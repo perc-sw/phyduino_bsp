@@ -1,0 +1,9 @@
+[submodule "extern/pico-sdk"]
+	path = extern/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "extern/ArduinoCore-API"]
+	path = extern/ArduinoCore-API
+	url = https://github.com/arduino/ArduinoCore-API.git
+[submodule "extern/doctest"]
+	path = extern/doctest
+	url = https://github.com/doctest/doctest.git
