@@ -18,8 +18,15 @@ runs:
         mkdir -p "$RUNNER_TEMP/picotool"
         tar -xzf picotool.tar.gz -C "$RUNNER_TEMP/picotool" --strip-components=1
 
+    # Direct download rather than arduino/setup-arduino-cli@v2 (still Node 20).
     - name: Install arduino-cli
-      uses: arduino/setup-arduino-cli@v2
+      shell: bash
+      run: |
+        curl -sSL -o arduino-cli.tar.gz \
+          https://github.com/arduino/arduino-cli/releases/download/v1.5.1/arduino-cli_1.5.1_Linux_64bit.tar.gz
+        mkdir -p "$RUNNER_TEMP/arduino-cli"
+        tar -xzf arduino-cli.tar.gz -C "$RUNNER_TEMP/arduino-cli" arduino-cli
+        echo "$RUNNER_TEMP/arduino-cli" >> "$GITHUB_PATH"
 
     - name: Install platform/ as a dev platform
       shell: bash

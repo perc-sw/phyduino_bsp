@@ -13,7 +13,7 @@ jobs:
   compile:
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
@@ -23,7 +23,7 @@ jobs:
   cmake:
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build   # also writes platform.local.txt with tool paths
       - name: Install Ninja
         run: sudo apt-get install -y ninja-build
@@ -33,7 +33,7 @@ jobs:
   host-tests:
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Fetch doctest (the only submodule the tests need)
         run: git submodule update --init extern/doctest
       - name: Install Ninja
