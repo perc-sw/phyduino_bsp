@@ -58,6 +58,9 @@ add_executable(host_tests
     models/chip_models.cpp)
 target_compile_features(host_tests PRIVATE cxx_std_17)
 target_compile_options(host_tests PRIVATE ${ARDUINO_DEFINES})
+# ArduinoCore-API's own PC-build switch: skips its atexit() declaration, which
+# clashes with glibc's noexcept one on Linux.
+target_compile_definitions(host_tests PRIVATE HOST)
 target_include_directories(host_tests PRIVATE
     "${FAKE_INCLUDE_DIR}"
     "${CMAKE_CURRENT_LIST_DIR}/fake_sdk"
