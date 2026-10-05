@@ -77,8 +77,14 @@ recipe.size.regex=^(?:\.boot2|\.text|\.rodata|\.binary_info|\.ARM\.extab|\.ARM\.
 recipe.size.regex.data=^(?:\.data|\.bss|\.uninitialized_data)\s+([0-9]+).*
 
 # --- Upload --------------------------------------------------------------------
-# The IDE's 1200-baud "touch" (boards.txt) reboots the board into BOOTSEL; picotool
-# then writes the program and starts it (-x).
-tools.picotool.upload.params.verbose=-v
-tools.picotool.upload.params.quiet=
-tools.picotool.upload.pattern="{path}/picotool" load {upload.verbose} -x "{build.path}/{build.project_name}.uf2"
+# The IDE's 1200-baud "touch" (boards.txt) reboots the board into BOOTSEL. The
+# uf2_upload script (platform/tools/) then copies the UF2 to the BOOTSEL drive,
+# which needs no USB driver, or falls back to "picotool load -x" where
+# picotool's driver is installed. Windows uses a batch file (not a PowerShell
+# script, which lab PCs' execution policy may block); Linux/macOS use /bin/sh.
+tools.uf2_upload.path={runtime.platform.path}/tools
+tools.uf2_upload.upload.params.verbose=
+tools.uf2_upload.upload.params.quiet=
+tools.uf2_upload.upload.pattern.windows="{path}/uf2_upload.cmd" "{build.path}/{build.project_name}.uf2" "{tools.picotool.path}/picotool"
+tools.uf2_upload.upload.pattern.linux=/bin/sh "{path}/uf2_upload.sh" "{build.path}/{build.project_name}.uf2" "{tools.picotool.path}/picotool"
+tools.uf2_upload.upload.pattern.macosx=/bin/sh "{path}/uf2_upload.sh" "{build.path}/{build.project_name}.uf2" "{tools.picotool.path}/picotool"

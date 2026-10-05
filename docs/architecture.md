@@ -30,7 +30,8 @@ nothing else. Everything outside it is tooling, docs or tests.
    ▼
  <sketch>.elf ──► picotool uf2 convert ──► <sketch>.uf2
    ▼
- upload: 1200-baud touch → board reboots to BOOTSEL → picotool load -x
+ upload: 1200-baud touch → board reboots to BOOTSEL → tools/uf2_upload copies the
+         .uf2 to the RPI-RP2 drive (or picotool load -x as fallback; ADR 007)
 ```
 
 ## Where things live
@@ -44,6 +45,7 @@ nothing else. Everything outside it is tooling, docs or tests.
 | `Serial` (USB) / `Serial1`, `Serial2` | `cores/phyduino/SerialUSB.*`, `SerialUART.*` |
 | USB name / VID / PID | `platform/boards.txt`; descriptors in `cores/phyduino/usb/usb_descriptors.c` |
 | Compiler flags, upload command | `platform/platform.txt` |
+| How the sketch reaches the board | `platform/tools/uf2_upload.cmd` (Windows), `uf2_upload.sh` (Linux/macOS) |
 | SPI / Wire | `platform/libraries/SPI`, `platform/libraries/Wire` |
 | SDK settings (flash, boot2, clocks) or which SDK libraries are included | `sdk-builder/boards/<board>.h`, `sdk-builder/CMakeLists.txt` → regenerate bundle |
 | TinyUSB class counts / buffers | `sdk-builder/config/tusb_config.h` → regenerate bundle |

@@ -25,9 +25,9 @@ phyduino_pico.build.extra_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DU
 phyduino_pico.build.vid=0x2E8A
 phyduino_pico.build.pid=0x000A
 
-phyduino_pico.upload.tool=picotool
-phyduino_pico.upload.tool.default=picotool
-phyduino_pico.upload.protocol=picotool
+phyduino_pico.upload.tool=uf2_upload
+phyduino_pico.upload.tool.default=uf2_upload
+phyduino_pico.upload.protocol=uf2
 phyduino_pico.upload.maximum_size=16777216
 phyduino_pico.upload.maximum_data_size=270336
 phyduino_pico.upload.use_1200bps_touch=true

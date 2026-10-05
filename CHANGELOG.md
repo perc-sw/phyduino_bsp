@@ -10,6 +10,8 @@ Format: one section per version, newest first. Stage plan: README.md.
 - Digital I/O, `analogRead` (A0–A2 RP2040 ADC, A3–A5 on-board MAX11635),
   `analogWrite` (PWM), `tone`, interrupts, `pulseIn`, `shiftIn/Out`, `random`.
 - USB `Serial` (TinyUSB CDC) with 1200-baud upload touch; `Serial1`/`Serial2` UARTs.
+- Upload by copying the UF2 to the BOOTSEL drive, no USB driver needed; picotool as
+  fallback (`platform/tools/uf2_upload.*`, ADR 007).
 - SPI and Wire (controller + peripheral) libraries.
 - STUSB4500 USB-PD driver (`stusb4500.h`); default profiles 5 V/2 A, 9 V/1 A,
   20 V/0.5 A loaded at start-up (working registers only, NVM untouched).
@@ -35,4 +37,8 @@ Format: one section per version, newest first. Stage plan: README.md.
 - **USB VID/PID**: uses Raspberry Pi VID 0x2E8A with the pico-sdk generic PID
   0x000A. Request a dedicated PID from Raspberry Pi before wide release.
 - STUSB4500 register addresses (from ST's register map) still to be confirmed on hardware.
-- Hardware checklist not yet run on a real board.
+- Hardware checklist (2026-10-05, one Phyduino Pico): items 1-8, 9b, 10, 10b, 11, 16
+  passed; 12 partial (scan works, no device fitted). Still to run: 9 (buzzer),
+  12 with a device, 13 (second board), 14-15 (USB-PD charger).
+- Board seen with A3-A5 100 kOhm pull-downs (R47-R49) apparently not connected:
+  unconnected inputs float. Hardware, not firmware.

@@ -51,3 +51,7 @@ sketches to a board and run the relevant items in `tests/hardware-checklist.md`.
 A board that has never run this core does not answer the 1200-baud touch:
 slide SW1 to GND (BOOTSEL), press reset, upload, slide SW1 back to 3.3 V.
 After that, uploads work from the IDE with no buttons.
+
+Uploads need no USB driver: the upload script copies the sketch to the
+RPI-RP2 drive (ADR 007). On Windows, picotool's own upload path additionally
+needs a WinUSB driver (Zadig); it is only a fallback and is not required.

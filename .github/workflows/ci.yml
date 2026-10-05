@@ -17,6 +17,8 @@ jobs:
       - uses: ./.github/actions/setup-build
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
+      - name: Upload script syntax
+        run: sh -n platform/tools/uf2_upload.sh
 
   cmake:
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)

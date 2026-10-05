@@ -11,7 +11,8 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 2 | `blink` | none | LED blinks at 1 Hz |
 | 3 | `sdk_only_blink` | none | LED blinks at 2 Hz (pico-sdk calls only) |
 | 4 | `serial_echo` | Serial Monitor 115200 | Banner appears; typed text echoes back |
-| 5 | (any) | Upload twice from IDE | Second upload works without touching the board (1200-baud touch) |
+| 5 | (any) | Upload twice from IDE | Second upload works without touching the board (1200-baud touch, then copy to RPI-RP2) |
+| 5b | (any) | Board already in BOOTSEL (RPI-RP2 drive showing, no port) | Upload without a port still works |
 | 6 | `analog_read` | Jumper AREF (2.048 V) to each of A0–A5 in turn | A0–A2 ≈ 2540 (3.3 V scale), A3–A5 = 4095 (2.048 V scale); only the jumpered input changes |
 | 7 | `pwm_fade` | none | LED fades smoothly up and down |
 | 8 | `interrupts` | Button D2 → GND | Count goes up once per press |
