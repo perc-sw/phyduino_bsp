@@ -1,0 +1,34 @@
+# Phyduino boards. One block per board; build recipes are in platform.txt.
+# Adding a board: docs/maintenance/add-board.md
+
+###############################################################################
+# Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.md
+###############################################################################
+phyduino_pico.name=Phyduino Pico
+
+# USB identity. Raspberry Pi VID + the pico-sdk's generic PID until a dedicated
+# PID is assigned (open item in CHANGELOG.md).
+phyduino_pico.vid.0=0x2E8A
+phyduino_pico.pid.0=0x000A
+phyduino_pico.upload_port.0.vid=0x2E8A
+phyduino_pico.upload_port.0.pid=0x000A
+phyduino_pico.build.usb_manufacturer="University of Toronto, Dept. of Physics"
+phyduino_pico.build.usb_product="Phyduino Pico"
+
+phyduino_pico.build.board=PHYDUINO_PICO
+phyduino_pico.build.core=phyduino
+phyduino_pico.build.variant=phyduino_pico
+phyduino_pico.build.chip=rp2040
+phyduino_pico.build.mcu=cortex-m0plus
+phyduino_pico.build.f_cpu=125000000L
+phyduino_pico.build.extra_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
+phyduino_pico.build.vid=0x2E8A
+phyduino_pico.build.pid=0x000A
+
+phyduino_pico.upload.tool=picotool
+phyduino_pico.upload.tool.default=picotool
+phyduino_pico.upload.protocol=picotool
+phyduino_pico.upload.maximum_size=16777216
+phyduino_pico.upload.maximum_data_size=270336
+phyduino_pico.upload.use_1200bps_touch=true
+phyduino_pico.upload.wait_for_upload_port=false

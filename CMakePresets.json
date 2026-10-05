@@ -1,0 +1,78 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "phyduino_pico",
+      "displayName": "Phyduino Pico (RP2040) - verification build",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi.cmake",
+      "cacheVariables": {
+        "PHYDUINO_BOARD": "phyduino_pico",
+        "PHYDUINO_WERROR": "ON"
+      }
+    },
+    {
+      "name": "host-tests",
+      "displayName": "PC-side unit tests (fake pico-sdk)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "PHYDUINO_HOST_TESTS": "ON",
+        "PHYDUINO_WERROR": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "phyduino_pico",
+      "configurePreset": "phyduino_pico"
+    },
+    {
+      "name": "host-tests",
+      "configurePreset": "host-tests"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "phyduino_pico",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "phyduino_pico"
+        },
+        {
+          "type": "build",
+          "name": "phyduino_pico"
+        }
+      ]
+    },
+    {
+      "name": "host-tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "host-tests"
+        },
+        {
+          "type": "build",
+          "name": "host-tests"
+        },
+        {
+          "type": "test",
+          "name": "host-tests"
+        }
+      ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "host-tests",
+      "configurePreset": "host-tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+# Phyduino Arduino platform.
+#
+# This file holds build *recipes* only. Board settings are in boards.txt.
+# Long SDK flag lists are NOT here: they are generated into
+#   system/<variant>/compile_flags.txt and link_flags.txt
+# by sdk-builder/ and passed with gcc's @file syntax.
+#
+# How a sketch is built: docs/architecture.md
+# Arduino spec: https://arduino.github.io/arduino-cli/latest/platform-specification/
+
+name=Phyduino Boards
+version=0.1.0
+
+# --- Paths ---------------------------------------------------------------------
+# Tool locations come from the Board Manager install. For a dev checkout, set them
+# in platform.local.txt instead (see docs/maintenance/dev-setup.md).
+compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
+tools.picotool.path={runtime.tools.picotool.path}
+
+# Prebuilt pico-sdk bundle for the selected board. (Not build.system.path:
+# arduino-cli reserves that name.)
+build.sdk.path={runtime.platform.path}/system/{build.variant}
+
+# --- Tools ---------------------------------------------------------------------
+compiler.c.cmd=arm-none-eabi-gcc
+compiler.cpp.cmd=arm-none-eabi-g++
+compiler.S.cmd=arm-none-eabi-gcc
+compiler.ar.cmd=arm-none-eabi-ar
+compiler.size.cmd=arm-none-eabi-size
+
+# --- Flags ---------------------------------------------------------------------
+compiler.warning_flags=-w
+compiler.warning_flags.none=-w
+compiler.warning_flags.default=
+compiler.warning_flags.more=-Wall
+compiler.warning_flags.all=-Wall -Wextra
+
+compiler.cpu.flags=-mcpu={build.mcu} -mthumb
+compiler.optimize.flags=-Os -g
+compiler.common.flags=-ffunction-sections -fdata-sections -MMD {compiler.warning_flags}
+
+compiler.sdk.flags="@{build.sdk.path}/compile_flags.txt" "-isystem{build.sdk.path}/include"
+compiler.arduino.defines=-DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DF_CPU={build.f_cpu}
+
+compiler.c.flags=-c -std=gnu17 {compiler.common.flags}
+compiler.cpp.flags=-c -std=gnu++17 {compiler.common.flags} -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit
+compiler.S.flags=-c -x assembler-with-cpp {compiler.common.flags}
+
+# Users may append flags via these (e.g. from arduino-cli --build-property).
+compiler.c.extra_flags=
+compiler.cpp.extra_flags=
+compiler.S.extra_flags=
+compiler.ldflags=
+
+# --- Compile -------------------------------------------------------------------
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.c.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.cpp.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} {compiler.cpu.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.S.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" rcs "{archive_file_path}" "{object_file}"
+
+# --- Link ----------------------------------------------------------------------
+# libpico.a is linked --whole-archive: the SDK registers its start-up code in
+# special sections nothing refers to by name, so a normal archive search would
+# silently drop it. --gc-sections still removes anything unused.
+recipe.c.combine.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpu.flags} {compiler.optimize.flags} "@{build.sdk.path}/link_flags.txt" "-L{build.sdk.path}" "-T{build.sdk.path}/memmap.ld" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} "{build.sdk.path}/lib/boot2.o" -Wl,--start-group "{archive_file_path}" -Wl,--whole-archive "{build.sdk.path}/lib/libpico.a" -Wl,--no-whole-archive -lstdc++ -lm -lc -Wl,--end-group
+
+# --- Outputs -------------------------------------------------------------------
+recipe.objcopy.uf2.pattern="{tools.picotool.path}/picotool" uf2 convert "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.uf2" --family {build.chip}
+
+# "Export compiled Binary" saves the UF2 (drag-and-drop onto the BOOTSEL drive).
+recipe.output.tmp_file={build.project_name}.uf2
+recipe.output.save_file={build.project_name}.{build.variant}.uf2
+
+# --- Size report ---------------------------------------------------------------
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
+recipe.size.regex=^(?:\.boot2|\.text|\.rodata|\.binary_info|\.ARM\.extab|\.ARM\.exidx|\.data)\s+([0-9]+).*
+recipe.size.regex.data=^(?:\.data|\.bss|\.uninitialized_data)\s+([0-9]+).*
+
+# --- Upload --------------------------------------------------------------------
+# The IDE's 1200-baud "touch" (boards.txt) reboots the board into BOOTSEL; picotool
+# then writes the program and starts it (-x).
+tools.picotool.upload.params.verbose=-v
+tools.picotool.upload.params.quiet=
+tools.picotool.upload.pattern="{path}/picotool" load {upload.verbose} -x "{build.path}/{build.project_name}.uf2"

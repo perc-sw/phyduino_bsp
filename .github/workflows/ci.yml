@@ -1,0 +1,40 @@
+# On each push / pull request:
+#   compile     - every test sketch and library example through arduino-cli
+#   cmake       - the same code through the CMake verification build (-Werror)
+#   host-tests  - PC-side unit tests against a fake pico-sdk (tests/host)
+# The SDK bundle is committed, so only host-tests fetches a submodule (doctest).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
+      - name: Compile sketches
+        run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
+
+  cmake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build   # also writes platform.local.txt with tool paths
+      - name: Install Ninja
+        run: sudo apt-get install -y ninja-build
+      - name: CMake verification build
+        run: cmake --workflow --preset phyduino_pico
+
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch doctest (the only submodule the tests need)
+        run: git submodule update --init extern/doctest
+      - name: Install Ninja
+        run: sudo apt-get install -y ninja-build
+      - name: PC-side unit tests
+        run: cmake --workflow --preset host-tests

@@ -1,0 +1,34 @@
+# Shared by ci.yml and release.yml: installs the toolchain, picotool and
+# arduino-cli, and makes platform/ visible to arduino-cli as phyduino:rp2.
+name: Set up Phyduino build
+description: Toolchain + arduino-cli with this checkout installed as a dev platform
+runs:
+  using: composite
+  steps:
+    - name: Install Arm GNU toolchain
+      uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: "15.2.Rel1"
+
+    - name: Install picotool
+      shell: bash
+      run: |
+        curl -sSL -o picotool.tar.gz \
+          https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.2.0-3/picotool-2.2.0-a4-x86_64-lin.tar.gz
+        mkdir -p "$RUNNER_TEMP/picotool"
+        tar -xzf picotool.tar.gz -C "$RUNNER_TEMP/picotool" --strip-components=1
+
+    - name: Install arduino-cli
+      uses: arduino/setup-arduino-cli@v2
+
+    - name: Install platform/ as a dev platform
+      shell: bash
+      run: |
+        SKETCHBOOK="$RUNNER_TEMP/sketchbook"
+        mkdir -p "$SKETCHBOOK/hardware/phyduino"
+        ln -s "$GITHUB_WORKSPACE/platform" "$SKETCHBOOK/hardware/phyduino/rp2"
+        printf 'directories:\n  user: %s\n' "$SKETCHBOOK" > "$RUNNER_TEMP/arduino-cli.yaml"
+        GCC_BIN="$(dirname "$(command -v arm-none-eabi-gcc)")"
+        printf 'compiler.path=%s/\ntools.picotool.path=%s\n' "$GCC_BIN" "$RUNNER_TEMP/picotool" \
+          > platform/platform.local.txt
+        echo "ARDUINO_CLI_CONFIG=$RUNNER_TEMP/arduino-cli.yaml" >> "$GITHUB_ENV"

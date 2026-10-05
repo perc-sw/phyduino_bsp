@@ -1,0 +1,29 @@
+{
+  "_comment": "Tools the Board Manager installs with the platform. Only URLs live here; make_release.py computes checksums. A system given as {\"url\", \"repack\": true} is re-packed with a single root folder (Arduino requires one) and hosted on the GitHub release named by host_tag. Host names: https://arduino.github.io/arduino-cli/latest/package_index_json-specification/",
+  "tools": [
+    {
+      "name": "arm-none-eabi-gcc",
+      "version": "15.2.rel1",
+      "systems": {
+        "x86_64-mingw32": {
+          "url": "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-mingw-w64-x86_64-arm-none-eabi.zip",
+          "repack": true
+        },
+        "x86_64-pc-linux-gnu": "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz",
+        "aarch64-linux-gnu": "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-aarch64-arm-none-eabi.tar.xz",
+        "arm64-apple-darwin": "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi.tar.xz"
+      },
+      "host_tag": "tools-arm-none-eabi-gcc-15.2.rel1"
+    },
+    {
+      "name": "picotool",
+      "version": "2.2.0-a4",
+      "systems": {
+        "x86_64-mingw32": "https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.2.0-3/picotool-2.2.0-a4-x64-win.zip",
+        "x86_64-pc-linux-gnu": "https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.2.0-3/picotool-2.2.0-a4-x86_64-lin.tar.gz",
+        "aarch64-linux-gnu": "https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.2.0-3/picotool-2.2.0-a4-aarch64-lin.tar.gz",
+        "arm64-apple-darwin": "https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.2.0-3/picotool-2.2.0-a4-mac.zip"
+      }
+    }
+  ]
+}

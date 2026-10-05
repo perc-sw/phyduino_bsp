@@ -1,0 +1,27 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "phyduino_pico",
+      "displayName": "Phyduino Pico (RP2040)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "PHYDUINO_BOARD": "phyduino_pico",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "phyduino_pico", "configurePreset": "phyduino_pico" }
+  ],
+  "workflowPresets": [
+    {
+      "name": "phyduino_pico",
+      "steps": [
+        { "type": "configure", "name": "phyduino_pico" },
+        { "type": "build",     "name": "phyduino_pico" }
+      ]
+    }
+  ]
+}

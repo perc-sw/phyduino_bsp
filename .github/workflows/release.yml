@@ -1,0 +1,53 @@
+# On a version tag (e.g. v0.1.0): compile everything, build the platform zip and
+# package index, and publish both as GitHub Release assets.
+# Board Manager URL for users (always the newest release):
+#   https://github.com/<owner>/<repo>/releases/latest/download/package_phyduino_index.json
+# Recipe: docs/maintenance/release.md
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build
+
+      - name: Check tag matches VERSION
+        run: test "v$(cat VERSION)" = "${GITHUB_REF_NAME}"
+
+      - name: Compile sketches
+        run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
+
+      - name: Fetch previous index (keeps older versions installable)
+        run: gh release download --pattern package_phyduino_index.json --output previous_index.json || true
+
+      - name: Build release
+        run: python3 package/make_release.py --repo "$GITHUB_REPOSITORY" --previous-index previous_index.json
+
+      # Re-packed tool archives (see package/tools.json "host_tag") are published
+      # once, on their own release; later releases reuse them.
+      - name: Publish re-packed tools (first time only)
+        run: |
+          for tag in $(python3 -c "import json; print(' '.join(t['host_tag'] for t in json.load(open('package/tools.json'))['tools'] if 'host_tag' in t))"); do
+            if ls package/build/tools/*.zip > /dev/null 2>&1 && ! gh release view "$tag" > /dev/null 2>&1; then
+              gh release create "$tag" package/build/tools/*.zip --title "$tag" \
+                --notes "Toolchain re-packed for the Arduino Board Manager (single root folder). Unmodified contents."
+            fi
+          done
+
+      - name: Publish
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            package/build/phyduino-rp2-*.zip \
+            package/build/package_phyduino_index.json \
+            --title "$GITHUB_REF_NAME" \
+            --notes "See CHANGELOG.md"
