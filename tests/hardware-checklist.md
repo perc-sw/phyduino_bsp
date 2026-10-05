@@ -16,6 +16,7 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 7 | `pwm_fade` | none | LED fades smoothly up and down |
 | 8 | `interrupts` | Button D2 → GND | Count goes up once per press |
 | 9 | `tone_test` | Piezo on D8 | Eight-note scale |
+| 9b | `tone_loopback` | Wire D8 → D2 (no buzzer needed) | Measured ≈ set frequency, duty ≈ 50 %; timed tone playing at 100 ms, stopped at 300 ms |
 | 10 | `uart_loopback` | Wire D1 → D0 | Counter values echo in Serial Monitor |
 | 10b | `uart2_loopback` | Wire D4 → D5 | Counter values echo in Serial Monitor (Serial2) |
 | 11 | `SpiLoopback` | Wire D11 → D12 | received == sent |
