@@ -84,3 +84,7 @@ variants/*/pico/config_autogen.h
 
 # Per-machine tool paths for a dev checkout (docs/maintenance/dev-setup.md)
 platform/platform.local.txt
+
+# Python bytecode
+__pycache__/
+*.pyc

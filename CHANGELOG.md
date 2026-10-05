@@ -19,6 +19,8 @@ Format: one section per version, newest first. Stage plan: README.md.
   Arduino build, read from platform.txt/boards.txt, with `-Werror`. Not shipped.
 - PC-side unit tests (`tests/host/`, doctest): core, variant drivers and
   libraries against a fake pico-sdk with MAX11635/STUSB4500 models; 71 cases.
+- GPL-3.0 licence (`LICENSE`, also in the release zip); bundled upstream
+  licences in `platform/licenses/`.
 - `Arduino.h` declares `itoa()`/`utoa()`/`ltoa()`/`ultoa()` and `dtostrf()`.
 
 ### Fixed (found by the PC-side tests)

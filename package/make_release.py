@@ -5,7 +5,7 @@ Usage:
     python package/make_release.py --repo OWNER/NAME [--previous-index FILE] [--local]
 
 Output (package/build/):
-    phyduino-rp2-<version>.zip      platform/ (minus EXCLUDE files), one root folder
+    phyduino-rp2-<version>.zip      platform/ (minus EXCLUDE files) + LICENSE, one root folder
     package_phyduino_index.json     index for the Arduino Board Manager
     tools/                          re-packed tool archives not yet published (if any)
 
@@ -61,6 +61,7 @@ def zip_platform(version):
         for path in sorted(PLATFORM.rglob("*")):
             if path.is_file() and not any(fnmatch.fnmatch(path.name, pat) for pat in EXCLUDE):
                 z.write(path, f"{root}/{path.relative_to(PLATFORM).as_posix()}")
+        z.write(REPO / "LICENSE", f"{root}/LICENSE")  # GPL-3.0 travels with every copy
     return out
 
 

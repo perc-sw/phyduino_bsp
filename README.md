@@ -59,5 +59,6 @@ Changes per version: [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 
-To be decided (no `LICENSE` file yet). Bundled upstream code keeps its own licence:
+GNU General Public License v3.0, see [LICENSE](LICENSE). Bundled upstream code keeps its own licence
+(texts in [platform/licenses/](platform/licenses/)):
 pico-sdk and TinyUSB (BSD-3-Clause / MIT), ArduinoCore-API (LGPL-2.1).

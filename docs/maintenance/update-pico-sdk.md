@@ -22,7 +22,9 @@ Do this to move to a new pico-sdk release, or after changing anything in
 4. `python tests/compile_all.py`. Fix any core code the new SDK broke.
 5. Hardware-test (`tests/hardware-checklist.md`): at least Blink, Serial echo,
    upload via 1200-baud touch.
-6. Commit the submodule bump **and** `platform/system/` together. Note the SDK
+6. Refresh `platform/licenses/pico-sdk.txt` and `tinyusb.txt` from `extern/pico-sdk/`
+   (`LICENSE.TXT`, `lib/tinyusb/LICENSE`) in case they changed.
+7. Commit the submodule bump **and** `platform/system/` together. Note the SDK
    version in `CHANGELOG.md`.
 
 If the Arm toolchain version changes too, update `package/tools.json` and the

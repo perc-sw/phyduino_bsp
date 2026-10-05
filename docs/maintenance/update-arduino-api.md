@@ -19,4 +19,5 @@ submodule elsewhere would not be built).
    file's wording.
 4. `python tests/compile_all.py`. If the API added new pure-virtual methods or
    functions the core must provide, implement them in the matching core file.
-5. Commit the submodule bump and the new copy together; note it in `CHANGELOG.md`.
+5. Refresh `platform/licenses/ArduinoCore-API.txt` from `extern/ArduinoCore-API/LICENSE`.
+6. Commit the submodule bump and the new copy together; note it in `CHANGELOG.md`.
