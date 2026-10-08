@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>Hardware checklist · Phyduino Boards · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="./style/uoft_physics_perc_sw.css">
+<!-- Page-only additions; the shared stylesheet stays identical to phyduino_pico's -->
+<style>
+  .ds-table td code   { font-family: var(--mono); font-size: 12px; }
+  .check-expected     { display: block; margin-top: 3px; color: var(--text); }
+  .status             { font-family: var(--mono); font-size: 11.5px; border-radius: 4px;
+                        padding: 3px 9px; border: 1px solid; }
+  .status.pass        { color: var(--green); background: var(--green-bg); border-color: #A9D9C6; }
+  .status.todo        { color: var(--amber); background: var(--amber-bg); border-color: #EBCB98; }
+  .status.check       { color: #005F7A; background: var(--accent-bg); border-color: #A8D8E8; }
+  .page-note          { font-size: 13px; color: var(--text-2); margin: 8px 0 0; }
+  .ds-table pre.wiring { font-family: Consolas, "Cascadia Mono", Menlo, "DejaVu Sans Mono", monospace;
+                        font-size: 11.5px; line-height: 1.15; color: var(--text); margin: 8px 0;
+                        padding: 8px 10px; background: var(--bg); border: 1px solid var(--border);
+                        border-radius: var(--r); overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="./images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Boards</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="./index.html">Phyduino Boards</a> - Hardware checklist</span>
+      <p class="board-desc">
+        Run before every release on a real board, and after core changes in the area.
+        Sketches are in tests/sketches/ and platform/libraries/*/examples/.
+        The checklist itself lives in
+        <a href="../tests/hardware-checklist.md">tests/hardware-checklist.md</a>; results are
+        recorded in the <a href="../CHANGELOG.md">changelog</a>.
+      </p>
+      <div class="spec-row">
+        <span class="spec-pill">v0.1.0</span>
+        <span class="spec-pill">Phyduino Pico</span>
+        <span class="spec-pill">15 passed</span>
+        <span class="spec-pill">3 to run</span>
+        <span class="spec-pill">1 to confirm</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Phyduino Pico</h2></div>
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr>
+          <td>1 · (any sketch)</td>
+          <td>New board: SW1 to GND, reset, upload, SW1 back<span class="check-expected">Sketch runs; later uploads work with no buttons</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>2 · blink</td>
+          <td>No wiring<span class="check-expected">LED blinks at 1 Hz</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>3 · sdk_only_blink</td>
+          <td>No wiring<span class="check-expected">LED blinks at 2 Hz (pico-sdk calls only)</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>4 · serial_echo</td>
+          <td>Serial Monitor at 115200<span class="check-expected">Banner appears; typed text echoes back</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>5 · (any sketch)</td>
+          <td>Upload twice from the IDE<span class="check-expected">Second upload works without touching the board (1200-baud touch, then copy to RPI-RP2)</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>5b · (any sketch)</td>
+          <td>Board already in BOOTSEL (RPI-RP2 drive showing, no port)<span class="check-expected">Upload without a port still works, using the IDE Upload button</span></td>
+          <td><span class="status check">Confirm</span></td>
+        </tr>
+        <tr>
+          <td>6 · analog_read</td>
+          <td>Jumper AREF (2.048 V) to each of A0–A5 in turn<pre class="wiring"> Phyduino Pico
+ ┌───────────────┐
+ │ AREF 2.048 V ●├──┐ jumper
+ │ A0           ●├──┘
+ │ A1           ●│
+ │ A2           ●│   move the jumper&#x27;s free end
+ │ A3           ●│   to A0, then A1 … A5,
+ │ A4           ●│   one input at a time
+ │ A5           ●│
+ └───────────────┘</pre><span class="check-expected">A0–A2 ≈ 2540 (3.3 V scale), A3–A5 = 4095 (2.048 V scale); only the jumpered input changes</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>7 · pwm_fade</td>
+          <td>No wiring<span class="check-expected">LED fades smoothly up and down</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>8 · interrupts</td>
+          <td>Button D2 → GND<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐        button
+ │ D2          ●├───────o  o──────┐
+ │              │                 │
+ │ GND         ●├─────────────────┘
+ └──────────────┘</pre><span class="check-expected">Count goes up once per press</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>9 · tone_test</td>
+          <td>Piezo on D8<pre class="wiring"> Phyduino Pico          piezo
+ ┌──────────────┐      ┌─────┐
+ │ D8          ●├──────┤+    │
+ │ GND         ●├──────┤-    │
+ └──────────────┘      └─────┘</pre><span class="check-expected">Eight-note scale</span></td>
+          <td><span class="status todo">To run</span></td>
+        </tr>
+        <tr>
+          <td>9b · tone_loopback</td>
+          <td>Wire D8 → D2 (no buzzer needed)<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D8          ●├──┐
+ │              │  │ jumper
+ │ D2          ●├──┘
+ └──────────────┘</pre><span class="check-expected">Measured ≈ set frequency, duty ≈ 50 %; timed tone playing at 100 ms, stopped at 300 ms</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>10 · uart_loopback</td>
+          <td>Wire D1 → D0<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D1 TX       ●├──┐
+ │              │  │ jumper
+ │ D0 RX       ●├──┘
+ └──────────────┘</pre><span class="check-expected">Counter values echo in the Serial Monitor</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>10b · uart2_loopback</td>
+          <td>Wire D4 → D5<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D4 TX       ●├──┐
+ │              │  │ jumper
+ │ D5 RX       ●├──┘
+ └──────────────┘</pre><span class="check-expected">Counter values echo in the Serial Monitor (Serial2)</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>11 · SpiLoopback</td>
+          <td>Wire D11 → D12<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D11 MOSI    ●├──┐
+ │              │  │ jumper
+ │ D12 MISO    ●├──┘
+ └──────────────┘</pre><span class="check-expected">received == sent</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>12 · I2CScanner</td>
+          <td>Any I2C device on SDA / SCL<pre class="wiring"> Phyduino Pico              I2C device (3.3 V)
+ ┌──────────────────┐       ┌──────────┐
+ │ 3.3V            ●├───────┤ VIN      │
+ │ GND             ●├───────┤ GND      │
+ │ SDA (D18,GPIO24)●├───────┤ SDA      │
+ │ SCL (D19,GPIO25)●├───────┤ SCL      │
+ └──────────────────┘       └──────────┘
+   No pull-ups on the Phyduino; most breakouts have their own.</pre><span class="check-expected">Its address is listed (found BMP280 at 0x77, seesaw encoder at 0x36)</span></td>
+          <td><span class="status pass">Passed 10-08</span></td>
+        </tr>
+        <tr>
+          <td>13 · PeripheralReceiver</td>
+          <td>Second board running i2c_controller on SDA / SCL / GND (e.g. a Raspberry Pi Pico 2; 5 V boards such as the UNO R4 need a level shifter)<pre class="wiring"> Raspberry Pi Pico 2                Phyduino Pico
+ (i2c_controller)                   (PeripheralReceiver, 0x42)
+ ┌────────────────┐                 ┌───────────────────┐
+ │ pin 6  GP4 SDA●├─────────────────┤● SDA (D18, GPIO24)│
+ │ pin 7  GP5 SCL●├─────────────────┤● SCL (D19, GPIO25)│
+ │ pin 8  GND    ●├─────────────────┤● GND              │
+ └────────────────┘                 └───────────────────┘
+
+ Pull-ups (were needed), anywhere on the bus:
+
+   3.3 V ──┬────────┐
+         [4.7k]   [4.7k]
+           │        │
+          SDA      SCL
+
+   Don&#x27;t join the 3V3 pins of the two boards.
+   5 V controllers (e.g. UNO R4) need a level shifter.</pre><span class="check-expected">“hello N” lines print; controller reads a rising counter (tested with a Raspberry Pi Pico 2)</span></td>
+          <td><span class="status pass">Passed 10-08</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-head"><h2>USB-PD</h2></div>
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr>
+          <td>14 · usbpd_status</td>
+          <td>USB-PD charger that offers 20 V; Pico 2 bridges Serial1 to the PC (planned: needs the usbpd_status change)<pre class="wiring"> USB-PD charger (20 V)                          PC
+        │ USB-C                                  │ USB
+        ▼                                        ▼
+ ┌────────────────────┐              ┌─────────────────────┐
+ │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
+ │ (usbpd_status)     │              │ (serial bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP1 RX  (pin 2)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP0 TX  (pin 1)    │
+ │ GND               ●├──────────────┤● GND     (pin 3)    │
+ │ POK2 / POK3 LEDs   │              └─────────────────────┘
+ └────────────────────┘
+   Only these three wires: VBUS is 20 V on a 20 V contract.</pre><span class="check-expected">“STUSB4500 found”; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit</span></td>
+          <td><span class="status todo">To run</span></td>
+        </tr>
+        <tr>
+          <td>15 · usbpd_status</td>
+          <td>Same setup as 14; send 9, then 5, then f<span class="check-expected">VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V</span></td>
+          <td><span class="status todo">To run</span></td>
+        </tr>
+        <tr>
+          <td>16 · usbpd_status</td>
+          <td>Ordinary USB port (no PD)<pre class="wiring"> PC USB port ──── USB-C ────► Phyduino Pico (usbpd_status)
+   5 V only; Serial Monitor at 115200</pre><span class="check-expected">Contract offer 0, VBUS ≈ 5 V</span></td>
+          <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-head"><h2>Notes</h2></div>
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr>
+          <td>Board tested</td>
+          <td>One Phyduino Pico, 2026-10-05 and 2026-10-08 (dates in the table are 2026).</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>A3–A5 pull-downs</td>
+          <td>On this board R47–R49 (100 kΩ) appear not to be connected, so unconnected
+            A3–A5 inputs float. Hardware, not firmware.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Windows Smart App Control</td>
+          <td>Blocks the unsigned picotool used to build the UF2. Turned off on the
+            development PC; distribution fix still open.</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
