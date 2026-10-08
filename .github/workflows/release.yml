@@ -2,7 +2,7 @@
 # package index, and publish both as GitHub Release assets.
 # Board Manager URL for users (always the newest release):
 #   https://github.com/<owner>/<repo>/releases/latest/download/package_phyduino_index.json
-# Recipe: docs/maintenance/release.md
+# Recipe: docs/maintenance/release.html
 name: Release
 
 on:

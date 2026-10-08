@@ -15,4 +15,4 @@ Regenerate (from `sdk-builder/`):
 
     cmake --workflow --preset phyduino_pico
 
-See `docs/maintenance/update-pico-sdk.md`.
+See `docs/maintenance/update-pico-sdk.html`.

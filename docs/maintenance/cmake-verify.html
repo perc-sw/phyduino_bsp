@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>CMake verification build · Phyduino Boards · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Boards</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Boards</a> - <a href="./index.html">Maintenance</a> - CMake verification build</span>
+      <p class="board-desc">Builds the core, variant, libraries and every sketch outside the Arduino IDE. Use it to check code with strict warnings, browse the code in an IDE (CLion, VS Code + clangd), or get an ELF with a map file for debugging. It is <strong>not</strong> shipped: the CMake files live outside <code>platform/</code>, and <code>make_release.py</code> excludes CMake files from the zip in any case.</p>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Run it</h2></div>
+
+  <div class="doc-text">
+    <p>From the repo root:</p>
+    <pre class="code"><code>cmake --workflow --preset phyduino_pico</code></pre>
+    <p>Output in <code>build/phyduino_pico/</code>: <code>&lt;sketch&gt;.elf</code>, <code>.map</code>, <code>.uf2</code> (if picotool is found) and <code>compile_commands.json</code>. Build one sketch with <code>cmake --build --preset phyduino_pico --target blink</code>.</p>
+    <p>Needs CMake ≥ 3.21, Ninja and the Arm toolchain. The compiler is found via <code>-DPHYDUINO_TOOLCHAIN_PATH=...</code>, else <code>compiler.path</code> in <code>platform/platform.local.txt</code> (the same file as the Arduino dev setup), else <code>PATH</code>.</p>
+  </div>
+
+  <div class="section-head"><h2>What it checks</h2></div>
+
+  <div class="doc-text">
+    <ul>
+      <li>The same sources as the Arduino build: <code>platform/cores/phyduino/**</code>, <code>platform/variants/&lt;board&gt;/</code>, <code>platform/libraries/*/src</code>.</li>
+      <li>The same flags: read from <code>platform.txt</code> and <code>boards.txt</code> by <code>cmake/arduino_properties.cmake</code>, so there is no second copy to keep in step. (<code>-w</code> is dropped and <code>-Wall -Wextra -Werror</code> added for our code; vendored <code>cores/phyduino/api/</code> stays quiet.) Turn <code>-Werror</code> off with <code>-DPHYDUINO_WERROR=OFF</code>.</li>
+      <li>The same link: SDK bundle <code>boot2.o</code>, <code>libpico.a</code> (whole-archive), <code>link_flags.txt</code>, <code>memmap.ld</code>.</li>
+      <li>Every sketch in <code>tests/sketches/</code> and <code>platform/libraries/*/examples/</code>. The ELF matches the Arduino build's (e.g. same <code>arm-none-eabi-size</code> output).</li>
+    </ul>
+  </div>
+
+  <div class="section-head"><h2>Differences from the Arduino builder</h2></div>
+
+  <div class="doc-text">
+    <ul>
+      <li>No automatic function prototypes: in a sketch, define or declare functions before use. (Arduino accepts either order.)</li>
+      <li>Libraries are linked when the sketch has <code>#include &lt;Library.h&gt;</code> for a library in <code>platform/libraries/</code>.</li>
+      <li>Sketch folder names must be unique across tests and examples (they become target names).</li>
+    </ul>
+  </div>
+
+  <div class="section-head"><h2>Files</h2></div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr><td><code>CMakeLists.txt</code>, <code>CMakePresets.json</code></td><td>entry point, one preset per board</td><td></td></tr>
+        <tr><td><code>cmake/arm-none-eabi.cmake</code></td><td>toolchain file</td><td></td></tr>
+        <tr><td><code>cmake/arduino_properties.cmake</code></td><td>reads <code>platform.txt</code> / <code>boards.txt</code> / <code>platform.local.txt</code></td><td></td></tr>
+        <tr><td><code>cmake/phyduino.cmake</code></td><td><code>phyduino_setup()</code> (core + library targets), <code>phyduino_add_sketch()</code></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-text">
+    <p>Adding a board: add a preset with <code>PHYDUINO_BOARD</code> set to its id from <code>boards.txt</code>. The separate <code>sdk-builder/</code> project (which builds the SDK bundle) is unrelated.</p>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

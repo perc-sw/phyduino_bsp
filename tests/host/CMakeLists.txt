@@ -4,7 +4,7 @@
 #
 #   cmake --workflow --preset host-tests
 #
-# Guide: docs/maintenance/host-tests.md
+# Guide: docs/maintenance/host-tests.html
 set(PLATFORM_DIR "${PHYDUINO_PLATFORM_DIR}")
 set(BOARD_VARIANT phyduino_pico)
 

@@ -2,7 +2,7 @@
 # Arduino core links against. Output: platform/system/<board>/
 #
 # Usage (from this folder):  cmake --workflow --preset phyduino_pico
-# Recipe:                    docs/maintenance/update-pico-sdk.md
+# Recipe:                    docs/maintenance/update-pico-sdk.html
 cmake_minimum_required(VERSION 3.20)
 
 if(NOT PHYDUINO_BOARD)

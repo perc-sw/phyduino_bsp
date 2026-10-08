@@ -10,7 +10,7 @@
 #   phyduino_add_sketch(<sketch dir>)
 #       Builds <name>.elf (+ .uf2 if picotool is found) from a sketch folder.
 #
-# Guide: docs/maintenance/cmake-verify.md
+# Guide: docs/maintenance/cmake-verify.html
 include_guard(GLOBAL)
 include(${CMAKE_CURRENT_LIST_DIR}/arduino_properties.cmake)
 
@@ -37,7 +37,7 @@ function(phyduino_setup board)
     arduino_property(variant build.variant)
     arduino_property(sdk     build.sdk.path)
     if(NOT EXISTS "${sdk}/lib/libpico.a")
-        message(FATAL_ERROR "SDK bundle missing: ${sdk} (see docs/maintenance/update-pico-sdk.md)")
+        message(FATAL_ERROR "SDK bundle missing: ${sdk} (see docs/maintenance/update-pico-sdk.html)")
     endif()
 
     # Compile flags shared by C and C++, minus what CMake handles itself

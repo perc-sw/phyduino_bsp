@@ -7,7 +7,7 @@
  * platform/variants/phyduino_pico/pins_arduino.h.
  *
  * Changing this file requires regenerating the SDK bundle:
- *   docs/maintenance/update-pico-sdk.md
+ *   docs/maintenance/update-pico-sdk.html
  */
 #ifndef PHYDUINO_BOARDS_PHYDUINO_PICO_H
 #define PHYDUINO_BOARDS_PHYDUINO_PICO_H

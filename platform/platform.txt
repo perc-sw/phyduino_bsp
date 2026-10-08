@@ -5,7 +5,7 @@
 #   system/<variant>/compile_flags.txt and link_flags.txt
 # by sdk-builder/ and passed with gcc's @file syntax.
 #
-# How a sketch is built: docs/architecture.md
+# How a sketch is built: docs/development/architecture.html
 # Arduino spec: https://arduino.github.io/arduino-cli/latest/platform-specification/
 
 name=Phyduino Boards
@@ -13,7 +13,7 @@ version=0.1.0
 
 # --- Paths ---------------------------------------------------------------------
 # Tool locations come from the Board Manager install. For a dev checkout, set them
-# in platform.local.txt instead (see docs/maintenance/dev-setup.md).
+# in platform.local.txt instead (see docs/maintenance/dev-setup.html).
 compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 tools.picotool.path={runtime.tools.picotool.path}
 

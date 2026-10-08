@@ -1,0 +1,50 @@
+/* Additions for text pages (docs/maintenance/).
+   uoft_physics_perc_sw.css is shared with phyduino_pico and stays unchanged. */
+
+.doc-page .board-desc + .board-desc { margin-top: -0.5rem; }
+
+/* Running text between steps and tables */
+.doc-text            { font-size: 14px; line-height: 1.65; color: var(--text-2);
+                       margin: 0 5px 1.25rem; }
+.doc-text p          { margin: 0 0 0.75rem; }
+.doc-text ul         { margin: 0 0 0.75rem; padding-left: 1.25rem; }
+.doc-text li         { margin-bottom: 0.35rem; }
+
+/* Inside a step */
+.step-body           { min-width: 0; flex: 1; }
+.step-body p         { margin: 0; }
+.step-body p + p,
+.step-body pre + p,
+.step-body ul + p    { margin-top: 6px; }
+.step-body ul        { margin: 6px 0 0; padding-left: 1.25rem; }
+.step-body li        { margin-bottom: 4px; }
+
+/* Inline code everywhere (the shared sheet styles it only inside .step-body) */
+.doc-page code       { font-family: var(--mono); font-size: 12px; background: var(--surface);
+                       border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; }
+.step-body code      { background: var(--bg); }
+.ds-table td code    { background: none; border: none; padding: 0; }
+.doc-page a code     { color: #005F7A; }
+
+/* Code blocks */
+.doc-page pre.code   { font-family: var(--mono); font-size: 12px; line-height: 1.5;
+                       color: var(--text); background: var(--surface);
+                       border: 1px solid var(--border); border-radius: var(--r);
+                       padding: 10px 14px; margin: 0 0 0.75rem; overflow-x: auto; }
+.step-body pre.code  { background: var(--bg); margin: 8px 0; }
+.doc-page pre.code code { background: none; border: none; padding: 0; font-size: inherit; }
+
+.doc-page .ds-table-wrap { margin-bottom: 1.25rem; }
+
+/* Header row, kept on tables with more than two columns */
+.doc-page .ds-table th { font-family: var(--mono); font-size: 11px; font-weight: 500;
+                         letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
+                         text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border);
+                         background: var(--bg); }
+.doc-page .ds-table th:last-child { padding: 0; }
+.doc-page .ds-table td:not(:first-child) { color: var(--text-2); font-size: 13px; }
+
+/* Box-drawing diagrams: IBM Plex Mono lacks these glyphs, so use a font that has them
+   (same stack as the wiring diagrams in development/hardware-checklist.html) */
+.doc-page pre.code.diagram { font-family: Consolas, "Cascadia Mono", Menlo, "DejaVu Sans Mono", monospace;
+                             line-height: 1.25; }

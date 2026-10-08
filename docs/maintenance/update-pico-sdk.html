@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>Update the pico-sdk (or regenerate the SDK bundle) · Phyduino Boards · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Boards</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Boards</a> - <a href="./index.html">Maintenance</a> - Update the pico-sdk (or regenerate the SDK bundle)</span>
+      <p class="board-desc">Do this to move to a new pico-sdk release, or after changing anything in <code>sdk-builder/</code> (board header, <code>tusb_config.h</code>, <code>SDK_COMPONENTS</code>).</p>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Steps</h2></div>
+
+  <ol class="steps">
+    <li class="step">
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>Move the submodule to the new tag (skip if only regenerating):</p>
+        <pre class="code"><code>git -C extern/pico-sdk fetch --tags
+git -C extern/pico-sdk checkout &lt;tag&gt;          # e.g. 2.3.0
+git -C extern/pico-sdk submodule update --init lib/tinyusb</code></pre>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>Regenerate the bundle for every board (from <code>sdk-builder/</code>):</p>
+        <pre class="code"><code>cmake --workflow --preset phyduino_pico</code></pre>
+        <p>This rewrites <code>platform/system/phyduino_pico/</code> completely. If it stops with "Two SDK include dirs provide different files with the same name", the new SDK added a clashing header; the message names it.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <p>Check what changed: <code>git status platform/system</code> and <code>git diff platform/system/*/compile_flags.txt platform/system/*/link_flags.txt</code>. New <code>--wrap</code> or define lines are normal after an SDK update.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <p><code>python tests/compile_all.py</code>. Fix any core code the new SDK broke.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">5</span>
+      <div class="step-body">
+        <p>Hardware-test (<a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a>): at least Blink, Serial echo, upload via 1200-baud touch.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">6</span>
+      <div class="step-body">
+        <p>Refresh <code>platform/licenses/pico-sdk.txt</code> and <code>tinyusb.txt</code> from <code>extern/pico-sdk/</code> (<code>LICENSE.TXT</code>, <code>lib/tinyusb/LICENSE</code>) in case they changed.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="step-num">7</span>
+      <div class="step-body">
+        <p>Commit the submodule bump <strong>and</strong> <code>platform/system/</code> together. Note the SDK version in <a href="../../CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="doc-text">
+    <p>If the Arm toolchain version changes too, update <code>package/tools.json</code> and the <code>release:</code> in <code>.github/actions/setup-build/action.yml</code> to match.</p>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>PC-side unit tests · Phyduino Boards · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Boards</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Boards</a> - <a href="./index.html">Maintenance</a> - PC-side unit tests</span>
+      <p class="board-desc">The real core, variant and library sources, compiled for your PC and run against a <strong>fake pico-sdk</strong> that simulates the hardware. Tests check what the code does to the hardware ("<code>pinMode(OUTPUT_OPENDRAIN)</code> then <code>digitalWrite(LOW)</code> drives the pin low", "<code>setProfiles()</code> writes these PDO bits"), with no board attached. Not shipped (lives in <code>tests/host/</code>).</p>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Run</h2></div>
+
+  <div class="doc-text">
+    <p>From the repo root:</p>
+    <pre class="code"><code>cmake --workflow --preset host-tests</code></pre>
+    <p>Needs a PC C++17 compiler (GCC or Clang; on Windows MSYS2 UCRT64 works), CMake ≥ 3.21, Ninja, and the doctest submodule (<code>git submodule update --init extern/doctest</code>). For one test or more detail, run the exe directly:</p>
+    <pre class="code"><code>build/host-tests/tests/host/host_tests -tc="*tone*" -s</code></pre>
+    <p>(<code>--help</code> lists doctest's options.)</p>
+  </div>
+
+  <div class="section-head"><h2>Layout</h2></div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr><td><code>tests/host/test_*.cpp</code></td><td>One file per area: pins, digital, analog, PWM/tone, time/pulse/shift, interrupts, Serial1/2, SPI, Wire, variant chips, strings/random</td><td></td></tr>
+        <tr><td><code>tests/host/test_support.h</code></td><td>Include in every test: doctest + fake SDK + <code>Arduino.h</code>; <code>HostTest</code> fixture</td><td></td></tr>
+        <tr><td><code>tests/host/fake_sdk/</code></td><td><code>fake_sdk.h/.cpp</code>: the SDK functions the code calls, backed by <code>fake::hw</code> (GPIO, ADC, PWM, UART, SPI, I2C, timer, alarms, IRQs)</td><td></td></tr>
+        <tr><td><code>tests/host/models/</code></td><td>MAX11635 and STUSB4500 models attached to the fake SPI0 / I2C1</td><td></td></tr>
+        <tr><td><code>tests/host/CMakeLists.txt</code></td><td>Picks up the sources, generates the fake SDK header names (<code>FAKE_SDK_HEADERS</code>)</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-text">
+    <p>Every <code>.cpp</code> in the core, variant and libraries is compiled automatically, except <code>main.cpp</code>, <code>SerialUSB.cpp</code>, <code>usb/</code> and <code>api/PluggableUSB.cpp</code> (they need TinyUSB). Arduino defines (<code>ARDUINO_*</code>, <code>F_CPU</code>, <code>USB_*</code>) come from <code>platform.txt</code>/<code>boards.txt</code>, like the other builds.</p>
+  </div>
+
+  <div class="section-head"><h2>Writing a test</h2></div>
+
+  <div class="doc-text">
+    <pre class="code"><code class="lang-cpp">#include "test_support.h"
+
+TEST_CASE_FIXTURE(HostTest, "what it checks, in words") {
+    pinMode(LED_BUILTIN, OUTPUT);              // code under test
+    digitalWrite(LED_BUILTIN, HIGH);
+    CHECK(gpioOf(LED_BUILTIN).out_level);      // simulated hardware state
+}</code></pre>
+    <ul>
+      <li><code>HostTest</code> resets <code>fake::hw</code> to power-on state. Static state inside the code under test (analogRead resolution, <code>Serial1</code>/<code>Wire</code> started flags, ...) is not reset, as on a board: set what your test relies on, and <code>end()</code> what you <code>begin()</code>.</li>
+      <li>Drive inputs through <code>fake::hw</code>: <code>gpio[n].input_level</code>, <code>gpio[n].waveform</code> (level over time), <code>adc_values[]</code>, <code>uart[n].rx</code>, <code>spi[n].device</code>, <code>i2c[n].on_write/on_read</code>; <code>fake::advance_us()</code>, <code>fake::raise_irq()</code>, <code>fake::trigger_gpio_irq()</code>.</li>
+      <li>Time moves 1 µs on every timer read, so busy-waits end.</li>
+      <li>Code that includes an SDK header not yet faked fails to compile: add the header to <code>FAKE_SDK_HEADERS</code> and the functions to <code>fake_sdk.h/.cpp</code>.</li>
+    </ul>
+  </div>
+
+  <div class="section-head"><h2>Limits</h2></div>
+
+  <div class="doc-text">
+    <p>The fake implements the SDK <em>as this code uses it</em>, not the real chip. Chip register addresses (e.g. STUSB4500) are built into the models, so the tests prove the driver logic and encoding, not the addresses; that, timing and electrical behaviour still need <a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a>.</p>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

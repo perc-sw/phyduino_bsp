@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
 <link rel="stylesheet" href="./style/uoft_physics_perc_sw.css">
+<link rel="stylesheet" href="./style/board_3d.css">
 </head>
 <body>
 
@@ -40,7 +41,7 @@
   <div class="board-hero">
     <div class="board-hero-text">
       <span class="board-tag"><a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a> - Arduino board package</span>
-      <div class="board-img-panel">
+      <div class="board-img-panel" data-model="./models/phyduino_pico.glb.js">
         <img src="./images/phyduino_pico.png" alt="Phyduino Pico board, top view">
       </div>
       <p class="board-desc">
@@ -102,7 +103,7 @@
         <tr>
           <td>Phyduino Pico</td>
           <td>RP2040 · Uno-style header · v0.1.0</td>
-          <td><a class="ds-link" href="./boards/phyduino_pico.md">Board notes</a></td>
+          <td><a class="ds-link" href="./boards/phyduino_pico.html">Board notes</a></td>
         </tr>
         <tr>
           <td>Phyduino Pico2</td>
@@ -189,19 +190,19 @@
   <!-- Maintainer docs -->
   <div class="section-head"><h2>Maintainer documentation</h2></div>
   <div class="repo-links">
-    <a class="repo-row" href="./architecture.md">
+    <a class="repo-row" href="./development/architecture.html">
       <span>
         <span class="repo-row-label">Start here · </span>
         <span class="repo-row-name">Architecture</span>
       </span>
     </a>
-    <a class="repo-row" href="./maintenance/">
+    <a class="repo-row" href="./maintenance/index.html">
       <span>
         <span class="repo-row-label">Step-by-step recipes · </span>
         <span class="repo-row-name">Maintenance</span>
       </span>
     </a>
-    <a class="repo-row" href="./decisions/README.md">
+    <a class="repo-row" href="./decisions/index.html">
       <span>
         <span class="repo-row-label">Why it is built this way · </span>
         <span class="repo-row-name">Design decisions</span>
@@ -294,6 +295,8 @@
     </div>
   </div>
 </footer>
+
+<script src="./scripts/board_3d.js"></script>
 
 </body>
 </html>

@@ -7,7 +7,7 @@ Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
 
 | Board | MCU | Status |
 |---|---|---|
-| [Phyduino Pico](docs/boards/phyduino_pico.md) | RP2040 | v0.1.0 (in progress) |
+| [Phyduino Pico](docs/boards/phyduino_pico.html) | RP2040 | v0.1.0 (in progress) |
 | Phyduino Pico2 | RP2350B | planned (v0.2.0) |
 
 ## Install (users)
@@ -23,13 +23,13 @@ Supported hosts: Windows x64, Linux x64/arm64, macOS Apple Silicon.
 
 ```
 git clone --recurse-submodules <repo-url>
-# link platform/ into your sketchbook + set tool paths: docs/maintenance/dev-setup.md
+# link platform/ into your sketchbook + set tool paths: docs/maintenance/dev-setup.html
 python tests/compile_all.py                 # via arduino-cli
-cmake --workflow --preset phyduino_pico     # via CMake, -Werror (docs/maintenance/cmake-verify.md)
-cmake --workflow --preset host-tests        # PC-side unit tests (docs/maintenance/host-tests.md)
+cmake --workflow --preset phyduino_pico     # via CMake, -Werror (docs/maintenance/cmake-verify.html)
+cmake --workflow --preset host-tests        # PC-side unit tests (docs/maintenance/host-tests.html)
 ```
 
-Start with **[docs/architecture.md](docs/architecture.md)**: how a sketch is
+Start with **[docs/development/architecture.html](docs/development/architecture.html)**: how a sketch is
 built and where everything lives. Recurring jobs have step-by-step recipes in
 [docs/maintenance/](docs/maintenance/), and the reasons behind the design are
 in [docs/decisions/](docs/decisions/).

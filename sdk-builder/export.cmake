@@ -144,6 +144,6 @@ Regenerate (from `sdk-builder/`):
 
     cmake --workflow --preset ${BOARD}
 
-See `docs/maintenance/update-pico-sdk.md`.
+See `docs/maintenance/update-pico-sdk.html`.
 ")
 message(STATUS "SDK bundle written: ${OUT}")

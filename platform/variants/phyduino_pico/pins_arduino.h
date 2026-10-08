@@ -3,7 +3,7 @@
  * @brief Phyduino Pico (RP2040): THE pin map. Every Arduino pin number and
  *        on-board peripheral pin is defined here and nowhere else.
  *
- * Board details and schematic notes: docs/boards/phyduino_pico.md
+ * Board details and schematic notes: docs/boards/phyduino_pico.html
  *
  * Arduino pin numbers (Uno-style):
  *

@@ -3,11 +3,11 @@
 #   cmake --workflow --preset phyduino_pico   Arm verification build: core,
 #       variant, libraries and every sketch compiled for the board with strict
 #       warnings, using the flags in platform/platform.txt + boards.txt and the
-#       committed SDK bundle.          Guide: docs/maintenance/cmake-verify.md
+#       committed SDK bundle.          Guide: docs/maintenance/cmake-verify.html
 #
 #   cmake --workflow --preset host-tests      PC-side unit tests: the same
 #       sources compiled for this PC against a fake pico-sdk.
-#                                      Guide: docs/maintenance/host-tests.md
+#                                      Guide: docs/maintenance/host-tests.html
 #
 # Neither is part of the release zip. (The SDK bundle itself is built by the
 # separate project in sdk-builder/.)

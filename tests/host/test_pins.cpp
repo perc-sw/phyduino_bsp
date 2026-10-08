@@ -30,7 +30,7 @@ TEST_CASE("pin numbers follow the Uno layout (docs/decisions/004)") {
     CHECK(PINS_COUNT == 23);
 }
 
-TEST_CASE("Arduino pin -> GPIO matches the table in docs/boards/phyduino_pico.md") {
+TEST_CASE("Arduino pin -> GPIO matches the table in docs/boards/phyduino_pico.html") {
     const int expected[PINS_COUNT] = {
         1, 0, 6, 7, 8, 9, 10, 15, 16, 17, 13, 11, 12, 14,  // D0-D13
         26, 27, 28,                                        // A0-A2

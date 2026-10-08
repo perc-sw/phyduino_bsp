@@ -1,8 +1,8 @@
 # Phyduino boards. One block per board; build recipes are in platform.txt.
-# Adding a board: docs/maintenance/add-board.md
+# Adding a board: docs/maintenance/add-board.html
 
 ###############################################################################
-# Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.md
+# Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.html
 ###############################################################################
 phyduino_pico.name=Phyduino Pico
 

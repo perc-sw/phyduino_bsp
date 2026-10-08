@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>Phyduino Pico (RP2040) · Phyduino Boards · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+<link rel="stylesheet" href="../style/board_3d.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Boards</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Boards</a> - <a href="./index.html">Boards</a> - Phyduino Pico (RP2040)</span>
+      <div class="board-img-panel" data-model="../models/phyduino_pico.glb.js">
+        <img src="../images/phyduino_pico.png" alt="Phyduino Pico board, top view">
+      </div>
+      <p class="board-desc">FQBN <code>phyduino:rp2:phyduino_pico</code>. Hardware design: <code>../phyduino_pico</code> (KiCad, rev D/E).</p>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Core parts</h2></div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr><td>MCU</td><td>RP2040 (U4), 125 MHz</td><td></td></tr>
+        <tr><td>Flash</td><td>W25Q128JV (U9), 16 MB; boot stage 2 = SDK <code>W25Q080</code> (works for the whole W25Q family)</td><td></td></tr>
+        <tr><td>Crystal</td><td>12 MHz (Y1)</td><td></td></tr>
+        <tr><td>LED</td><td>GPIO5, active high (<code>LED_BUILTIN</code>, Arduino pin 22)</td><td></td></tr>
+        <tr><td>Boot mode</td><td>Slide switch SW1: 3.3 V = normal, GND = BOOTSEL (UF2 drive). No BOOTSEL button.</td><td></td></tr>
+        <tr><td>Reset</td><td>SW2 (also header power pin 3)</td><td></td></tr>
+        <tr><td>Debug</td><td>J1, 3-pin JST-SH SWD</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-head"><h2>Pin map</h2></div>
+
+  <div class="doc-text">
+    <p>The authoritative table is the comment at the top of <a href="../../platform/variants/phyduino_pico/pins_arduino.h"><code>platform/variants/phyduino_pico/pins_arduino.h</code></a>. Summary:</p>
+  </div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <thead>
+        <tr><th>Arduino pin</th><th>Header</th><th>RP2040</th><th>Notes</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0 / 1</td><td>D0 RX / D1 TX</td><td>GPIO1 / GPIO0</td><td><code>Serial1</code> (UART0)</td><td></td></tr>
+        <tr><td>2–9</td><td>D2–D9</td><td>GPIO6,7,8,9,10,15,16,17</td><td>D4/D5 = <code>Serial2</code> (UART1)</td><td></td></tr>
+        <tr><td>10–13</td><td>D10 SS, D11 MOSI, D12 MISO, D13 SCK</td><td>GPIO13, 11, 12, 14</td><td><code>SPI</code> (SPI1)</td><td></td></tr>
+        <tr><td>14–16</td><td>A0–A2</td><td>GPIO26–28</td><td>RP2040 ADC, 3.3 V full scale; also usable as digital pins</td><td></td></tr>
+        <tr><td>17–19</td><td>A3–A5</td><td>—</td><td>MAX11635 ADC, <strong>2.048 V full scale</strong>, analog only</td><td></td></tr>
+        <tr><td>20 / 21</td><td>SDA / SCL</td><td>GPIO24 / GPIO25</td><td><code>Wire</code> (I2C0); silkscreen D18/D19</td><td></td></tr>
+        <tr><td>22</td><td>(LED)</td><td>GPIO5</td><td><code>LED_BUILTIN</code></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-text">
+    <p>Numbering follows the Uno (A0–A5 = 14–19, so <code>for (p = A0; p &lt;= A5; p++)</code> works). The silkscreen's D18/D19 names for SDA/SCL are not Arduino pin numbers here; use <code>SDA</code>/<code>SCL</code> (<a href="../decisions/004-pin-numbering.html">ADR 004</a>).</p>
+  </div>
+
+  <div class="section-head"><h2>On-board peripherals (not on the header)</h2></div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <thead>
+        <tr><th>Chip</th><th>Bus / pins</th><th>Used by</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>MAX11635 12-bit ADC (U5)</td><td>SPI0: SCK 22, MOSI 23, MISO 20, CS 21, EOC 19, CNVST 18</td><td><code>analogRead(A3..A5)</code> (ch 0–2); ch 3 = VBUS ÷ (100k/10.2k)</td><td></td></tr>
+        <tr><td>LM4040 2.048 V reference (U7)</td><td>AREF header pin</td><td>MAX11635 reference only</td><td></td></tr>
+        <tr><td>STUSB4500 USB-PD sink (U6)</td><td>I2C1: SDA 2, SCL 3, ALERT 4, RESET 29; address 0x28</td><td>power profiles at start-up; <code>#include &lt;stusb4500.h&gt;</code></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-head"><h2>USB Power Delivery</h2></div>
+
+  <div class="doc-text">
+    <p>At start-up <code>initVariant()</code> loads the board's default sink profiles into the STUSB4500 (<a href="../../platform/variants/phyduino_pico/variant.cpp"><code>platform/variants/phyduino_pico/variant.cpp</code></a>):</p>
+  </div>
+
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <thead>
+        <tr><th>Profile</th><th>Voltage</th><th>Current</th><th>LED</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>5.0 V</td><td>2.0 A</td><td>POK2 off, POK3 off</td><td></td></tr>
+        <tr><td>2</td><td>9.0 V</td><td>1.0 A</td><td>POK2 on</td><td></td></tr>
+        <tr><td>3</td><td>20.0 V</td><td>0.5 A</td><td>POK3 on</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-text">
+    <p>A USB-PD charger supplies the highest profile it can; an ordinary USB port gives 5 V. Profiles go to the chip's working registers, never its NVM, and the board renegotiates only if they differ from what the chip already holds. A sketch can change them with <code>stusb4500::setProfiles()</code> and read the contract and measured VBUS (see <a href="../../platform/variants/phyduino_pico/stusb4500.h"><code>platform/variants/phyduino_pico/stusb4500.h</code></a> and <a href="../../tests/sketches/usbpd_status"><code>tests/sketches/usbpd_status</code></a>). The register addresses come from ST's register map, not the datasheet; <a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a> item 14 checks them.</p>
+  </div>
+
+  <div class="section-head"><h2>Things to know</h2></div>
+
+  <div class="doc-text">
+    <ul>
+      <li><strong>Analog full scale differs</strong>: A0–A2 = 3.3 V, A3–A5 = 2.048 V. With the default 10-bit <code>analogRead()</code>, volts = <code>reading * 3.3 / 1023</code> on A0–A2 but <code>reading * 2.048 / 1023</code> on A3–A5. <code>analogReference()</code> does nothing.</li>
+      <li><strong>No I2C pull-ups on the board.</strong> <code>Wire</code> enables the RP2040's weak internal pull-ups; use 4.7 kΩ to 3.3 V for longer wires or 400 kHz.</li>
+      <li><strong>GPIO25 (SCL) needs 12 mA drive</strong> (schematic note); <code>Wire</code> sets it.</li>
+      <li><strong>PWM pairs</strong>: GPIO n and n^1 share a PWM slice and so a frequency (e.g. D2/D3, D4/D5). <code>tone()</code> on one changes the other's frequency.</li>
+      <li><strong>USB-PD bus</strong>: the STUSB4500 is on I2C1 (GPIO2/3). <code>phyduino_pico_bios</code> sets it to <code>i2c0</code> by mistake; this core uses I2C1. Wire (I2C0) is separate.</li>
+    </ul>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="../scripts/board_3d.js"></script>
+
+</body>
+</html>

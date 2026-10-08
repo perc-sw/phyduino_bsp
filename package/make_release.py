@@ -11,7 +11,7 @@ Output (package/build/):
 
 The version comes from VERSION and must match platform.txt. Tool URLs come from
 package/tools.json; their checksums are computed here (downloads are cached in
-package/build/cache/). Recipe: docs/maintenance/release.md
+package/build/cache/). Recipe: docs/maintenance/release.html
 """
 import argparse
 import fnmatch

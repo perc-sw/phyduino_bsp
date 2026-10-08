@@ -79,10 +79,10 @@ notes/
 variants/*/pico/config_autogen.h
 
 
-# Generated SDK bundle is committed on purpose (see docs/decisions/002-prebuilt-sdk-committed.md)
+# Generated SDK bundle is committed on purpose (see docs/decisions/002-prebuilt-sdk-committed.html)
 !platform/system/**
 
-# Per-machine tool paths for a dev checkout (docs/maintenance/dev-setup.md)
+# Per-machine tool paths for a dev checkout (docs/maintenance/dev-setup.html)
 platform/platform.local.txt
 
 # Python bytecode

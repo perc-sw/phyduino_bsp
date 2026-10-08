@@ -7,4 +7,4 @@ https://github.com/arduino/ArduinoCore-API
 |-------|------------------------------------------|
 | 1.5.2 | cd91833d90b4fe50e428021ba5051e2b7ceafc84 |
 
-To update, follow `docs/maintenance/update-arduino-api.md`.
+To update, follow `docs/maintenance/update-arduino-api.html`.
