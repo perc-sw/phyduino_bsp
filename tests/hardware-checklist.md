@@ -171,7 +171,9 @@ Raspberry Pi Pico 2 as controller.
 
 ### 14 / 15 · `usbpd_status`
 
-Planned: charger powers the board, Pico 2 bridges Serial1 to the PC (needs the usbpd_status change).
+Charger powers the board; a Pico 2 running `serial_bridge` passes Serial1 to the PC
+(`usbpd_status` mirrors its output to Serial1). Open the Pico 2's Serial Monitor
+before plugging in the charger, or the "STUSB4500 found" line is missed.
 
 ```text
  USB-PD charger (20 V)                          PC
