@@ -2,6 +2,8 @@
 # package index, and publish both as GitHub Release assets.
 # Board Manager URL for users (always the newest release):
 #   https://github.com/<owner>/<repo>/releases/latest/download/package_phyduino_index.json
+# A tag with a suffix (e.g. v0.1.0-alpha) is published as a pre-release, which
+# releases/latest skips; test it with releases/download/<tag>/package_phyduino_index.json
 # Recipe: docs/maintenance/release.html
 name: Release
 
@@ -39,14 +41,18 @@ jobs:
         run: |
           for tag in $(python3 -c "import json; print(' '.join(t['host_tag'] for t in json.load(open('package/tools.json'))['tools'] if 'host_tag' in t))"); do
             if ls package/build/tools/*.zip > /dev/null 2>&1 && ! gh release view "$tag" > /dev/null 2>&1; then
-              gh release create "$tag" package/build/tools/*.zip --title "$tag" \
+              gh release create "$tag" package/build/tools/*.zip --title "$tag" --latest=false \
                 --notes "Toolchain re-packed for the Arduino Board Manager (single root folder). Unmodified contents."
             fi
           done
 
       - name: Publish
         run: |
-          gh release create "$GITHUB_REF_NAME" \
+          case "$GITHUB_REF_NAME" in
+            *-*) kind="--prerelease" ;;
+            *)   kind="--latest" ;;
+          esac
+          gh release create "$GITHUB_REF_NAME" $kind \
             package/build/phyduino-rp2-*.zip \
             package/build/package_phyduino_index.json \
             --title "$GITHUB_REF_NAME" \
