@@ -65,9 +65,8 @@
       <div class="spec-row">
         <span class="spec-pill">v0.1.0</span>
         <span class="spec-pill">Phyduino Pico</span>
-        <span class="spec-pill">15 passed</span>
-        <span class="spec-pill">3 to run</span>
-        <span class="spec-pill">1 to confirm</span>
+        <span class="spec-pill">19 passed</span>
+        <span class="spec-pill">0 to run</span>
       </div>
     </div>
   </div>
@@ -103,8 +102,8 @@
         </tr>
         <tr>
           <td>5b · (any sketch)</td>
-          <td>Board already in BOOTSEL (RPI-RP2 drive showing, no port)<span class="check-expected">Upload without a port still works, using the IDE Upload button</span></td>
-          <td><span class="status check">Confirm</span></td>
+          <td>Board already in BOOTSEL (RPI-RP2 drive showing, no port)<span class="check-expected">Upload without a port still works, using the IDE Upload button (tested with the IDE&#x27;s built-in Blink example)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
         </tr>
         <tr>
           <td>6 · analog_read</td>
@@ -142,7 +141,7 @@
  │ D8          ●├──────┤+    │
  │ GND         ●├──────┤-    │
  └──────────────┘      └─────┘</pre><span class="check-expected">Eight-note scale</span></td>
-          <td><span class="status todo">To run</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
         </tr>
         <tr>
           <td>9b · tone_loopback</td>
@@ -227,7 +226,7 @@
       <tbody>
         <tr>
           <td>14 · usbpd_status</td>
-          <td>USB-PD charger that offers 20 V; Pico 2 bridges Serial1 to the PC (planned: needs the usbpd_status change)<pre class="wiring"> USB-PD charger (20 V)                          PC
+          <td>USB-PD charger that offers 20 V; Pico 2 running serial_bridge passes Serial1 to the PC (usbpd_status mirrors its output to Serial1). Open the Pico 2&#x27;s Serial Monitor before plugging in the charger, or the &ldquo;STUSB4500 found&rdquo; line is missed<pre class="wiring"> USB-PD charger (20 V)                          PC
         │ USB-C                                  │ USB
         ▼                                        ▼
  ┌────────────────────┐              ┌─────────────────────┐
@@ -238,13 +237,13 @@
  │ GND               ●├──────────────┤● GND     (pin 3)    │
  │ POK2 / POK3 LEDs   │              └─────────────────────┘
  └────────────────────┘
-   Only these three wires: VBUS is 20 V on a 20 V contract.</pre><span class="check-expected">“STUSB4500 found”; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit</span></td>
-          <td><span class="status todo">To run</span></td>
+   Only these three wires: VBUS is 20 V on a 20 V contract.</pre><span class="check-expected">“STUSB4500 found”; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit (got 20.2 V)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
         </tr>
         <tr>
           <td>15 · usbpd_status</td>
-          <td>Same setup as 14; send 9, then 5, then f<span class="check-expected">VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V</span></td>
-          <td><span class="status todo">To run</span></td>
+          <td>Same setup as 14; send 9, then 5, then f<span class="check-expected">VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V (got 9.1 V, 5.15 V, 20.2 V)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
         </tr>
         <tr>
           <td>16 · usbpd_status</td>
@@ -262,7 +261,7 @@
       <tbody>
         <tr>
           <td>Board tested</td>
-          <td>One Phyduino Pico, 2026-10-05 and 2026-10-08 (dates in the table are 2026).</td>
+          <td>One Phyduino Pico, 2026-10-05, 2026-10-08 and 2026-10-09 (dates in the table are 2026).</td>
           <td></td>
         </tr>
         <tr>
@@ -275,6 +274,20 @@
           <td>Windows Smart App Control</td>
           <td>Blocks the unsigned picotool used to build the UF2. Turned off on the
             development PC; distribution fix still open.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>First PD contract current</td>
+          <td>On plugging into a charger the first 20 V contract asks 1000 mA, although the
+            profiles (from the chip&#x27;s NVM) read 20 V/0.5 A; after <code>setProfiles()</code>
+            renegotiates it asks 500 mA. Cause not known yet.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Pico 2 used for 13–15</td>
+          <td>Its GP0 (pin 1) does not transmit, so for 14–15 the bridge used
+            <code>Serial1.setTX(12)</code> (pin 16) instead. That board only; a working
+            Pico 2 uses the wiring shown.</td>
           <td></td>
         </tr>
       </tbody>

@@ -41,9 +41,20 @@ Format: one section per version, newest first. Stage plan: README.md.
 ### Open items
 - **USB VID/PID**: uses Raspberry Pi VID 0x2E8A with the pico-sdk generic PID
   0x000A. Request a dedicated PID from Raspberry Pi before wide release.
-- STUSB4500 register addresses (from ST's register map) still to be confirmed on hardware.
+- STUSB4500 register addresses (from ST's register map) confirmed on hardware
+  2026-10-09 (checklist 14-15: profiles, contract and renegotiation all work).
 - Hardware checklist (2026-10-05, one Phyduino Pico): items 1-8, 9b, 10, 10b, 11, 16
-  passed; 12 partial (scan works, no device fitted). Still to run: 9 (buzzer),
-  12 with a device, 13 (second board), 14-15 (USB-PD charger).
+  passed. 2026-10-08: 12 (BMP280 at 0x77, seesaw at 0x36) and 13 (Pico 2 as
+  controller) passed. 2026-10-09: 9 (piezo), 14 and 15 (USB-PD charger, Pico 2
+  running serial_bridge) passed: 20.2 V with POK3 lit, then 9.1 V, 5.15 V and back
+  to 20.2 V on command. 5b passed: Arduino IDE 2 Upload button, no port selected,
+  board already in BOOTSEL, with the IDE's built-in Blink example. All items passed.
+- The first contract after plugging into a charger asks 1000 mA at 20 V, although
+  the chip's profiles (loaded from its NVM) already read 20 V/0.5 A; after a
+  renegotiation (`setProfiles()`) it asks 500 mA. Cause not known yet (probably an
+  STUSB4500 NVM setting); `begin()` does not touch the profiles.
+- `usbpd_status` read one command character per second, so a burst of input was
+  acted on seconds late; it now handles all waiting input each loop (fix not yet
+  run on hardware).
 - Board seen with A3-A5 100 kOhm pull-downs (R47-R49) apparently not connected:
   unconnected inputs float. Hardware, not firmware.

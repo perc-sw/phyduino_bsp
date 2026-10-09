@@ -1,5 +1,13 @@
 # Phyduino Boards: Arduino board package
 
+[![CI](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml/badge.svg)](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/perc-sw/phyduino_bsp?include_prereleases&sort=semver)](https://github.com/perc-sw/phyduino_bsp/releases)
+![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue)
+![Arduino IDE](https://img.shields.io/badge/Arduino_IDE-2.x-00979D?logo=arduino&logoColor=white)
+![pico-sdk](https://img.shields.io/badge/pico--sdk-2.2.0-C51A4A?logo=raspberrypi&logoColor=white)
+![MCU](https://img.shields.io/badge/MCU-RP2040-C51A4A)
+![Hosts](https://img.shields.io/badge/hosts-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+
 Arduino IDE support for the University of Toronto Department of Physics
 student-workshop boards. It is a standalone Arduino core built directly on the
 Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
@@ -7,42 +15,21 @@ Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
 
 | Board | MCU | Status |
 |---|---|---|
-| [Phyduino Pico](docs/boards/phyduino_pico.html) | RP2040 | v0.1.0 (in progress) |
+| [Phyduino Pico](docs/boards/phyduino_pico.html) | RP2040 | v0.1.0-alpha |
 | Phyduino Pico2 | RP2350B | planned (v0.2.0) |
 
-## Install (users)
+## Install
 
 1. Arduino IDE → **File → Preferences → Additional boards manager URLs**, add:
-   `https://github.com/<owner>/<repo>/releases/latest/download/package_phyduino_index.json`
+   `https://github.com/perc-sw/phyduino_bsp/releases/latest/download/package_phyduino_index.json`
 2. **Tools → Board → Boards Manager**, search "Phyduino", install.
 3. **Tools → Board → Phyduino Boards → Phyduino Pico.**
 
 Supported hosts: Windows x64, Linux x64/arm64, macOS Apple Silicon.
 
-## Develop (maintainers)
-
-```
-git clone --recurse-submodules <repo-url>
-# link platform/ into your sketchbook + set tool paths: docs/maintenance/dev-setup.html
-python tests/compile_all.py                 # via arduino-cli
-cmake --workflow --preset phyduino_pico     # via CMake, -Werror (docs/maintenance/cmake-verify.html)
-cmake --workflow --preset host-tests        # PC-side unit tests (docs/maintenance/host-tests.html)
-```
-
-Start with **[docs/development/architecture.html](docs/development/architecture.html)**: how a sketch is
-built and where everything lives. Recurring jobs have step-by-step recipes in
-[docs/maintenance/](docs/maintenance/), and the reasons behind the design are
-in [docs/decisions/](docs/decisions/).
-
-```
-platform/      what ships to users (the release zip is exactly this folder)
-sdk-builder/   builds the pico-sdk into platform/system/<board>/ (committed)
-CMakeLists.txt, cmake/   CMake verification build of platform/ (not shipped)
-extern/        pinned upstream submodules: pico-sdk, ArduinoCore-API, doctest
-package/       release script + tool download list
-tests/         compile-test sketches, PC-side unit tests (tests/host), hardware checklist
-docs/          architecture, board pages, maintenance recipes, decisions
-```
+The URL works once v0.1.0 is published and the repository is public.
+Pin map and board details: [docs/boards/phyduino_pico.html](docs/boards/phyduino_pico.html);
+all documentation starts at [docs/index.html](docs/index.html).
 
 ## Roadmap
 
