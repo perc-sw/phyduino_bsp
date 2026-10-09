@@ -24,6 +24,8 @@ Format: one section per version, newest first. Stage plan: README.md.
 - GPL-3.0 licence (`LICENSE`, also in the release zip); bundled upstream
   licences in `platform/licenses/`.
 - `Arduino.h` declares `itoa()`/`utoa()`/`ltoa()`/`ultoa()` and `dtostrf()`.
+- Tools > C++ Standard menu: C++14, 17 (default), 20, 23 (`gnu++NN`). CI
+  compiles every sketch at each standard; the CMake build stays on C++17.
 
 ### Changed
 - Stage plan: the Analog Shield and Analog Shield2 libraries move to their own

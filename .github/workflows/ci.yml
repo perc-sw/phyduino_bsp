@@ -17,6 +17,12 @@ jobs:
       - uses: ./.github/actions/setup-build
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
+      - name: Compile sketches, other C++ standards (Tools > C++ Standard)
+        run: |
+          for std in gnu14 gnu20 gnu23; do
+            python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG" \
+              --fqbn "phyduino:rp2:phyduino_pico:cppstd=$std" || exit 1
+          done
       - name: Upload script syntax
         run: sh -n platform/tools/uf2_upload.sh
 

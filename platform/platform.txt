@@ -42,8 +42,12 @@ compiler.common.flags=-ffunction-sections -fdata-sections -MMD {compiler.warning
 compiler.sdk.flags="@{build.sdk.path}/compile_flags.txt" "-isystem{build.sdk.path}/include"
 compiler.arduino.defines=-DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DF_CPU={build.f_cpu}
 
+# C++ standard: set by the Tools > C++ Standard menu (boards.txt). This default
+# covers builds without the menu (e.g. the CMake verification build).
+build.cpp_std=gnu++17
+
 compiler.c.flags=-c -std=gnu17 {compiler.common.flags}
-compiler.cpp.flags=-c -std=gnu++17 {compiler.common.flags} -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit
+compiler.cpp.flags=-c -std={build.cpp_std} {compiler.common.flags} -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit
 compiler.S.flags=-c -x assembler-with-cpp {compiler.common.flags}
 
 # Users may append flags via these (e.g. from arduino-cli --build-property).

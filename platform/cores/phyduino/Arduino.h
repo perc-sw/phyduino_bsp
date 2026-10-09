@@ -23,7 +23,11 @@
 using namespace arduino;
 
 // --- Pin mapping ---------------------------------------------------------------
+#if __cplusplus >= 201703L
 inline constexpr uint8_t kPinToGpio[] = PHYDUINO_PIN_TO_GPIO;
+#else
+static constexpr uint8_t kPinToGpio[] = PHYDUINO_PIN_TO_GPIO;  // C++14: no inline variables
+#endif
 static_assert(sizeof(kPinToGpio) == PINS_COUNT,
               "pins_arduino.h: PHYDUINO_PIN_TO_GPIO needs exactly PINS_COUNT entries");
 

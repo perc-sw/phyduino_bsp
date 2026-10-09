@@ -140,6 +140,7 @@
       <li><strong>GPIO25 (SCL) needs 12 mA drive</strong> (schematic note); <code>Wire</code> sets it.</li>
       <li><strong>PWM pairs</strong>: GPIO n and n^1 share a PWM slice and so a frequency (e.g. D2/D3, D4/D5). <code>tone()</code> on one changes the other's frequency.</li>
       <li><strong>USB-PD bus</strong>: the STUSB4500 is on I2C1 (GPIO2/3). <code>phyduino_pico_bios</code> sets it to <code>i2c0</code> by mistake; this core uses I2C1. Wire (I2C0) is separate.</li>
+      <li><strong>C++ standard</strong>: <em>Tools &gt; C++ Standard</em> picks C++14, 17 (default), 20 or 23 (GNU dialects) for the sketch, core and libraries. C++20 and later warn on <code>++</code>/<code>--</code> of a <code>volatile</code> variable (common in interrupt sketches); the code still works.</li>
     </ul>
   </div>
 

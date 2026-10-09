@@ -1,6 +1,9 @@
 # Phyduino boards. One block per board; build recipes are in platform.txt.
 # Adding a board: docs/maintenance/add-board.html
 
+# Tools menus. Each board lists its own options; the first option is the default.
+menu.cppstd=C++ Standard
+
 ###############################################################################
 # Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.html
 ###############################################################################
@@ -32,3 +35,13 @@ phyduino_pico.upload.maximum_size=16777216
 phyduino_pico.upload.maximum_data_size=270336
 phyduino_pico.upload.use_1200bps_touch=true
 phyduino_pico.upload.wait_for_upload_port=false
+
+# Tools > C++ Standard (sketch, core and libraries; C files stay gnu17).
+phyduino_pico.menu.cppstd.gnu17=C++17 (default)
+phyduino_pico.menu.cppstd.gnu17.build.cpp_std=gnu++17
+phyduino_pico.menu.cppstd.gnu14=C++14
+phyduino_pico.menu.cppstd.gnu14.build.cpp_std=gnu++14
+phyduino_pico.menu.cppstd.gnu20=C++20
+phyduino_pico.menu.cppstd.gnu20.build.cpp_std=gnu++20
+phyduino_pico.menu.cppstd.gnu23=C++23
+phyduino_pico.menu.cppstd.gnu23.build.cpp_std=gnu++23
