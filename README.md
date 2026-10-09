@@ -49,11 +49,12 @@ docs/          architecture, board pages, maintenance recipes, decisions
 | Stage | Version | Scope |
 |---|---|---|
 | 1 | v0.1.0 | Phyduino Pico board package with integrated pico-sdk |
-| 2 | v0.1.1 | Libraries + examples for the Analog Shield |
-| 3 | v0.1.2 | FreeRTOS and multi-core |
-| 4 | v0.2.0 | Phyduino Pico2 (RP2350B, Arm); libraries updated |
-| 5 | v0.2.1 | RISC-V build option for Phyduino Pico2 |
-| 6 | v0.2.2 | Libraries for the Analog Shield2 |
+| 2 | v0.1.1 | FreeRTOS and multi-core |
+| 3 | v0.2.0 | Phyduino Pico2 (RP2350B, Arm); libraries updated |
+| 4 | v0.2.1 | RISC-V build option for Phyduino Pico2 |
+
+Libraries and examples for the Analog Shield and Analog Shield2 live in their own
+repository, not in this board package ([ADR 008](docs/decisions/008-shield-libraries-separate-repo.html)).
 
 Changes per version: [CHANGELOG.md](CHANGELOG.md).
 

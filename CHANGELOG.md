@@ -25,6 +25,11 @@ Format: one section per version, newest first. Stage plan: README.md.
   licences in `platform/licenses/`.
 - `Arduino.h` declares `itoa()`/`utoa()`/`ltoa()`/`ultoa()` and `dtostrf()`.
 
+### Changed
+- Stage plan: the Analog Shield and Analog Shield2 libraries move to their own
+  repository (ADR 008). Old Stages 2 and 6 removed; FreeRTOS/multi-core is now
+  v0.1.1 and the Pico2 stages are v0.2.0 and v0.2.1.
+
 ### Fixed (found by the PC-side tests)
 - PWM/`tone()` below ~7.5 Hz: counter top overflowed 16 bits and gave a wrong
   frequency; now clamps to the lowest achievable frequency.
