@@ -56,7 +56,7 @@
         <span class="spec-pill">pico-sdk 2.2.0</span>
         <span class="spec-pill">RP2040</span>
         <span class="spec-pill">Windows · Linux · macOS</span>
-        <span class="spec-pill">v0.1.0</span>
+        <span class="spec-pill">v0.1.0-alpha</span>
       </div>
     </div>
   </div>
@@ -69,7 +69,9 @@
       <span class="step-body">
         Open <strong>File → Preferences</strong> and add this line to
         <strong>Additional boards manager URLs</strong>:<br>
-        <code>https://github.com/perc-sw/phyduino_bsp/releases/latest/download/package_phyduino_index.json</code>
+        <!-- The release workflow (.github/workflows/release.yml) rewrites this URL
+             and the version pill above for each tag. -->
+        <code>https://github.com/perc-sw/phyduino_bsp/releases/download/v0.1.0-alpha/package_phyduino_index.json</code>
       </span>
     </li>
     <li class="step">
@@ -103,60 +105,11 @@
         <tr>
           <td>Phyduino Pico</td>
           <td>RP2040 · Uno-style header · v0.1.0</td>
-          <td><a class="ds-link" href="./boards/phyduino_pico.html">Board notes</a></td>
+          <td><a class="ds-link" href="./boards/phyduino_pico.html">Pin map and notes</a></td>
         </tr>
         <tr>
           <td>Phyduino Pico2</td>
           <td>RP2350B · planned for v0.2.0</td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pin map -->
-  <div class="section-head"><h2>Phyduino Pico pin map</h2></div>
-  <div class="ds-table-wrap">
-    <table class="ds-table">
-      <tbody>
-        <tr><td>0 / 1</td><td>D0 RX / D1 TX: Serial1</td><td>GPIO1 / GPIO0</td></tr>
-        <tr><td>2 – 9</td><td>D2 – D9 (D4 / D5 = Serial2)</td><td>GPIO6–10, 15–17</td></tr>
-        <tr><td>10 – 13</td><td>D10 SS, D11 MOSI, D12 MISO, D13 SCK: SPI</td><td>GPIO13, 11, 12, 14</td></tr>
-        <tr><td>A0 – A2</td><td>RP2040 ADC, 3.3 V full scale; also digital pins 14–16</td><td>GPIO26–28</td></tr>
-        <tr><td>A3 – A5</td><td>On-board MAX11635 ADC, 2.048 V full scale, analog only</td><td>SPI0</td></tr>
-        <tr><td>SDA / SCL</td><td>Wire (silkscreen D18 / D19)</td><td>GPIO24 / GPIO25</td></tr>
-        <tr><td>LED_BUILTIN</td><td>On-board LED, active high</td><td>GPIO5</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Things to know -->
-  <div class="section-head"><h2>Things to know</h2></div>
-  <div class="ds-table-wrap">
-    <table class="ds-table">
-      <tbody>
-        <tr>
-          <td>Analog full scale</td>
-          <td>A0–A2 read 0–3.3 V; A3–A5 read 0–2.048 V. Volts = reading × 3.3 / 1023 on
-            A0–A2 and reading × 2.048 / 1023 on A3–A5. <em>analogReference()</em> does nothing.</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>I2C pull-ups</td>
-          <td>None on the board. Wire turns on the RP2040's weak internal pull-ups; add
-            4.7 kΩ to 3.3 V for long wires or 400 kHz.</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>PWM pairs</td>
-          <td>Neighbouring pins share a frequency (D2/D3, D4/D5, …). <em>tone()</em> on
-            one pin changes the other's frequency.</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>USB power</td>
-          <td>With a USB-PD charger the board asks for 20 V / 0.5 A, 9 V / 1 A or
-            5 V / 2 A (the highest the charger offers); an ordinary USB port gives 5 V.</td>
           <td></td>
         </tr>
       </tbody>
@@ -171,49 +124,15 @@
         <tr>
           <td>SPI</td>
           <td>SPI controller on D10–D13 · example: SpiLoopback</td>
-          <td><a class="ds-link" href="../platform/libraries/SPI">Source</a></td>
+          <td></td>
         </tr>
         <tr>
           <td>Wire</td>
           <td>I2C controller and peripheral on SDA / SCL · examples: I2CScanner, PeripheralReceiver</td>
-          <td><a class="ds-link" href="../platform/libraries/Wire">Source</a></td>
-        </tr>
-        <tr>
-          <td>stusb4500.h</td>
-          <td>Read the USB-PD contract and VBUS; change the power profiles</td>
-          <td><a class="ds-link" href="../platform/variants/phyduino_pico/stusb4500.h">Source</a></td>
+          <td></td>
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- Maintainer docs -->
-  <div class="section-head"><h2>Maintainer documentation</h2></div>
-  <div class="repo-links">
-    <a class="repo-row" href="./development/architecture.html">
-      <span>
-        <span class="repo-row-label">Start here · </span>
-        <span class="repo-row-name">Architecture</span>
-      </span>
-    </a>
-    <a class="repo-row" href="./maintenance/index.html">
-      <span>
-        <span class="repo-row-label">Step-by-step recipes · </span>
-        <span class="repo-row-name">Maintenance</span>
-      </span>
-    </a>
-    <a class="repo-row" href="./decisions/index.html">
-      <span>
-        <span class="repo-row-label">Why it is built this way · </span>
-        <span class="repo-row-name">Design decisions</span>
-      </span>
-    </a>
-    <a class="repo-row" href="../CHANGELOG.md">
-      <span>
-        <span class="repo-row-label">Changes per version · </span>
-        <span class="repo-row-name">Changelog</span>
-      </span>
-    </a>
   </div>
 
   <!-- Repo links -->
@@ -223,7 +142,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
       <span>
         <span class="repo-row-label">GitHub · </span>
-        <span class="repo-row-name">Phyduino Boards (Arduino package)</span>
+        <span class="repo-row-name">Phyduino Board Support</span>
       </span>
       <svg class="repo-row-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
     </a>
@@ -232,14 +151,6 @@
       <span>
         <span class="repo-row-label">GitHub · </span>
         <span class="repo-row-name">Phyduino Pico</span>
-      </span>
-      <svg class="repo-row-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-    </a>
-    <a class="repo-row" href="https://github.com/perc-sw/analog_shield">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-      <span>
-        <span class="repo-row-label">GitHub · </span>
-        <span class="repo-row-name">Analog Shield</span>
       </span>
       <svg class="repo-row-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
     </a>

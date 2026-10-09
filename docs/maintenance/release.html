@@ -87,7 +87,7 @@
         <p>Commit, then tag and push:</p>
         <pre class="code"><code>git tag v0.1.0
 git push origin v0.1.0</code></pre>
-        <p><code>.github/workflows/release.yml</code> compiles everything, runs <code>package/make_release.py</code> and publishes the zip + index as release assets. Older versions stay in the index so users can roll back.</p>
+        <p><code>.github/workflows/release.yml</code> compiles everything, runs <code>package/make_release.py</code> and publishes the zip + index as release assets. Older versions stay in the index so users can roll back. It then commits a change to <code>main</code> that points the Board Manager URL and version on <a href="../index.html"><code>docs/index.html</code></a> at the new release (the tag's own URL for a pre-release), so run <code>git pull</code> afterwards.</p>
       </div>
     </li>
     <li class="step">
