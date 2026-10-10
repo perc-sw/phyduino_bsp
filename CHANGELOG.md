@@ -33,11 +33,19 @@ Format: one section per version, newest first. Stage plan: README.md.
   the CPU up to 133 MHz (SPI up to F_CPU / 2), 48 MHz above. Hardware-tested at
   200, 133 and 50 MHz (`tests/sketches/cpu_speed`); other speeds not yet.
 - Tools > Optimize menu: `-Os` (default), `-O2`, `-O3`, `-Og`.
+- Tools > USB-PD Power (VIN) menu: 5 V only (default), up to 9, 12, 15 or 20 V
+  (top profile at 10 W), or the chip's stored settings. VBUS feeds VIN, so VIN
+  follows the contract. Working registers only (`stusb4500::boardProfiles()`).
+- `tests/sketches/usbpd_nvm`: one-off tool that sets the STUSB4500 NVM to 5 V only
+  (sector 3 only, skipped if already set, read back to verify; `factory` undoes
+  it), so VIN is 5 V from plug-in until a sketch asks for more.
 - Pre-release reminder: a post-commit hook (`.githooks/`) runs
   `package/prerelease_reminder.py`, which lists the CHANGELOG entries since the
   last tag once there are 10 or more.
 
 ### Changed
+- Default USB-PD request is now 5 V only (was up to 20 V): VIN is 5 V unless
+  Tools > USB-PD Power asks for more.
 - Stage plan: the Analog Shield and Analog Shield2 libraries move to their own
   repository (ADR 008). Old Stages 2 and 6 removed; FreeRTOS/multi-core is now
   v0.1.1 and the Pico2 stages are v0.2.0 and v0.2.1.
@@ -64,10 +72,13 @@ Format: one section per version, newest first. Stage plan: README.md.
   New items for the CPU Speed menu: 17 (`cpu_speed` at 50/133/200 MHz) passed
   2026-10-09; 18 (MAX11635 A3 at 200 MHz, Analog Shield temperature front end,
   ≈ 1.39 V) passed 2026-10-09: same reading as at 133 MHz within sensor drift.
-- The first contract after plugging into a charger asks 1000 mA at 20 V, although
-  the chip's profiles (loaded from its NVM) already read 20 V/0.5 A; after a
-  renegotiation (`setProfiles()`) it asks 500 mA. Cause not known yet (probably an
-  STUSB4500 NVM setting); `begin()` does not touch the profiles.
+- Solved 2026-10-09: the first contract after plug-in asked 1000 mA at 20 V
+  because the NVM held ST's factory profiles (5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A);
+  the "20 V/0.5 A" seen earlier was the working registers after `initVariant()`.
+  The test board's NVM is now 5 V only (checklist 19, passed); its original
+  contents (factory, except sector 0 byte 3 = AB) are recorded in
+  docs/development/hardware-checklist.html. Item 20 (20 V charger: 5 V at plug-in,
+  menu still raises it) still to do.
 - `usbpd_status` read one command character per second, so a burst of input was
   acted on seconds late; it now handles all waiting input each loop (fix not yet
   run on hardware).

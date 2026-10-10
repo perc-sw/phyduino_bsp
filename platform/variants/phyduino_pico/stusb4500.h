@@ -14,6 +14,10 @@
  * NVM, so they last until the board loses power. Profile 1 must be 5 V (USB
  * rule). Profile 3 has the highest priority, then 2, then 1.
  *
+ * VBUS also feeds the header's VIN pin, so VIN follows the contract. The chip
+ * negotiates from its NVM at plug-in, before any sketch runs; Phyduino boards
+ * have the NVM set to 5 V only (tests/sketches/usbpd_nvm, run once per board).
+ *
  * Bus: I2C1, address 0x28 (pins in pins_arduino.h, PHYDUINO_USBPD_*). It is
  * separate from the Wire library's I2C0, so both can be used freely.
  */
@@ -39,6 +43,12 @@ bool setProfiles(const Profile* profiles, uint8_t count);
 
 /// Copies the active profiles into `out` (room for kMaxProfiles); returns the count.
 uint8_t getProfiles(Profile* out);
+
+/// The board's profiles for Tools > USB-PD Power: 5 V/2 A, then 9 V/1 A if
+/// max_millivolts >= 9000, then max_millivolts at 10 W (schematic limit) if it
+/// is above 9 V. Writes `out` (room for kMaxProfiles) and returns the count;
+/// returns 0 for max_millivolts 0 ("use the chip's stored settings").
+uint8_t boardProfiles(uint16_t max_millivolts, Profile* out);
 
 /// Asks the charger to negotiate again with the current profiles.
 bool renegotiate();

@@ -159,6 +159,19 @@ bool setProfiles(const Profile* profiles, uint8_t count) {
     return renegotiate();
 }
 
+uint8_t boardProfiles(uint16_t max_millivolts, Profile* out) {
+    constexpr uint32_t kBoardMaxMilliwatts = 10000;
+    if (max_millivolts == 0) return 0;
+    uint8_t count = 0;
+    out[count++] = {5000, 2000};
+    if (max_millivolts >= 9000) out[count++] = {9000, 1000};
+    if (max_millivolts > 9000) {
+        const uint32_t ma = kBoardMaxMilliwatts * 1000 / max_millivolts / 10 * 10;  // 10 mA steps
+        out[count++] = {max_millivolts, static_cast<uint16_t>(ma)};
+    }
+    return count;
+}
+
 bool renegotiate() {
     if (!started) return false;
     return writeRegs(kRegTxHeaderLow, &kSoftResetMessage, 1) &&

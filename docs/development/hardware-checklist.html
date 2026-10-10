@@ -244,7 +244,7 @@
       <tbody>
         <tr>
           <td>14 · usbpd_status</td>
-          <td>USB-PD charger that offers 20 V; Pico 2 running serial_bridge passes Serial1 to the PC (usbpd_status mirrors its output to Serial1). Open the Pico 2&#x27;s Serial Monitor before plugging in the charger, or the &ldquo;STUSB4500 found&rdquo; line is missed<pre class="wiring"> USB-PD charger (20 V)                          PC
+          <td>Tools &gt; USB-PD Power: Up to 20 V. USB-PD charger that offers 20 V; Pico 2 running serial_bridge passes Serial1 to the PC (usbpd_status mirrors its output to Serial1). Open the Pico 2&#x27;s Serial Monitor before plugging in the charger, or the &ldquo;STUSB4500 found&rdquo; line is missed<pre class="wiring"> USB-PD charger (20 V)                          PC
         │ USB-C                                  │ USB
         ▼                                        ▼
  ┌────────────────────┐              ┌─────────────────────┐
@@ -268,6 +268,16 @@
           <td>Ordinary USB port (no PD)<pre class="wiring"> PC USB port ──── USB-C ────► Phyduino Pico (usbpd_status)
    5 V only; Serial Monitor at 115200</pre><span class="check-expected">Contract offer 0, VBUS ≈ 5 V</span></td>
           <td><span class="status pass">Passed 10-05</span></td>
+        </tr>
+        <tr>
+          <td>19 · usbpd_nvm</td>
+          <td>New board, once. Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; Serial Monitor 115200; send <code>r</code>, then <code>write5v</code>; unplug and replug. Keep the printed <code>r</code> output as the board&#x27;s backup<span class="check-expected"><code>r</code> shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after <code>write5v</code> the read-back shows 1 profile, 5 V/2.0 A and &ldquo;OK: verified&rdquo;; after replugging, usbpd_status (stored settings) shows profiles 5.0V/2.0A (got: factory NVM except sector 0 byte 3 = AB; only sector 3 written, 56 &rarr; 72)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
+        </tr>
+        <tr>
+          <td>20 · usbpd_status</td>
+          <td>After 19: same setup as 14 but Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; plug in the 20 V charger. Then rebuild with Up to 20 V<span class="check-expected">VBUS &asymp; 5 V from plug-in, profiles 5.0V/2.0A; with Up to 20 V, VBUS &asymp; 20 V (menu changes working registers only; <code>r</code> in usbpd_nvm still shows 5 V only)</span></td>
+          <td><span class="status todo">To do</span></td>
         </tr>
       </tbody>
     </table>

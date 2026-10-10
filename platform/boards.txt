@@ -5,6 +5,7 @@
 menu.cpu=CPU Speed
 menu.opt=Optimize
 menu.cppstd=C++ Standard
+menu.usbpd=USB-PD Power (VIN)
 
 ###############################################################################
 # Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.html
@@ -26,7 +27,8 @@ phyduino_pico.build.variant=phyduino_pico
 phyduino_pico.build.chip=rp2040
 phyduino_pico.build.mcu=cortex-m0plus
 phyduino_pico.build.f_cpu=133000000L
-phyduino_pico.build.extra_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
+phyduino_pico.build.extra_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}' -DPHYDUINO_USBPD_MAX_MV={build.usbpd_max_mv}
+phyduino_pico.build.usbpd_max_mv=5000
 phyduino_pico.build.vid=0x2E8A
 phyduino_pico.build.pid=0x000A
 
@@ -76,3 +78,20 @@ phyduino_pico.menu.cppstd.gnu20=C++20
 phyduino_pico.menu.cppstd.gnu20.build.cpp_std=gnu++20
 phyduino_pico.menu.cppstd.gnu23=C++23
 phyduino_pico.menu.cppstd.gnu23.build.cpp_std=gnu++23
+
+# Tools > USB-PD Power: highest voltage asked of a USB-PD charger. VBUS feeds the
+# on-board regulator and the VIN pin, so VIN follows it. Sets the STUSB4500's
+# working registers at start-up (variant.cpp), never its NVM; until then the chip
+# uses its NVM, set to 5 V only on Phyduino boards (tests/sketches/usbpd_nvm).
+phyduino_pico.menu.usbpd.5v=5 V only (default)
+phyduino_pico.menu.usbpd.5v.build.usbpd_max_mv=5000
+phyduino_pico.menu.usbpd.9v=Up to 9 V
+phyduino_pico.menu.usbpd.9v.build.usbpd_max_mv=9000
+phyduino_pico.menu.usbpd.12v=Up to 12 V
+phyduino_pico.menu.usbpd.12v.build.usbpd_max_mv=12000
+phyduino_pico.menu.usbpd.15v=Up to 15 V
+phyduino_pico.menu.usbpd.15v.build.usbpd_max_mv=15000
+phyduino_pico.menu.usbpd.20v=Up to 20 V
+phyduino_pico.menu.usbpd.20v.build.usbpd_max_mv=20000
+phyduino_pico.menu.usbpd.nvm=Use chip's stored settings (NVM)
+phyduino_pico.menu.usbpd.nvm.build.usbpd_max_mv=0

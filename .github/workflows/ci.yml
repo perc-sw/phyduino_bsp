@@ -17,9 +17,9 @@ jobs:
       - uses: ./.github/actions/setup-build
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
-      - name: Compile sketches, other Tools menu options (C++ Standard, CPU Speed, Optimize)
+      - name: Compile sketches, other Tools menu options (C++ Standard, CPU Speed, Optimize, USB-PD Power)
         run: |
-          for opt in cppstd=gnu14 cppstd=gnu20 cppstd=gnu23 cpu=50 cpu=200 opt=O2 opt=O3 opt=Og; do
+          for opt in cppstd=gnu14 cppstd=gnu20 cppstd=gnu23 cpu=50 cpu=200 opt=O2 opt=O3 opt=Og usbpd=20v usbpd=nvm; do
             echo "::group::$opt"
             python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG" \
               --fqbn "phyduino:rp2:phyduino_pico:$opt" || exit 1

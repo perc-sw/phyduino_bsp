@@ -130,20 +130,41 @@ TEST_CASE_FIXTURE(HostTest, "STUSB4500 contract and VBUS readings") {
     CHECK(stusb4500::vbusMillivolts() == 948u * 1102u / 102u);
 }
 
-TEST_CASE_FIXTURE(HostTest, "initVariant() loads the board's default power profiles") {
+TEST_CASE_FIXTURE(HostTest, "initVariant() loads the default power profile (5 V only)") {
     Max11635Model adc;
     adc.attach();
     Stusb4500Model pd;
-    pd.attach();
+    pd.attach();                                 // starts with ST's factory 5/15/20 V profiles
     initVariant();
 
     stusb4500::Profile p[stusb4500::kMaxProfiles];
-    REQUIRE(stusb4500::getProfiles(p) == 3);
+    REQUIRE(stusb4500::getProfiles(p) == 1);
     CHECK(p[0].millivolts == 5000);  CHECK(p[0].milliamps == 2000);
-    CHECK(p[1].millivolts == 9000);  CHECK(p[1].milliamps == 1000);
-    CHECK(p[2].millivolts == 20000); CHECK(p[2].milliamps == 500);
+    CHECK(pd.regs[0x70] == 1);
     CHECK(pd.soft_resets == 1);
     CHECK(adc.setup_register == 0x46);           // MAX11635 configured too
+}
+
+TEST_CASE("boardProfiles() gives each Tools > USB-PD Power option, within 10 W") {
+    stusb4500::Profile p[stusb4500::kMaxProfiles];
+
+    CHECK(stusb4500::boardProfiles(0, p) == 0);  // "use the chip's stored settings"
+
+    REQUIRE(stusb4500::boardProfiles(5000, p) == 1);
+    CHECK(p[0].millivolts == 5000);  CHECK(p[0].milliamps == 2000);
+
+    REQUIRE(stusb4500::boardProfiles(9000, p) == 2);
+    CHECK(p[1].millivolts == 9000);  CHECK(p[1].milliamps == 1000);
+
+    const uint16_t top[][2] = {{12000, 830}, {15000, 660}, {20000, 500}};
+    for (const auto& t : top) {
+        CAPTURE(t[0]);
+        REQUIRE(stusb4500::boardProfiles(t[0], p) == 3);
+        CHECK(p[0].millivolts == 5000);
+        CHECK(p[1].millivolts == 9000);
+        CHECK(p[2].millivolts == t[0]);  CHECK(p[2].milliamps == t[1]);
+        CHECK(uint32_t(p[2].millivolts) * p[2].milliamps <= 10000u * 1000u);
+    }
 }
 
 TEST_CASE_FIXTURE(HostTest, "initVariant() carries on when the STUSB4500 is missing") {

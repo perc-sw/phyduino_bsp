@@ -111,24 +111,29 @@
   <div class="section-head"><h2>USB Power Delivery</h2></div>
 
   <div class="doc-text">
-    <p>At start-up <code>initVariant()</code> loads the board's default sink profiles into the STUSB4500 (<a href="../../platform/variants/phyduino_pico/variant.cpp"><code>platform/variants/phyduino_pico/variant.cpp</code></a>):</p>
+    <p><strong>VBUS feeds the on-board regulator and the VIN pin, so VIN carries whatever voltage the USB-PD charger supplies.</strong> <em>Tools &gt; USB-PD Power (VIN)</em> sets the highest voltage the board asks for; at start-up <code>initVariant()</code> loads the matching sink profiles into the STUSB4500 (<a href="../../platform/variants/phyduino_pico/variant.cpp"><code>variant.cpp</code></a>). The 10 W limit (schematic) sets the current of the top profile:</p>
   </div>
 
   <div class="ds-table-wrap">
     <table class="ds-table">
       <thead>
-        <tr><th>Profile</th><th>Voltage</th><th>Current</th><th>LED</th><th></th></tr>
+        <tr><th>Menu option</th><th>Profiles</th><th>VIN on a USB-PD charger</th><th></th></tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td>5.0 V</td><td>2.0 A</td><td>POK2 off, POK3 off</td><td></td></tr>
-        <tr><td>2</td><td>9.0 V</td><td>1.0 A</td><td>POK2 on</td><td></td></tr>
-        <tr><td>3</td><td>20.0 V</td><td>0.5 A</td><td>POK3 on</td><td></td></tr>
+        <tr><td>5 V only (default)</td><td>5 V/2 A</td><td>5 V</td><td></td></tr>
+        <tr><td>Up to 9 V</td><td>5 V/2 A, 9 V/1 A</td><td>9 V (POK2 lit)</td><td></td></tr>
+        <tr><td>Up to 12 V</td><td>5 V/2 A, 9 V/1 A, 12 V/0.83 A</td><td>12 V, or 9 V if the charger has no 12 V (common)</td><td></td></tr>
+        <tr><td>Up to 15 V</td><td>5 V/2 A, 9 V/1 A, 15 V/0.66 A</td><td>15 V (POK3 lit)</td><td></td></tr>
+        <tr><td>Up to 20 V</td><td>5 V/2 A, 9 V/1 A, 20 V/0.5 A</td><td>20 V (POK3 lit)</td><td></td></tr>
+        <tr><td>Use chip's stored settings (NVM)</td><td>left as loaded at power-up</td><td>5 V on a Phyduino board</td><td></td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="doc-text">
-    <p>A USB-PD charger supplies the highest profile it can; an ordinary USB port gives 5 V. Profiles go to the chip's working registers, never its NVM, and the board renegotiates only if they differ from what the chip already holds. A sketch can change them with <code>stusb4500::setProfiles()</code> and read the contract and measured VBUS (see <a href="../../platform/variants/phyduino_pico/stusb4500.h"><code>platform/variants/phyduino_pico/stusb4500.h</code></a> and <a href="../../tests/sketches/usbpd_status"><code>tests/sketches/usbpd_status</code></a>). The register addresses come from ST's register map, not the datasheet; <a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a> item 14 checks them.</p>
+    <p>An ordinary USB port always gives 5 V. A charger supplies the highest profile it can. The menu writes the chip's working registers only, never its NVM, and the board renegotiates only if they differ from what the chip already holds. A sketch can change them with <code>stusb4500::setProfiles()</code> and read the contract and measured VBUS (see <a href="../../platform/variants/phyduino_pico/stusb4500.h"><code>stusb4500.h</code></a> and <a href="../../tests/sketches/usbpd_status"><code>tests/sketches/usbpd_status</code></a>).</p>
+    <p><strong>At plug-in, before any sketch runs</strong> (and during uploads), the chip negotiates from its NVM. ST's factory NVM asks for up to 20 V at 1 A, so Phyduino boards have their NVM set to 5 V only, once per board, with <a href="../../tests/sketches/usbpd_nvm"><code>tests/sketches/usbpd_nvm</code></a> (hardware checklist item 19). The NVM is good for about 1000 writes, which is why only that tool writes it.</p>
+    <p>The register addresses come from ST's register map, not the datasheet; <a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a> item 14 checks them.</p>
   </div>
 
   <div class="section-head"><h2>Things to know</h2></div>

@@ -6,19 +6,20 @@
 #include "max11635.h"
 #include "stusb4500.h"
 
-// Board USB-PD profiles (schematic: 10 W max). The STUSB4500 picks the highest
-// one the charger offers; POK2/POK3 LEDs show which (2: 9 V, 3: 20 V).
-static const stusb4500::Profile kDefaultPowerProfiles[] = {
-    {5000, 2000},   // 1: 5.0 V, 2.0 A
-    {9000, 1000},   // 2: 9.0 V, 1.0 A
-    {20000, 500},   // 3: 20.0 V, 0.5 A
-};
+// Highest USB-PD voltage to ask for, from Tools > USB-PD Power (boards.txt);
+// 0 = leave the chip on its NVM settings. VIN follows the contract.
+#ifndef PHYDUINO_USBPD_MAX_MV
+#define PHYDUINO_USBPD_MAX_MV 5000
+#endif
 
 void initVariant() {
     max11635::begin();
-    // Only renegotiates if the chip's profiles differ; does nothing if it is absent.
-    if (stusb4500::begin()) {
-        stusb4500::setProfiles(kDefaultPowerProfiles, 3);
+    // Working registers only, never the NVM. Only renegotiates if the chip's
+    // profiles differ; does nothing if the chip is absent.
+    stusb4500::Profile profiles[stusb4500::kMaxProfiles];
+    const uint8_t count = stusb4500::boardProfiles(PHYDUINO_USBPD_MAX_MV, profiles);
+    if (stusb4500::begin() && count > 0) {
+        stusb4500::setProfiles(profiles, count);
     }
 }
 

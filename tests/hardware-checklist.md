@@ -35,9 +35,11 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 
 | # | Sketch | Setup | Expected |
 |---|---|---|---|
-| 14 | `usbpd_status` | USB-PD charger that offers 20 V | "STUSB4500 found"; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit |
+| 14 | `usbpd_status` | Tools > USB-PD Power: Up to 20 V; USB-PD charger that offers 20 V | "STUSB4500 found"; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit |
 | 15 | `usbpd_status` | Same charger; send `9`, then `5`, then `f` | VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V |
 | 16 | `usbpd_status` | Ordinary USB port (no PD) | contract offer 0, VBUS ≈ 5 V |
+| 19 | `usbpd_nvm` | New board, once: USB-PD Power "Use chip's stored settings"; send `r`, then `write5v`; unplug and replug | `r` shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after `write5v` the read-back shows 1 profile, 5 V/2.0 A, "OK: verified". Keep the printed `r` output as the board's backup |
+| 20 | `usbpd_status` | After 19: USB-PD Power "Use chip's stored settings", 20 V charger | VBUS ≈ 5 V from plug-in, profiles 5.0V/2.0A; then rebuilt with Up to 20 V: VBUS ≈ 20 V (the menu changes the working registers only; `r` in `usbpd_nvm` still shows 5 V only) |
 
 ## Wiring diagrams
 
