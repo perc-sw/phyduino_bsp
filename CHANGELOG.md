@@ -39,6 +39,8 @@ Format: one section per version, newest first. Stage plan: README.md.
 - `tests/sketches/usbpd_nvm`: one-off tool that sets the STUSB4500 NVM to 5 V only
   (sector 3 only, skipped if already set, read back to verify; `factory` undoes
   it), so VIN is 5 V from plug-in until a sketch asks for more.
+- GitHub release notes come from the annotated tag's message (`git tag -a`);
+  a lightweight tag still gets "See CHANGELOG.md".
 - Pre-release reminder: a post-commit hook (`.githooks/`) runs
   `package/prerelease_reminder.py`, which lists the CHANGELOG entries since the
   last tag once there are 10 or more.

@@ -87,9 +87,15 @@
     <li class="step">
       <span class="step-num">5</span>
       <div class="step-body">
-        <p>Commit, then tag and push:</p>
-        <pre class="code"><code>git tag v0.1.0
+        <p>Commit, then make an <em>annotated</em> tag and push it. The tag message becomes the GitHub release notes, so give a short list of the changes (the pre-release reminder prints one):</p>
+        <pre class="code"><code>git tag -a v0.1.0 -F - &lt;&lt;'EOF'
+v0.1.0
+
+Changes since v0.1.0-alpha.N:
+- ...
+EOF
 git push origin v0.1.0</code></pre>
+        <p>A plain <code>git tag v0.1.0</code> (lightweight, no message) still works; its release notes just say &ldquo;See CHANGELOG.md&rdquo;.</p>
         <p><code>.github/workflows/release.yml</code> compiles everything, runs <code>package/make_release.py</code> and publishes the zip + index as release assets. Older versions stay in the index so users can roll back. It then commits a change to <code>main</code> that points the Board Manager URL and version on <a href="../index.html"><code>docs/index.html</code></a> at the new release (the tag's own URL for a pre-release), so run <code>git pull</code> afterwards.</p>
       </div>
     </li>

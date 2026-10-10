@@ -46,6 +46,17 @@ jobs:
             fi
           done
 
+      # Release notes = the annotated tag's message (git tag -a). The checkout may
+      # hold the tag as lightweight, so fetch the tag object itself first.
+      - name: Release notes from tag message
+        run: |
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = tag ]; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release_notes.md
+          fi
+          [ -s release_notes.md ] || echo "See CHANGELOG.md" > release_notes.md
+          cat release_notes.md
+
       - name: Publish
         run: |
           case "$GITHUB_REF_NAME" in
@@ -56,7 +67,7 @@ jobs:
             package/build/phyduino-rp2-*.zip \
             package/build/package_phyduino_index.json \
             --title "$GITHUB_REF_NAME" \
-            --notes "See CHANGELOG.md"
+            --notes-file release_notes.md
 
       # docs/index.html is the students' install page: point its Board Manager URL
       # and version pill at this release and commit that to main. A pre-release

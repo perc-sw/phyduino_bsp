@@ -25,9 +25,15 @@ def git(*args):
 
 
 def bullets(text):
-    """Top-level "- " entries, with their indented continuation lines joined."""
+    """Top-level "- " entries, with their indented continuation lines joined.
+    Skips "### Open items" (status notes, not features or fixes)."""
     entries = []
+    counted = True
     for line in text.splitlines():
+        if line.startswith("#"):
+            counted = not line.lower().startswith("### open")
+        if not counted:
+            continue
         if line.startswith("- "):
             entries.append(line[2:].strip())
         elif entries and entries[-1] and line.startswith("  ") and line.strip():
