@@ -49,7 +49,10 @@
   <div class="doc-text">
     <pre class="code"><code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/latest/download/package_phyduino_index.json</code></pre>
     <p>(Arduino IDE → File → Preferences → Additional boards manager URLs.)</p>
-    <p>A tag with a suffix (e.g. <code>v0.1.0-alpha</code>) is published as a pre-release,
+    <p>Pre-releases are numbered <code>&lt;version&gt;-alpha.&lt;build&gt;</code> (e.g. <code>0.1.0-alpha.1</code>, <code>0.1.0-alpha.2</code>), the build number going up by one each time.
+    The post-commit hook (<code>.githooks/</code>, turned on in <a href="dev-setup.html">dev setup</a>) says when 10 CHANGELOG entries have built up since the last tag and lists them; <code>python package/prerelease_reminder.py --always</code> shows the count at any time.
+    Keep the dot before the build number: the IDE sorts <code>alpha.10</code> after <code>alpha.9</code>, but rejects the whole index for a four-part version such as <code>0.1.0.1-alpha</code>.</p>
+    <p>A tag with a suffix (e.g. <code>v0.1.0-alpha.1</code>) is published as a pre-release,
     which <code>releases/latest</code> skips. Test it with:</p>
     <pre class="code"><code>https://github.com/&lt;owner&gt;/&lt;repo&gt;/releases/download/&lt;tag&gt;/package_phyduino_index.json</code></pre>
   </div>

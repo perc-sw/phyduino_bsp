@@ -2,7 +2,7 @@
 # package index, and publish both as GitHub Release assets.
 # Board Manager URL for users (always the newest release):
 #   https://github.com/<owner>/<repo>/releases/latest/download/package_phyduino_index.json
-# A tag with a suffix (e.g. v0.1.0-alpha) is published as a pre-release, which
+# A tag with a suffix (e.g. v0.1.0-alpha.1) is published as a pre-release, which
 # releases/latest skips; test it with releases/download/<tag>/package_phyduino_index.json
 # Recipe: docs/maintenance/release.html
 name: Release

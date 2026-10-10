@@ -9,7 +9,7 @@
 # Arduino spec: https://arduino.github.io/arduino-cli/latest/platform-specification/
 
 name=Phyduino Boards
-version=0.1.0-alpha
+version=0.1.0-alpha.1
 
 # --- Paths ---------------------------------------------------------------------
 # Tool locations come from the Board Manager install. For a dev checkout, set them
@@ -36,7 +36,10 @@ compiler.warning_flags.more=-Wall
 compiler.warning_flags.all=-Wall -Wextra
 
 compiler.cpu.flags=-mcpu={build.mcu} -mthumb
-compiler.optimize.flags=-Os -g
+# Tools > Optimize sets build.optimize (boards.txt); this default covers builds
+# without the menu.
+build.optimize=-Os
+compiler.optimize.flags={build.optimize} -g
 compiler.common.flags=-ffunction-sections -fdata-sections -MMD {compiler.warning_flags}
 
 compiler.sdk.flags="@{build.sdk.path}/compile_flags.txt" "-isystem{build.sdk.path}/include"

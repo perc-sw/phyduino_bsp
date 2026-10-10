@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pre-release reminder after each commit (package/prerelease_reminder.py).
+# Enable once per clone: git config core.hooksPath .githooks
+PY=python3
+command -v python >/dev/null 2>&1 && PY=python
+"$PY" "$(git rev-parse --show-toplevel)/package/prerelease_reminder.py" || true

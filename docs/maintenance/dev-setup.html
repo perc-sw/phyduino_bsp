@@ -61,6 +61,8 @@
         <p>Clone with submodules:</p>
         <pre class="code"><code>git clone --recurse-submodules &lt;repo-url&gt;</code></pre>
         <p>(Already cloned? <code>git submodule update --init --recursive</code>.)</p>
+        <p>Turn on the repo's git hooks (after each commit they remind you when 10 or more CHANGELOG entries have built up since the last tag; <code>package/prerelease_reminder.py</code>):</p>
+        <pre class="code"><code>git config core.hooksPath .githooks</code></pre>
       </div>
     </li>
     <li class="step">
@@ -83,7 +85,7 @@ tools.picotool.path=C:/Program Files (x86)/picotool</code></pre>
     <li class="step">
       <span class="step-num">5</span>
       <div class="step-body">
-        <p>Restart the IDE. <strong>Tools → Board → Phyduino Boards (in sketchbook) → Phyduino Pico.</strong> If the Board Manager version is also installed, the IDE lists both; pick the "(in sketchbook)" one.</p>
+        <p>Restart the IDE. <strong>Tools → Board → Phyduino Boards (in sketchbook) → Phyduino Pico.</strong> If the Board Manager version is also installed, the IDE lists both; pick the "(in sketchbook)" one. While this link is in the sketchbook, Boards Manager hides the published Phyduino package, so switch to a sketchbook without it before testing a Board Manager install. The other way round, arduino-cli can build with the installed Board Manager copy instead of this link when the versions differ, so remove the installed copy (Boards Manager → Remove) when you go back to development.</p>
       </div>
     </li>
   </ol>

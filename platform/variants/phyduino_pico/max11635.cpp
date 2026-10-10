@@ -76,9 +76,9 @@ uint16_t read(uint8_t channel) {
 
     writeByte(kRegConversion | static_cast<uint8_t>(channel << 3) | kNoScan);
 
-    // CNVST low pulse (>= 40 ns) starts the conversion.
+    // CNVST low pulse (>= 40 ns) starts the conversion. 100 ns at any CPU speed.
     gpio_put(PHYDUINO_EXT_ADC_GPIO_CNVST, false);
-    busy_wait_at_least_cycles(8);
+    busy_wait_at_least_cycles(F_CPU / 10000000);
     gpio_put(PHYDUINO_EXT_ADC_GPIO_CNVST, true);
 
     const uint32_t start = time_us_32();

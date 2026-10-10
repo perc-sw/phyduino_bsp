@@ -24,6 +24,13 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 12 | `I2CScanner` | Any I2C device on SDA/SCL | Its address is listed |
 | 13 | `PeripheralReceiver` | Second board running `i2c_controller` on SDA/SCL/GND (e.g. a Raspberry Pi Pico 2; 5 V boards such as the UNO R4 need a level shifter) | "hello N" lines print; controller reads a rising counter |
 
+### CPU Speed
+
+| # | Sketch | Setup | Expected |
+|---|---|---|---|
+| 17 | `cpu_speed` | Tools > CPU Speed at 50, 133 (default) and 200 MHz; Serial Monitor 115200 | LED 1 Hz; sys = F_CPU; peri = sys up to 133 MHz, 48 MHz above; vreg 1.15 V above 133 MHz, else 1.10 V; delay(1000) ≈ 1000000 us; loop time ∝ 1/F_CPU |
+| 18 | `analog_read` | CPU Speed 200 MHz; known voltage < 2.048 V on A3 | A3 reads the applied voltage, same as at 133 MHz (MAX11635 conversion pulse long enough at full speed) |
+
 ### USB-PD
 
 | # | Sketch | Setup | Expected |

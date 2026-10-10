@@ -2,6 +2,8 @@
 # Adding a board: docs/maintenance/add-board.html
 
 # Tools menus. Each board lists its own options; the first option is the default.
+menu.cpu=CPU Speed
+menu.opt=Optimize
 menu.cppstd=C++ Standard
 
 ###############################################################################
@@ -23,7 +25,7 @@ phyduino_pico.build.core=phyduino
 phyduino_pico.build.variant=phyduino_pico
 phyduino_pico.build.chip=rp2040
 phyduino_pico.build.mcu=cortex-m0plus
-phyduino_pico.build.f_cpu=125000000L
+phyduino_pico.build.f_cpu=133000000L
 phyduino_pico.build.extra_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
 phyduino_pico.build.vid=0x2E8A
 phyduino_pico.build.pid=0x000A
@@ -35,6 +37,35 @@ phyduino_pico.upload.maximum_size=16777216
 phyduino_pico.upload.maximum_data_size=270336
 phyduino_pico.upload.use_1200bps_touch=true
 phyduino_pico.upload.wait_for_upload_port=false
+
+# Tools > CPU Speed. Each speed must be exact from the 12 MHz crystal (175 is not;
+# 176 is the nearest). Above 133 MHz the core first raises VREG to 1.15 V (main.cpp).
+phyduino_pico.menu.cpu.133=133 MHz (default)
+phyduino_pico.menu.cpu.133.build.f_cpu=133000000L
+phyduino_pico.menu.cpu.50=50 MHz
+phyduino_pico.menu.cpu.50.build.f_cpu=50000000L
+phyduino_pico.menu.cpu.75=75 MHz
+phyduino_pico.menu.cpu.75.build.f_cpu=75000000L
+phyduino_pico.menu.cpu.100=100 MHz
+phyduino_pico.menu.cpu.100.build.f_cpu=100000000L
+phyduino_pico.menu.cpu.125=125 MHz
+phyduino_pico.menu.cpu.125.build.f_cpu=125000000L
+phyduino_pico.menu.cpu.150=150 MHz
+phyduino_pico.menu.cpu.150.build.f_cpu=150000000L
+phyduino_pico.menu.cpu.176=176 MHz
+phyduino_pico.menu.cpu.176.build.f_cpu=176000000L
+phyduino_pico.menu.cpu.200=200 MHz (fastest supported)
+phyduino_pico.menu.cpu.200.build.f_cpu=200000000L
+
+# Tools > Optimize (sketch, core and libraries; the prebuilt pico-sdk is unchanged).
+phyduino_pico.menu.opt.Os=Smallest (-Os, default)
+phyduino_pico.menu.opt.Os.build.optimize=-Os
+phyduino_pico.menu.opt.O2=Fast (-O2)
+phyduino_pico.menu.opt.O2.build.optimize=-O2
+phyduino_pico.menu.opt.O3=Fastest (-O3)
+phyduino_pico.menu.opt.O3.build.optimize=-O3
+phyduino_pico.menu.opt.Og=Debug (-Og)
+phyduino_pico.menu.opt.Og.build.optimize=-Og
 
 # Tools > C++ Standard (sketch, core and libraries; C files stay gnu17).
 phyduino_pico.menu.cppstd.gnu17=C++17 (default)

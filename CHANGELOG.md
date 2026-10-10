@@ -25,7 +25,17 @@ Format: one section per version, newest first. Stage plan: README.md.
   licences in `platform/licenses/`.
 - `Arduino.h` declares `itoa()`/`utoa()`/`ltoa()`/`ultoa()` and `dtostrf()`.
 - Tools > C++ Standard menu: C++14, 17 (default), 20, 23 (`gnu++NN`). CI
-  compiles every sketch at each standard; the CMake build stays on C++17.
+  compiles every sketch at each standard (and at the CPU Speed / Optimize
+  extremes); the CMake build stays on C++17.
+- Tools > CPU Speed menu: 50, 75, 100, 125, 133 (default), 150, 176, 200 MHz.
+  Set in `init()`; above 133 MHz the core voltage goes to 1.15 V first. 175 MHz
+  is not possible from the 12 MHz crystal, so 176 MHz. Peripheral clock follows
+  the CPU up to 133 MHz (SPI up to F_CPU / 2), 48 MHz above. Hardware-tested at
+  200, 133 and 50 MHz (`tests/sketches/cpu_speed`); other speeds not yet.
+- Tools > Optimize menu: `-Os` (default), `-O2`, `-O3`, `-Og`.
+- Pre-release reminder: a post-commit hook (`.githooks/`) runs
+  `package/prerelease_reminder.py`, which lists the CHANGELOG entries since the
+  last tag once there are 10 or more.
 
 ### Changed
 - Stage plan: the Analog Shield and Analog Shield2 libraries move to their own
@@ -51,6 +61,9 @@ Format: one section per version, newest first. Stage plan: README.md.
   running serial_bridge) passed: 20.2 V with POK3 lit, then 9.1 V, 5.15 V and back
   to 20.2 V on command. 5b passed: Arduino IDE 2 Upload button, no port selected,
   board already in BOOTSEL, with the IDE's built-in Blink example. All items passed.
+  New items for the CPU Speed menu: 17 (`cpu_speed` at 50/133/200 MHz) passed
+  2026-10-09; 18 (MAX11635 A3 at 200 MHz, Analog Shield temperature front end,
+  ≈ 1.39 V) passed 2026-10-09: same reading as at 133 MHz within sensor drift.
 - The first contract after plugging into a charger asks 1000 mA at 20 V, although
   the chip's profiles (loaded from its NVM) already read 20 V/0.5 A; after a
   renegotiation (`setProfiles()`) it asks 500 mA. Cause not known yet (probably an

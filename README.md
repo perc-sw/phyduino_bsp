@@ -15,7 +15,7 @@ Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
 
 | Board | MCU | Status |
 |---|---|---|
-| [Phyduino Pico](docs/boards/phyduino_pico.html) | RP2040 | v0.1.0-alpha |
+| [Phyduino Pico](docs/boards/phyduino_pico.html) | RP2040 | v0.1.0-alpha.1 |
 | Phyduino Pico2 | RP2350B | planned (v0.2.0) |
 
 ## Install

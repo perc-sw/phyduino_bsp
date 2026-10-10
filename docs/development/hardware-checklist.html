@@ -220,6 +220,24 @@
     </table>
   </div>
 
+  <div class="section-head"><h2>CPU Speed</h2></div>
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr>
+          <td>17 · cpu_speed</td>
+          <td>Tools &gt; CPU Speed at 50, 133 (default) and 200 MHz; Serial Monitor at 115200<span class="check-expected">LED blinks at 1 Hz; sys = F_CPU; peri = sys up to 133 MHz, 48 MHz above; vreg 1.15 V above 133 MHz, else 1.10 V; delay(1000) ≈ 1000000 us; loop time ∝ 1/F_CPU (got 243060 / 90680 / 60204 us)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
+        </tr>
+        <tr>
+          <td>18 · analog_read</td>
+          <td>CPU Speed 200 MHz; a known voltage under 2.048 V on A3 (e.g. a 1.5 V cell, a divider from 3.3 V, or the Analog Shield's temperature front end). Checks the MAX11635 start-conversion pulse is still long enough at the fastest clock<span class="check-expected">A3 reads the applied voltage (reading × 2.048 / 4095), same as at 133 MHz (Analog Shield temperature front end on A3: 2783 at 133 MHz, 2788 at 200 MHz, 2790 at 133 MHz again ≈ 1.39 V; steady within each run, the small rise is sensor drift)</span></td>
+          <td><span class="status pass">Passed 10-09</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="section-head"><h2>USB-PD</h2></div>
   <div class="ds-table-wrap">
     <table class="ds-table">
