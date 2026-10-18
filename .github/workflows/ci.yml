@@ -2,6 +2,7 @@
 #   compile     - every test sketch and library example through arduino-cli
 #   cmake       - the same code through the CMake verification build (-Werror)
 #   host-tests  - PC-side unit tests against a fake pico-sdk (tests/host)
+#   release-downloads - (main only) caches the tool archives release.yml needs
 # The SDK bundle is committed, so only host-tests fetches a submodule (doctest).
 name: CI
 
@@ -48,3 +49,21 @@ jobs:
         run: sudo apt-get install -y ninja-build
       - name: PC-side unit tests
         run: cmake --workflow --preset host-tests
+
+  # A tag run (release.yml) can only restore caches saved on main or on that tag,
+  # so the tool-archive cache is filled here. Only downloads when tools.json changes.
+  release-downloads:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)
+    steps:
+      - uses: actions/checkout@v7
+      - name: Cache tool archives
+        id: release-tools
+        uses: actions/cache@v6
+        with:
+          path: package/build/cache
+          key: release-tools-${{ hashFiles('package/tools.json') }}
+          lookup-only: true
+      - name: Download tool archives
+        if: steps.release-tools.outputs.cache-hit != 'true'
+        run: python3 package/make_release.py --repo "$GITHUB_REPOSITORY"

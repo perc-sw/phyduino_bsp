@@ -60,6 +60,12 @@ Format: one section per version, newest first. Stage plan: README.md.
 - `itoa()` of a negative value in base 2/8/16 printed a 64-bit pattern where
   `long` is 64-bit; now always the width of `int`.
 
+### Fixed
+- Release workflow merged the package index of the newest full release only
+  (`releases/latest` skips pre-releases), so each pre-release index listed only
+  itself. It now merges the index of the newest `v*` release, pre-releases
+  included.
+
 ### Open items
 - **USB VID/PID**: uses Raspberry Pi VID 0x2E8A with the pico-sdk generic PID
   0x000A. Request a dedicated PID from Raspberry Pi before wide release.

@@ -29,8 +29,25 @@ jobs:
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
 
+      # Newest v* release, pre-releases included (plain `gh release download`
+      # takes releases/latest, which skips them and drops their versions).
       - name: Fetch previous index (keeps older versions installable)
-        run: gh release download --pattern package_phyduino_index.json --output previous_index.json || true
+        run: |
+          prev=$(gh release list --limit 100 --json tagName,isDraft \
+            --jq '[.[] | select(.isDraft | not) | .tagName
+                   | select(startswith("v") and . != env.GITHUB_REF_NAME)] | first // empty')
+          echo "previous release: ${prev:-none}"
+          if [ -n "$prev" ]; then
+            gh release download "$prev" --pattern package_phyduino_index.json --output previous_index.json || true
+          fi
+
+      # Tool archives make_release.py checksums (hundreds of MB). A tag run can
+      # only restore caches from main, so ci.yml's release-downloads job fills it.
+      - name: Cache tool archives
+        uses: actions/cache@v6
+        with:
+          path: package/build/cache
+          key: release-tools-${{ hashFiles('package/tools.json') }}
 
       - name: Build release
         run: python3 package/make_release.py --repo "$GITHUB_REPOSITORY" --previous-index previous_index.json
