@@ -196,7 +196,13 @@ bool analogBurstDone();
 
 /**
  * @ingroup core_analog
- * @brief Stops a running burst. The buffer's contents are then not valid.
+ * @brief Stops the burst started by analogStartBurst() before it has finished.
+ *
+ * Sampling stops at once and the ADC is free again for analogRead() and the
+ * other analog functions. The buffer's contents are then not valid: some
+ * samples may be missing and the rest are not converted to
+ * analogReadResolution(). Afterwards analogBurstDone() returns true and a new
+ * burst can be started. Does nothing if no burst is running.
  */
 void analogStopBurst();
 

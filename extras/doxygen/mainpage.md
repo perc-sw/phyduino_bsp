@@ -16,15 +16,15 @@ in the [Arduino language reference](https://docs.arduino.cc/language-reference/)
 | Topic | Functions |
 |---|---|
 | @ref core_digital | pinMode(), digitalWrite(), digitalRead() |
-| @ref core_analog | analogRead(), analogWrite(), resolution and PWM frequency; on every analog pin: averaging, millivolts, differential, several pins at once, fixed-rate bursts |
-| @ref core_advanced | tone(), noTone(), pulseIn(), shiftOut(), shiftIn() |
+| @ref core_analog | analogRead(), analogWrite(), analogReference(), resolution and PWM frequency; on every analog pin: averaging, millivolts, differential, several pins at once, fixed-rate bursts |
+| @ref core_advanced | tone(), noTone(), pulseIn(), pulseInLong(), shiftOut(), shiftIn() |
 | @ref core_time | millis(), micros(), delay(), delayMicroseconds() |
-| @ref core_interrupts | attachInterrupt(), detachInterrupt(), interrupts(), noInterrupts() |
-| @ref core_math | min(), max(), constrain(), map(), sq() |
+| @ref core_interrupts | attachInterrupt(), attachInterruptParam(), detachInterrupt(), digitalPinToInterrupt(), interrupts(), noInterrupts() |
+| @ref core_math | min(), max(), constrain(), map(), sq(), radians(), degrees(), `PI`, `HALF_PI`, `TWO_PI`, `DEG_TO_RAD`, `RAD_TO_DEG`, `EULER` |
 | @ref core_random | random(), randomSeed() |
-| @ref core_bits | bitRead(), bitSet(), lowByte(), highByte(), ... |
-| @ref core_sketch | setup(), loop(), yield() |
-| @ref core_types | HIGH, LOW, INPUT, OUTPUT, ..., `byte`, `word` |
+| @ref core_bits | bit(), bitRead(), bitWrite(), bitSet(), bitClear(), bitToggle(), lowByte(), highByte(), makeWord(), word() |
+| @ref core_sketch | setup(), loop(), yield(); start-up: init(), initVariant() |
+| @ref core_types | `HIGH`, `LOW`, `CHANGE`, `FALLING`, `RISING` (PinStatus); `INPUT`, `OUTPUT`, `INPUT_PULLUP`, `INPUT_PULLDOWN`, `OUTPUT_OPENDRAIN` (PinMode); `LSBFIRST`, `MSBFIRST` (BitOrder); `boolean`, `byte`, `word`, `pin_size_t`, `voidFuncPtr`, `voidFuncPtrParam` |
 
 ## Phyduino additions
 
@@ -32,7 +32,7 @@ in the [Arduino language reference](https://docs.arduino.cc/language-reference/)
 |---|---|---|
 | USB serial | `Serial` (SerialUSBClass) | SerialUSB.h |
 | Hardware serial | `Serial1` on D0/D1, `Serial2` on D4/D5 (SerialUARTClass) | SerialUART.h |
-| Analog and PWM extras | analogReadResolution(), analogReadAveraging(), analogReadMillivolts(), analogReadDifferentialMillivolts(), analogReadMultiple(), analogReadBurst(), analogStartBurst(), analogWriteResolution(), analogWriteFrequency() | Arduino.h |
+| Analog and PWM extras | analogReadResolution(), analogReadAveraging(), analogReadMillivolts(), analogFullScaleMillivolts(), analogReadDifferentialMillivolts(), analogReadMultiple(), analogReadBurst(), analogStartBurst(), analogBurstDone(), analogStopBurst(), analogWriteResolution(), analogWriteFrequency() | Arduino.h |
 | pico-sdk access | digitalPinToGpio(): the RP2040 GPIO behind an Arduino pin | Arduino.h |
 | Pin map | `A0`-`A5`, `LED_BUILTIN`, `SS`, `MOSI`, `MISO`, `SCK`, `SDA`, `SCL` | pins_arduino.h |
 | SPI | `SPI` (PhyduinoSPI): SCK D13, MOSI D11, MISO D12 | SPI.h |
