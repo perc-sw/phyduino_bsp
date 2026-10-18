@@ -74,6 +74,16 @@ $generatedby&#160;<a href="https://www.doxygen.org/index.html"><img class="foote
 </footer>
 
 <script type="text/javascript">
+// Example pages: Doxygen titles them with the file name (AnalogMillivolts.ino).
+// Show the title from the hidden example-title span in extras/doxygen/examples.dox.
+(function () {
+  const name = document.querySelector('.contents .example-title');
+  const title = document.querySelector('.headertitle .title');
+  if (name && title) title.textContent = name.textContent;
+})();
+</script>
+
+<script type="text/javascript">
 // Short pages: stretch the content so the footer sits at the bottom of the window.
 // Plain CSS can't do this here, because a flex layout would break the floated side bar.
 (function () {

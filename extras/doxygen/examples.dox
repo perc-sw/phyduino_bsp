@@ -1,13 +1,43 @@
 /*
- * Registers the library sketches in platform/libraries/<library>/examples/ for
- * the Doxygen Examples page, with the formatted description shown above each
- * sketch's source. Doxygen does not read comments in the sketches themselves,
- * so keep each block here in step with that sketch's header comment and with
- * the Included libraries table in docs/index.html.
+ * The Examples page, and the library sketches in
+ * platform/libraries/<library>/examples/ registered for it, with the formatted
+ * description shown above each sketch's source. Doxygen does not read comments
+ * in the sketches themselves, so keep each block here in step with that
+ * sketch's header comment, with the list on the Examples page and with the
+ * Included libraries table in docs/index.html.
+ *
+ * The Examples page replaces Doxygen's own list (hidden in DoxygenLayout.xml),
+ * which can only show file names such as AnalogMillivolts.ino. For the same
+ * reason each sketch's page title is set by the hidden example-title span at
+ * the start of its block, which a script in footer.html moves into the title.
  */
 
 /**
+@page example_sketches Examples
+
+Example sketches for Phyduino boards. Each page below explains what the sketch
+does, how to wire it and what it prints, followed by its source. The same
+sketches are in the Arduino IDE under **File → Examples → Examples for
+Phyduino Pico** once Phyduino Pico is selected: **Phyduino** for the analog and
+USB-PD sketches, **SPI** and **Wire** for those libraries.
+
+| Example | What it shows |
+|---|---|
+| @ref AnalogMillivolts.ino "Analog Millivolts" | Every analog pin in millivolts |
+| @ref AnalogAveraging.ino "Analog Averaging" | How averaging steadies a reading |
+| @ref AnalogDifferential.ino "Analog Differential" | The voltage between two pins |
+| @ref AnalogReadMultiple.ino "Analog Read Multiple" | All six analog pins at once, in the Serial Plotter |
+| @ref AnalogBurst.ino "Analog Burst" | A fixed-rate burst of samples, to see a waveform |
+| @ref AnalogBurstBackground.ino "Analog Burst Background" | Continuous sampling in the background |
+| @ref UsbPdPower.ino "USB-PD Power" | Asking a USB-PD charger for a higher voltage |
+| @ref SpiLoopback.ino "SPI Loopback" | An SPI loopback test |
+| @ref I2CScanner.ino "I2C Scanner" | Finding the devices on the I2C bus |
+| @ref PeripheralReceiver.ino "Peripheral Receiver" | The board as an I2C peripheral |
+*/
+
+/**
  * @example AnalogMillivolts.ino
+ * @htmlonly<span class="example-title" hidden>Analog Millivolts example sketch</span>@endhtmlonly
  * Prints the voltage on every analog pin, in millivolts, once a second, and
  * the full scale of each pin at start-up.
  *
@@ -24,6 +54,7 @@
 
 /**
  * @example AnalogAveraging.ino
+ * @htmlonly<span class="example-title" hidden>Analog Averaging example sketch</span>@endhtmlonly
  * Shows how averaging steadies a reading: for averaging 1, 4, 8, 16 and 32,
  * takes 100 readings of A0 and A3 and prints the lowest, the highest and the
  * spread, in 12-bit ADC steps.
@@ -45,6 +76,7 @@
 
 /**
  * @example AnalogDifferential.ino
+ * @htmlonly<span class="example-title" hidden>Analog Differential example sketch</span>@endhtmlonly
  * Measures the voltage between two pins twice a second, with
  * analogReadDifferentialMillivolts():
  * - A3 - A4: true differential; the on-board ADC samples both pins at the
@@ -64,6 +96,7 @@
 
 /**
  * @example AnalogReadMultiple.ino
+ * @htmlonly<span class="example-title" hidden>Analog Read Multiple example sketch</span>@endhtmlonly
  * Reads all six analog pins together with analogReadMultiple() and streams
  * them, in millivolts, to the Serial Plotter 20 times a second. A3-A5 are
  * read in one scan of the external ADC, A0-A2 back to back on the RP2040 ADC.
@@ -77,6 +110,7 @@
 
 /**
  * @example AnalogBurst.ino
+ * @htmlonly<span class="example-title" hidden>Analog Burst example sketch</span>@endhtmlonly
  * Captures 500 samples of A0 at 20000 samples per second with
  * analogReadBurst(), plots them in the Serial Plotter and prints the rate,
  * lowest, highest and mean. The hardware takes the samples at evenly spaced
@@ -99,6 +133,7 @@
 
 /**
  * @example AnalogBurstBackground.ino
+ * @htmlonly<span class="example-title" hidden>Analog Burst Background example sketch</span>@endhtmlonly
  * Samples A3 continuously in the background with analogStartBurst() and
  * analogBurstDone(), in blocks of 1000 samples at 10000 samples per second.
  * One buffer fills while the other is processed ("double buffering"), and
@@ -114,6 +149,7 @@
 
 /**
  * @example UsbPdPower.ino
+ * @htmlonly<span class="example-title" hidden>USB-PD Power example sketch</span>@endhtmlonly
  * Prints the board's USB-PD power profiles, the charger's contract and the
  * measured VBUS once a second. Send 5, 9, 12, 15 or 20 over Serial to ask a
  * USB-PD charger for up to that many volts, with stusb4500::boardProfiles()
@@ -140,6 +176,7 @@
 
 /**
  * @example SpiLoopback.ino
+ * @htmlonly<span class="example-title" hidden>SPI Loopback example sketch</span>@endhtmlonly
  * SPI loopback test: sends a counter with SPI.transfer() every 500 ms and
  * prints the byte that comes back. With MOSI wired to MISO, every byte sent
  * should come straight back.
@@ -159,6 +196,7 @@
 
 /**
  * @example I2CScanner.ino
+ * @htmlonly<span class="example-title" hidden>I2C Scanner example sketch</span>@endhtmlonly
  * Scans the I2C bus on the SDA/SCL header pins every 5 s and prints every
  * address from 0x08 to 0x77 that answers.
  *
@@ -182,6 +220,7 @@
 
 /**
  * @example PeripheralReceiver.ino
+ * @htmlonly<span class="example-title" hidden>Peripheral Receiver example sketch</span>@endhtmlonly
  * Makes the board an I2C peripheral at address 0x42. Prints the bytes a
  * controller writes, and answers each read with a counter that goes up by one.
  *

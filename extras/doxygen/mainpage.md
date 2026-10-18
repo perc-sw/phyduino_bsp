@@ -44,7 +44,7 @@ None of these need an `#include` except SPI.h, Wire.h, max11635.h and stusb4500.
 
 ## Examples
 
-The [Examples](examples.html) page lists the example sketches, also under
+The @ref example_sketches page lists the example sketches, also under
 **File → Examples → Examples for Phyduino Pico** in the Arduino IDE once
 Phyduino Pico is selected: **Phyduino** for the analog functions, **SPI** and
 **Wire** for those libraries.
