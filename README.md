@@ -1,7 +1,7 @@
 # Phyduino Boards: Arduino board package
 
 [![CI](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml/badge.svg)](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/perc-sw/phyduino_bsp?include_prereleases&sort=semver)](https://github.com/perc-sw/phyduino_bsp/releases)
+[![Release](https://img.shields.io/github/v/release/perc-sw/phyduino_bsp?include_prereleases&sort=semver&filter=v*)](https://github.com/perc-sw/phyduino_bsp/releases)
 ![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue)
 ![Arduino IDE](https://img.shields.io/badge/Arduino_IDE-2.x-00979D?logo=arduino&logoColor=white)
 ![pico-sdk](https://img.shields.io/badge/pico--sdk-2.2.0-C51A4A?logo=raspberrypi&logoColor=white)
