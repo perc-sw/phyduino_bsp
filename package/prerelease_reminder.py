@@ -63,7 +63,7 @@ def main():
 
     version = (REPO / "VERSION").read_text().strip()
     if f"v{version}" == tag:  # VERSION not bumped yet: suggest the next build number
-        match = re.fullmatch(r"(.*-alpha)(?:\.(\d+))?", version)
+        match = re.fullmatch(r"(.*-(?:alpha|rc))(?:\.(\d+))?", version)
         if match:
             version = f"{match.group(1)}.{int(match.group(2) or 0) + 1}"
     print(f"\n*** {len(new)} changes since {tag}: time for a pre-release tag (v{version}). ***")

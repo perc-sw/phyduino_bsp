@@ -9,7 +9,7 @@
 # Arduino spec: https://arduino.github.io/arduino-cli/latest/platform-specification/
 
 name=Phyduino Boards
-version=0.1.0-alpha.2
+version=0.1.0-rc.2
 
 # --- Paths ---------------------------------------------------------------------
 # Tool locations come from the Board Manager install. For a dev checkout, set them
