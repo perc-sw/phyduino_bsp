@@ -1,4 +1,4 @@
-# Phyduino Boards: Arduino board package
+# Phyduino Board Support: Introduction to Electronics - Arduino Board Manager
 
 [![CI](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml/badge.svg)](https://github.com/perc-sw/phyduino_bsp/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/perc-sw/phyduino_bsp?include_prereleases&sort=semver&filter=v*)](https://github.com/perc-sw/phyduino_bsp/releases)

@@ -10,7 +10,7 @@
 PROJECT_NAME           = "Phyduino Board Support"
 # docs.yml overrides this with the contents of VERSION
 PROJECT_NUMBER         = 0.1.0-rc.2
-PROJECT_BRIEF          = "U of T Physics Arduino board package (Introduction to Electronics)"
+PROJECT_BRIEF          = "Introduction to Electronics - Arduino Board Manager"
 OUTPUT_DIRECTORY       = docs
 HTML_OUTPUT            = wiki
 
