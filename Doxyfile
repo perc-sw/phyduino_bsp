@@ -1,0 +1,56 @@
+# Doxyfile for the Phyduino board package API reference (Doxygen 1.17.0).
+# Run "doxygen" in the repository root; output goes to docs/wiki/ (git-ignored).
+# .github/workflows/docs.yml builds it with warnings as errors and publishes it.
+#
+# Documented: the core's own headers, the variant drivers, the SPI and Wire
+# libraries, and the standard Arduino functions in the vendored api/Common.h
+# (its documentation is in extras/doxygen/core_api.dox, since api/ must not be
+# edited). The rest of ArduinoCore-API and the pico-sdk bundle are left out.
+
+PROJECT_NAME           = "Phyduino Board Support"
+# docs.yml overrides this with the contents of VERSION
+PROJECT_NUMBER         = 0.1.0-alpha.2
+PROJECT_BRIEF          = "U of T Physics Arduino board package (Introduction to Electronics)"
+OUTPUT_DIRECTORY       = docs
+HTML_OUTPUT            = wiki
+
+INPUT                  = platform/cores/phyduino/Arduino.h \
+                         platform/cores/phyduino/api/Common.h \
+                         platform/cores/phyduino/SerialUSB.h \
+                         platform/cores/phyduino/SerialUART.h \
+                         platform/variants/phyduino_pico/pins_arduino.h \
+                         platform/variants/phyduino_pico/max11635.h \
+                         platform/variants/phyduino_pico/stusb4500.h \
+                         platform/libraries/SPI/src/SPI.h \
+                         platform/libraries/Wire/src/Wire.h \
+                         extras/doxygen/mainpage.md \
+                         extras/doxygen/core_api.dox \
+                         extras/doxygen/examples.dox
+# Not README.md: its repository-relative links break inside docs/wiki/
+USE_MDFILE_AS_MAINPAGE = extras/doxygen/mainpage.md
+EXAMPLE_PATH           = platform/libraries
+EXAMPLE_RECURSIVE      = YES
+EXTENSION_MAPPING      = ino=C++
+FULL_PATH_NAMES        = NO
+ENABLE_PREPROCESSING   = YES
+PREDEFINED             = __cplusplus=201703L
+# Common.h entries that are not for sketches: start-up internals, obsolete constants
+EXCLUDE_SYMBOLS        = main atexit SERIAL DISPLAY
+
+EXTRACT_PRIVATE        = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
+
+GENERATE_HTML          = YES
+HTML_HEADER            = extras/doxygen/header.html
+HTML_FOOTER            = extras/doxygen/footer.html
+HTML_EXTRA_STYLESHEET  = extras/doxygen/uoft_doxygen.css
+HTML_EXTRA_FILES       = docs/images/uoft_physics_plrs_logo.png
+HTML_COLORSTYLE        = LIGHT
+GENERATE_TREEVIEW      = YES
+
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+GENERATE_DOCBOOK       = NO

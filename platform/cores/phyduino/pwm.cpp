@@ -2,8 +2,10 @@
  * @file pwm.cpp
  * @brief analogWrite(), analogWriteResolution(), analogWriteFrequency().
  *
- * Every RP2040 GPIO can output PWM. Two GPIOs share each PWM "slice" (and so
- * its frequency): GPIO n and n^1, e.g. GPIO6/7 = D2/D3.
+ * Every RP2040 GPIO can output PWM. Each of the 8 PWM "slices" (and so its
+ * frequency) serves GPIO n and n^1 and, from GPIO16 up, again n - 16 and its
+ * pair: GPIO n and n + 16 are the same channel, so they also share the duty
+ * cycle (e.g. GPIO1/17 = D0/D9). Pin table: core_api.dox, analogWrite().
  */
 #include "Arduino.h"
 #include "wiring_private.h"

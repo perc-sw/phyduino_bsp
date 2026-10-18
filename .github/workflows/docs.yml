@@ -1,0 +1,88 @@
+# GitHub Pages: the docs/ site plus the Doxygen API reference (docs/wiki/).
+#   build  - runs Doxygen 1.17.0 (any warning fails the run), uploads docs/
+#   deploy - publishes the upload to GitHub Pages (main branch only)
+#
+# Pull requests run build only, so missing documentation shows up before merge.
+# Needs Settings -> Pages -> Source set to "GitHub Actions".
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a newer push does not cancel one in progress
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Pinned: extras/doxygen/ (header, footer, layout CSS) is written against
+  # Doxygen 1.17's page structure. Check the pages before changing it.
+  DOXYGEN_VERSION: 1.17.0
+  DOXYGEN_SHA256: 75419ef4f446fc1c24ef12514b574e66e898ee6f527c6ae2ad84f91a905823c2
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04  # pinned; change deliberately
+    permissions:
+      contents: read
+      pages: read  # configure-pages reads the repository's Pages settings
+    steps:
+      - uses: actions/checkout@v7
+
+      # Only the downloaded archive is cached; its checksum is still checked every run
+      - name: Cache Doxygen archive
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/doxygen-download
+          key: doxygen-${{ runner.os }}-${{ env.DOXYGEN_VERSION }}-${{ env.DOXYGEN_SHA256 }}
+
+      # Release binary rather than apt: Ubuntu packages an older Doxygen
+      - name: Install Doxygen ${{ env.DOXYGEN_VERSION }}
+        run: |
+          tag="Release_${DOXYGEN_VERSION//./_}"
+          archive="$RUNNER_TEMP/doxygen-download/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz"
+          if [ ! -f "$archive" ]; then
+            mkdir -p "$RUNNER_TEMP/doxygen-download"
+            curl -sSfL -o "$archive" \
+              "https://github.com/doxygen/doxygen/releases/download/$tag/$(basename "$archive")"
+          fi
+          echo "$DOXYGEN_SHA256  $archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/doxygen-${DOXYGEN_VERSION}/bin" >> "$GITHUB_PATH"
+
+      # Same Doxyfile as a local run, with the version from VERSION and
+      # warnings (e.g. undocumented API) as errors
+      - name: Build API reference
+        run: |
+          doxygen --version
+          ( cat Doxyfile
+            echo "PROJECT_NUMBER = $(cat VERSION)"
+            echo "WARN_AS_ERROR = FAIL_ON_WARNINGS" ) | doxygen -
+
+      - uses: actions/configure-pages@v6
+        if: github.event_name != 'pull_request'
+
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: docs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04  # pinned; change deliberately
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -6,9 +6,11 @@
  * profiles" (PDOs) that the charger can supply. initVariant() (variant.cpp)
  * loads the board's default profiles at start-up; a sketch can change them:
  *
- *   #include <stusb4500.h>
- *   const stusb4500::Profile profiles[] = {{5000, 2000}, {9000, 1000}};
- *   stusb4500::setProfiles(profiles, 2);
+ * @code
+ * #include <stusb4500.h>
+ * const stusb4500::Profile profiles[] = {{5000, 2000}, {9000, 1000}};
+ * stusb4500::setProfiles(profiles, 2);
+ * @endcode
  *
  * Profiles are written to the chip's working registers only, never to its
  * NVM, so they last until the board loses power. Profile 1 must be 5 V (USB
@@ -27,40 +29,73 @@
 
 namespace stusb4500 {
 
+/**
+ * @brief One sink profile (PDO): a voltage the board accepts and the current it draws.
+ */
 struct Profile {
-    uint16_t millivolts;  // 5000-20000, 50 mV steps
-    uint16_t milliamps;   // 0-5000, 10 mA steps
+    uint16_t millivolts;  ///< 5000-20000, 50 mV steps
+    uint16_t milliamps;   ///< 0-5000, 10 mA steps
 };
 
+/// Number of profiles the chip holds.
 constexpr uint8_t kMaxProfiles = 3;
 
-/// Sets up I2C1 and the control pins. Returns true if the chip answers.
+/**
+ * @brief Sets up I2C1 and the control pins.
+ * @return true if the chip answers.
+ */
 bool begin();
 
-/// Loads 1-3 profiles and renegotiates if they differ from the current ones.
-/// Returns false if the arguments are invalid or the chip does not answer.
+/**
+ * @brief Loads 1-3 profiles and renegotiates if they differ from the current ones.
+ * @param profiles Profiles in priority order, lowest first; the first must be 5 V.
+ * @param count Number of profiles, 1 to kMaxProfiles.
+ * @return false if the arguments are invalid or the chip does not answer.
+ */
 bool setProfiles(const Profile* profiles, uint8_t count);
 
-/// Copies the active profiles into `out` (room for kMaxProfiles); returns the count.
+/**
+ * @brief Reads the active profiles.
+ * @param out Array with room for kMaxProfiles.
+ * @return Number of profiles written to `out`.
+ */
 uint8_t getProfiles(Profile* out);
 
-/// The board's profiles for Tools > USB-PD Power: 5 V/2 A, then 9 V/1 A if
-/// max_millivolts >= 9000, then max_millivolts at 10 W (schematic limit) if it
-/// is above 9 V. Writes `out` (room for kMaxProfiles) and returns the count;
-/// returns 0 for max_millivolts 0 ("use the chip's stored settings").
+/**
+ * @brief The board's profiles for Tools > USB-PD Power.
+ *
+ * 5 V/2 A, then 9 V/1 A if max_millivolts >= 9000, then max_millivolts at
+ * 10 W (schematic limit) if it is above 9 V.
+ * @param max_millivolts Highest voltage to ask for, or 0 for "use the chip's
+ *                       stored settings".
+ * @param out Array with room for kMaxProfiles.
+ * @return Number of profiles written to `out`; 0 for max_millivolts 0.
+ */
 uint8_t boardProfiles(uint16_t max_millivolts, Profile* out);
 
-/// Asks the charger to negotiate again with the current profiles.
+/**
+ * @brief Asks the charger to negotiate again with the current profiles.
+ * @return false if begin() has not run or the chip does not answer.
+ */
 bool renegotiate();
 
-/// Position (1-7) of the charger offer currently in use; 0 = no PD contract
-/// (plain 5 V USB, or no charger attached).
+/**
+ * @brief Which charger offer is in use.
+ * @return Position 1-7 of the offer; 0 = no PD contract (plain 5 V USB, or
+ *         no charger attached).
+ */
 uint8_t contractPosition();
 
-/// Operating current agreed in the current contract, in mA (0 = no contract).
+/**
+ * @brief Operating current agreed in the current contract.
+ * @return Current in mA; 0 = no contract.
+ */
 uint16_t contractMilliamps();
 
-/// VBUS measured by the on-board ADC (MAX11635 channel 3), in mV.
+/**
+ * @brief VBUS measured by the on-board ADC (MAX11635 channel 3).
+ * @return Voltage in mV.
+ */
 uint32_t vbusMillivolts();
 
 }  // namespace stusb4500

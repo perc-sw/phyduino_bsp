@@ -1,0 +1,641 @@
+/*
+ * Documents the standard Arduino API that the Phyduino core implements. The
+ * declarations are in the vendored platform/cores/phyduino/api/Common.h, which
+ * must not be edited (api/UPSTREAM.md), so the documentation lives here.
+ *
+ * Each entry gives the usual Arduino meaning plus what is different on
+ * Phyduino boards. Keep it in step with the implementations in
+ * platform/cores/phyduino/ (wiring_*.cpp, pwm.cpp, tone.cpp, random.cpp,
+ * main.cpp); Doxygen warns if a declaration here no longer matches Common.h.
+ */
+
+/**
+ * @file Common.h
+ * @brief Standard Arduino functions, constants and types (from ArduinoCore-API).
+ *
+ * Included by Arduino.h, so sketches never include it themselves. The
+ * functions are grouped by topic under Topics. See the
+ * [Arduino language reference](https://docs.arduino.cc/language-reference/)
+ * for the general behaviour; the notes here give what is different on
+ * Phyduino boards.
+ */
+
+/* ============================================================================ */
+/*  Topics                                                                       */
+/* ============================================================================ */
+
+/**
+ * @defgroup core_digital Digital I/O
+ * @brief pinMode(), digitalWrite(), digitalRead().
+ *
+ * All pins are 3.3 V. A3-A5 are analog only: digital functions ignore them.
+ */
+
+/**
+ * @defgroup core_analog Analog I/O
+ * @brief analogRead(), analogWrite() (PWM) and their settings.
+ *
+ * A0-A2 use the RP2040 ADC (0-3.3 V); A3-A5 use the on-board MAX11635 ADC
+ * (0-2.048 V). analogWrite() is PWM and works on every pin except A3-A5.
+ */
+
+/**
+ * @defgroup core_advanced Advanced I/O
+ * @brief tone(), pulseIn(), shiftOut(), shiftIn().
+ */
+
+/**
+ * @defgroup core_time Time
+ * @brief millis(), micros(), delay(), delayMicroseconds().
+ *
+ * All use the RP2040's microsecond timer, so they are exact at every
+ * Tools > CPU Speed setting.
+ */
+
+/**
+ * @defgroup core_interrupts Interrupts
+ * @brief attachInterrupt(), detachInterrupt(), interrupts(), noInterrupts().
+ */
+
+/**
+ * @defgroup core_math Math
+ * @brief min(), max(), constrain(), map(), sq() and angle conversions.
+ */
+
+/**
+ * @defgroup core_random Random numbers
+ * @brief random(), randomSeed().
+ */
+
+/**
+ * @defgroup core_bits Bits and bytes
+ * @brief Reading and setting bits, splitting and joining bytes.
+ */
+
+/**
+ * @defgroup core_sketch Sketch structure
+ * @brief setup(), loop() and the start-up order.
+ *
+ * Start-up: init() (core), then initVariant() (board), then setup() once,
+ * then loop() forever.
+ */
+
+/**
+ * @defgroup core_types Constants and types
+ * @brief Pin levels and modes, bit order, and the Arduino integer types.
+ */
+
+/* ============================================================================ */
+/*  Digital I/O                                                                  */
+/* ============================================================================ */
+
+/**
+ * @fn void pinMode(pin_size_t pinNumber, PinMode pinMode)
+ * @ingroup core_digital
+ * @brief Sets a pin as an input or an output.
+ *
+ * Also stops analogWrite() or tone() output on the pin and returns it to a
+ * plain digital pin.
+ * @param pinNumber Arduino pin (e.g. 2, A0, LED_BUILTIN). A3-A5 and numbers
+ *                  out of range are ignored.
+ * @param pinMode   One of:
+ *                  - INPUT: no pull resistor.
+ *                  - INPUT_PULLUP, INPUT_PULLDOWN: the RP2040's weak internal
+ *                    pull-up or pull-down.
+ *                  - OUTPUT: driven high or low.
+ *                  - OUTPUT_OPENDRAIN: driven low, or released (floating) for
+ *                    HIGH. Needs a pull-up resistor.
+ * @warning The pins are 3.3 V and not 5 V tolerant: do not connect a 5 V
+ *          signal directly.
+ */
+
+/**
+ * @fn void digitalWrite(pin_size_t pinNumber, PinStatus status)
+ * @ingroup core_digital
+ * @brief Sets an output pin HIGH (3.3 V) or LOW (0 V).
+ *
+ * What it does depends on the pin's mode:
+ * - OUTPUT: drives the pin.
+ * - OUTPUT_OPENDRAIN: LOW drives the pin low, HIGH releases it.
+ * - INPUT: HIGH turns on the pull-up and LOW turns it off, as on an Uno.
+ *
+ * @param pinNumber Arduino pin. A3-A5 and numbers out of range are ignored.
+ * @param status    HIGH or LOW.
+ * @note Unlike an Uno, digitalWrite() does not stop analogWrite() or tone()
+ *       output: call pinMode() first to use the pin as a plain output again.
+ */
+
+/**
+ * @fn PinStatus digitalRead(pin_size_t pinNumber)
+ * @ingroup core_digital
+ * @brief Reads the level on a pin.
+ *
+ * Works in any mode, including OUTPUT (it reads back the pin). Inputs are
+ * HIGH above about 2 V and LOW below about 0.8 V.
+ * @param pinNumber Arduino pin.
+ * @return HIGH or LOW. Always LOW for A3-A5 and numbers out of range.
+ * @note After analogRead() on A0-A2, call pinMode() before digitalRead() on
+ *       that pin: analogRead() turns off its digital input.
+ */
+
+/* ============================================================================ */
+/*  Analog I/O                                                                   */
+/* ============================================================================ */
+
+/**
+ * @fn int analogRead(pin_size_t pinNumber)
+ * @ingroup core_analog
+ * @brief Reads the voltage on an analog pin.
+ *
+ * | Pin | ADC | Full scale |
+ * |---|---|---|
+ * | A0-A2 | RP2040 ADC | 3.3 V |
+ * | A3-A5 | On-board MAX11635 (max11635::read()) | 2.048 V |
+ *
+ * Both are 12-bit ADCs. The result is scaled to analogReadResolution(), 10
+ * bits (0-1023) by default as on an Uno.
+ * @param pinNumber A0-A5.
+ * @return 0 to 2^bits - 1, where bits is the analogReadResolution() setting.
+ *         0 for a pin that is not analog.
+ * @note Use the names A0-A5. `analogRead(0)` reads D0, which is not an
+ *       analog pin, and returns 0; on an Uno it would read A0.
+ * @note Full scale differs between A0-A2 and A3-A5, so the same reading means
+ *       a different voltage. At 10 bits: volts = `reading * 3.3 / 1023` on
+ *       A0-A2, and `reading * 2.048 / 1023` on A3-A5.
+ */
+
+/**
+ * @fn void analogReference(uint8_t mode)
+ * @ingroup core_analog
+ * @brief Does nothing: the references are fixed on Phyduino boards.
+ *
+ * A0-A2 use the 3.3 V supply; A3-A5 use the 2.048 V LM4040 reference (U7) on
+ * the AREF pin.
+ * @param mode Ignored.
+ */
+
+/**
+ * @fn void analogWrite(pin_size_t pinNumber, int value)
+ * @ingroup core_analog
+ * @brief Outputs a PWM signal: a square wave whose duty cycle sets the average voltage.
+ *
+ * Unlike an Uno, every pin except A3-A5 can do PWM. The defaults match an
+ * Uno: 8 bits (0-255) at 1000 Hz; see analogWriteResolution() and
+ * analogWriteFrequency(). Call it again to change the duty cycle; pinMode()
+ * stops it.
+ *
+ * The RP2040 has 8 PWM "slices". The pins on a slice share one frequency,
+ * set by the last analogWrite() or tone() on any of them. Pins on the same
+ * channel also share the duty cycle: both output what was last written to
+ * either.
+ *
+ * | Slice | Channel A | Channel B |
+ * |---|---|---|
+ * | 0 | D1, D8 | D0, D9 |
+ * | 2 | | LED_BUILTIN |
+ * | 3 | D2 | D3 |
+ * | 4 | D4, SDA | D5, SCL |
+ * | 5 | D6, A0 | D11, A1 |
+ * | 6 | D12, A2 | D10 |
+ * | 7 | D13 | D7 |
+ *
+ * @param pinNumber Arduino pin. A3-A5 and numbers out of range are ignored.
+ * @param value     0 (always LOW) to 2^bits - 1 (always HIGH), where bits is
+ *                  the analogWriteResolution() setting. Values outside the
+ *                  range are clamped.
+ */
+
+/* ============================================================================ */
+/*  Advanced I/O                                                                 */
+/* ============================================================================ */
+
+/**
+ * @fn void tone(uint8_t _pin, unsigned int frequency, unsigned long duration)
+ * @ingroup core_advanced
+ * @brief Plays a square wave (50 % duty) on a pin, for a buzzer or speaker.
+ *
+ * Returns at once; the tone plays in the background. Only one tone plays at a
+ * time: starting a tone stops the previous one, on any pin. When it stops,
+ * the pin becomes an input.
+ *
+ * The tone uses the pin's PWM slice, so it also changes the frequency of
+ * analogWrite() on the other pins of that slice (see analogWrite()).
+ * @param _pin      Arduino pin. A3-A5 and numbers out of range are ignored.
+ * @param frequency Frequency in Hz; 0 is ignored. The lowest is about 8 Hz
+ *                  at the default 133 MHz CPU speed.
+ * @param duration  Length in ms; 0 (the default) plays until noTone().
+ */
+
+/**
+ * @fn void noTone(uint8_t _pin)
+ * @ingroup core_advanced
+ * @brief Stops the tone, if one is playing on this pin.
+ * @param _pin Arduino pin.
+ */
+
+/**
+ * @fn unsigned long pulseIn(pin_size_t pin, uint8_t state, unsigned long timeout)
+ * @ingroup core_advanced
+ * @brief Measures how long a pulse on a pin lasts.
+ *
+ * If the pin is already at `state`, waits for that pulse to end first, then
+ * times the next one. Timing uses the microsecond timer, so it is accurate
+ * even with interrupts running. Blocks until the pulse ends or the timeout.
+ * @param pin     Arduino pin (an input).
+ * @param state   HIGH to time a high pulse, LOW for a low pulse.
+ * @param timeout Longest time to wait for the whole measurement, in µs;
+ *                1000000 (1 s) by default.
+ * @return Pulse length in µs, or 0 on timeout or for A3-A5.
+ */
+
+/**
+ * @fn unsigned long pulseInLong(pin_size_t pin, uint8_t state, unsigned long timeout)
+ * @ingroup core_advanced
+ * @brief Same as pulseIn(); kept for Arduino compatibility.
+ * @param pin     Arduino pin (an input).
+ * @param state   HIGH or LOW.
+ * @param timeout Longest time to wait, in µs; 1000000 (1 s) by default.
+ * @return Pulse length in µs, or 0 on timeout.
+ */
+
+/**
+ * @fn void shiftOut(pin_size_t dataPin, pin_size_t clockPin, BitOrder bitOrder, uint8_t val)
+ * @ingroup core_advanced
+ * @brief Sends a byte one bit at a time, pulsing the clock pin after each bit.
+ *
+ * For shift registers such as the 74HC595. Set both pins to OUTPUT first.
+ * The data bit is set while the clock is low and read by the chip on the
+ * rising edge.
+ * @param dataPin  Arduino pin for data.
+ * @param clockPin Arduino pin for the clock.
+ * @param bitOrder MSBFIRST or LSBFIRST.
+ * @param val      Byte to send.
+ */
+
+/**
+ * @fn uint8_t shiftIn(pin_size_t dataPin, pin_size_t clockPin, BitOrder bitOrder)
+ * @ingroup core_advanced
+ * @brief Reads a byte one bit at a time, pulsing the clock pin for each bit.
+ *
+ * For shift registers such as the 74HC165. Set the clock pin to OUTPUT and
+ * the data pin to INPUT first. Each bit is read while the clock is high.
+ * @param dataPin  Arduino pin for data.
+ * @param clockPin Arduino pin for the clock.
+ * @param bitOrder MSBFIRST or LSBFIRST.
+ * @return Byte received.
+ */
+
+/* ============================================================================ */
+/*  Time                                                                         */
+/* ============================================================================ */
+
+/**
+ * @fn unsigned long millis(void)
+ * @ingroup core_time
+ * @brief Milliseconds since the board started.
+ * @return Time in ms. Goes back to 0 after about 49.7 days.
+ */
+
+/**
+ * @fn unsigned long micros(void)
+ * @ingroup core_time
+ * @brief Microseconds since the board started, with 1 µs resolution (4 µs on an Uno).
+ * @return Time in µs. Goes back to 0 after about 71.6 minutes, so compare
+ *         times by subtracting: `micros() - start`.
+ */
+
+/**
+ * @fn void delay(unsigned long)
+ * @ingroup core_time
+ * @brief Waits a number of milliseconds.
+ *
+ * Interrupts, USB Serial and tones keep running. Calls yield() while waiting.
+ */
+
+/**
+ * @fn void delayMicroseconds(unsigned int us)
+ * @ingroup core_time
+ * @brief Waits a number of microseconds, exactly, by busy-waiting.
+ * @param us Time in µs.
+ */
+
+/* ============================================================================ */
+/*  Interrupts                                                                   */
+/* ============================================================================ */
+
+/**
+ * @fn void attachInterrupt(pin_size_t interruptNumber, voidFuncPtr callback, PinStatus mode)
+ * @ingroup core_interrupts
+ * @brief Calls a function when the level on a pin changes.
+ *
+ * Unlike an Uno (D2 and D3 only), every pin except A3-A5 can interrupt.
+ * Replaces any function already attached to the pin.
+ * @param interruptNumber `digitalPinToInterrupt(pin)`, which is just the pin number.
+ * @param callback Function to call; nullptr is ignored.
+ * @param mode     RISING, FALLING or CHANGE; or LOW or HIGH, which call the
+ *                 function again as soon as it returns, for as long as the
+ *                 level lasts.
+ * @warning The function runs inside the interrupt: keep it short, make
+ *          variables it shares with loop() `volatile`, and do not use Serial
+ *          or delay() in it.
+ */
+
+/**
+ * @fn void attachInterruptParam(pin_size_t interruptNumber, voidFuncPtrParam callback, PinStatus mode, void* param)
+ * @ingroup core_interrupts
+ * @brief Same as attachInterrupt(), but the function is called with `param`.
+ * @param interruptNumber `digitalPinToInterrupt(pin)`, which is just the pin number.
+ * @param callback Function taking a `void*`; nullptr is ignored.
+ * @param mode     As for attachInterrupt().
+ * @param param    Passed to `callback` on every call.
+ */
+
+/**
+ * @fn void detachInterrupt(pin_size_t interruptNumber)
+ * @ingroup core_interrupts
+ * @brief Stops calling the function attached to a pin.
+ * @param interruptNumber `digitalPinToInterrupt(pin)`, which is just the pin number.
+ */
+
+/* ============================================================================ */
+/*  Sketch structure                                                             */
+/* ============================================================================ */
+
+/**
+ * @fn void setup(void)
+ * @ingroup core_sketch
+ * @brief Written by the sketch: runs once after reset.
+ *
+ * USB Serial is already running; add `while (!Serial) {}` to wait for the
+ * Serial Monitor before printing.
+ */
+
+/**
+ * @fn void loop(void)
+ * @ingroup core_sketch
+ * @brief Written by the sketch: runs over and over after setup().
+ */
+
+/**
+ * @fn void yield(void)
+ * @ingroup core_sketch
+ * @brief Called while delay() or USB Serial is waiting. Does nothing unless the sketch defines its own.
+ */
+
+/**
+ * @fn void init(void)
+ * @ingroup core_sketch
+ * @brief Core start-up, before setup(): sets the CPU speed (Tools > CPU Speed), the ADC and USB.
+ */
+
+/**
+ * @fn void initVariant(void)
+ * @ingroup core_sketch
+ * @brief Board start-up, after init(): the on-board ADC and the USB-PD controller.
+ */
+
+/* ============================================================================ */
+/*  Math                                                                         */
+/* ============================================================================ */
+
+/**
+ * @fn auto min(const T& a, const L& b) -> decltype((b < a) ? b : a)
+ * @ingroup core_math
+ * @brief The smaller of two values.
+ * @tparam T Type of `a`.
+ * @tparam L Type of `b`.
+ * @param a First value.
+ * @param b Second value.
+ * @return `b` if it is less than `a`, otherwise `a`.
+ */
+
+/**
+ * @fn auto max(const T& a, const L& b) -> decltype((b < a) ? b : a)
+ * @ingroup core_math
+ * @brief The larger of two values.
+ * @tparam T Type of `a`.
+ * @tparam L Type of `b`.
+ * @param a First value.
+ * @param b Second value.
+ * @return `b` if `a` is less than it, otherwise `a`.
+ */
+
+/**
+ * @def constrain(amt, low, high)
+ * @ingroup core_math
+ * @brief Limits a value to a range: `low` if below it, `high` if above it.
+ * @note A macro: do not put `x++` or a function call in the arguments.
+ */
+
+/**
+ * @fn long map(long, long, long, long, long)
+ * @ingroup core_math
+ * @brief Re-maps a number from one range to another, e.g. 0-1023 to 0-255.
+ *
+ * `map(x, in_min, in_max, out_min, out_max)`. Integer maths: the result is
+ * rounded down and not limited to the output range (use constrain()).
+ * @return The value in the output range.
+ */
+
+/**
+ * @def sq(x)
+ * @ingroup core_math
+ * @brief The square of a number, `x * x`.
+ * @note A macro: do not put `x++` or a function call in the argument.
+ */
+
+/**
+ * @def radians(deg)
+ * @ingroup core_math
+ * @brief Converts degrees to radians.
+ */
+
+/**
+ * @def degrees(rad)
+ * @ingroup core_math
+ * @brief Converts radians to degrees.
+ */
+
+/// @def PI
+/// @ingroup core_math
+/// @brief π, 3.14159...
+
+/// @def HALF_PI
+/// @ingroup core_math
+/// @brief π / 2.
+
+/// @def TWO_PI
+/// @ingroup core_math
+/// @brief 2π.
+
+/// @def DEG_TO_RAD
+/// @ingroup core_math
+/// @brief Radians per degree, π / 180.
+
+/// @def RAD_TO_DEG
+/// @ingroup core_math
+/// @brief Degrees per radian, 180 / π.
+
+/// @def EULER
+/// @ingroup core_math
+/// @brief e, 2.71828...
+
+/* ============================================================================ */
+/*  Random numbers                                                               */
+/* ============================================================================ */
+
+/**
+ * @fn long random(long)
+ * @ingroup core_random
+ * @brief Pseudo-random number from 0 up to, but not including, the argument.
+ *
+ * `random(max)`.
+ * @return 0 to `max` - 1; 0 if `max` is 0 or less.
+ */
+
+/**
+ * @fn long random(long, long)
+ * @ingroup core_random
+ * @brief Pseudo-random number from the first argument up to, but not including, the second.
+ *
+ * `random(min, max)`.
+ * @return `min` to `max` - 1; `min` if `min` is not less than `max`.
+ */
+
+/**
+ * @fn void randomSeed(unsigned long)
+ * @ingroup core_random
+ * @brief Starts the random sequence at a new point.
+ *
+ * Without it, random() gives the same sequence after every reset. Seed with
+ * something that differs each time, e.g. micros() when a button is first
+ * pressed. A seed of 0 is ignored.
+ */
+
+/* ============================================================================ */
+/*  Bits and bytes                                                               */
+/* ============================================================================ */
+
+/// @def lowByte(w)
+/// @ingroup core_bits
+/// @brief The low (rightmost) byte of a value.
+
+/// @def highByte(w)
+/// @ingroup core_bits
+/// @brief The second-lowest byte of a value (bits 8-15).
+
+/// @def bitRead(value, bit)
+/// @ingroup core_bits
+/// @brief Reads bit number `bit` (0 = rightmost) of a value: 0 or 1.
+
+/// @def bitSet(value, bit)
+/// @ingroup core_bits
+/// @brief Sets bit number `bit` of a variable to 1.
+
+/// @def bitClear(value, bit)
+/// @ingroup core_bits
+/// @brief Sets bit number `bit` of a variable to 0.
+
+/// @def bitToggle(value, bit)
+/// @ingroup core_bits
+/// @brief Flips bit number `bit` of a variable.
+
+/// @def bitWrite(value, bit, bitvalue)
+/// @ingroup core_bits
+/// @brief Sets bit number `bit` of a variable to `bitvalue` (0 or 1).
+
+/// @def bit(b)
+/// @ingroup core_bits
+/// @brief The value of bit number `b`: 1, 2, 4, 8, ...
+
+/**
+ * @fn uint16_t makeWord(uint16_t w)
+ * @ingroup core_bits
+ * @brief Returns `w` as a 16-bit word.
+ * @param w Value.
+ * @return `w`.
+ */
+
+/**
+ * @fn uint16_t makeWord(byte h, byte l)
+ * @ingroup core_bits
+ * @brief Joins two bytes into a 16-bit word.
+ * @param h High byte.
+ * @param l Low byte.
+ * @return `h * 256 + l`.
+ */
+
+/// @def word(...)
+/// @ingroup core_bits
+/// @brief Same as makeWord().
+
+/* ============================================================================ */
+/*  Constants and types                                                          */
+/* ============================================================================ */
+
+/**
+ * @typedef PinStatus
+ * @ingroup core_types
+ * @brief Pin levels for digitalWrite() and digitalRead(), and interrupt modes for attachInterrupt().
+ */
+/// @var PinStatus LOW
+/// 0 V; for attachInterrupt(), while the pin is low.
+/// @var PinStatus HIGH
+/// 3.3 V; for attachInterrupt(), while the pin is high.
+/// @var PinStatus CHANGE
+/// attachInterrupt(): on every rising and falling edge.
+/// @var PinStatus FALLING
+/// attachInterrupt(): when the pin goes from high to low.
+/// @var PinStatus RISING
+/// attachInterrupt(): when the pin goes from low to high.
+
+/**
+ * @typedef PinMode
+ * @ingroup core_types
+ * @brief Pin modes for pinMode().
+ */
+/// @var PinMode INPUT
+/// Input with no pull resistor.
+/// @var PinMode OUTPUT
+/// Output, driven high or low.
+/// @var PinMode INPUT_PULLUP
+/// Input with the internal pull-up resistor.
+/// @var PinMode INPUT_PULLDOWN
+/// Input with the internal pull-down resistor.
+/// @var PinMode OUTPUT_OPENDRAIN
+/// Output driven low, or released for HIGH.
+
+/**
+ * @typedef BitOrder
+ * @ingroup core_types
+ * @brief Bit order for shiftOut(), shiftIn() and SPISettings.
+ */
+/// @var BitOrder LSBFIRST
+/// Least significant (rightmost) bit first.
+/// @var BitOrder MSBFIRST
+/// Most significant (leftmost) bit first.
+
+/// @typedef pin_size_t
+/// @ingroup core_types
+/// @brief Type for Arduino pin numbers (uint8_t).
+
+/// @typedef byte
+/// @ingroup core_types
+/// @brief 8-bit unsigned number, 0-255 (uint8_t).
+
+/// @typedef word
+/// @ingroup core_types
+/// @brief 16-bit unsigned number, 0-65535 (uint16_t). On an Uno `int` is
+/// 16 bits too, but on Phyduino boards `int` is 32 bits.
+
+/// @typedef boolean
+/// @ingroup core_types
+/// @brief Old name for `bool`.
+
+/// @typedef voidFuncPtr
+/// @ingroup core_types
+/// @brief Function with no arguments and no return value, as used by attachInterrupt().
+
+/// @typedef voidFuncPtrParam
+/// @ingroup core_types
+/// @brief Function taking a `void*`, as used by attachInterruptParam().

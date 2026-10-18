@@ -44,6 +44,9 @@ build/
 Build/
 build-*/
 
+# Doxygen output; built and published by .github/workflows/docs.yml
+docs/wiki/
+
 # CMake generated files
 CMakeFiles/
 CMakeCache.txt

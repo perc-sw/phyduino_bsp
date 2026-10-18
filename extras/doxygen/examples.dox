@@ -1,0 +1,66 @@
+/*
+ * Registers the library sketches in platform/libraries/<library>/examples/ for
+ * the Doxygen Examples page, with the formatted description shown above each
+ * sketch's source. Doxygen does not read comments in the sketches themselves,
+ * so keep each block here in step with that sketch's header comment and with
+ * the Included libraries table in docs/index.html.
+ */
+
+/**
+ * @example SpiLoopback.ino
+ * SPI loopback test: sends a counter with SPI.transfer() every 500 ms and
+ * prints the byte that comes back. With MOSI wired to MISO, every byte sent
+ * should come straight back.
+ *
+ * Uses PhyduinoSPI::beginTransaction() with 1 MHz, MSBFIRST, SPI_MODE0.
+ *
+ * @par Wiring
+ * D11 (MOSI) to D12 (MISO).
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * sent 7 received 7
+ * @endcode
+ * With D11 and D12 not connected, the received value is usually 0 or 255.
+ */
+
+/**
+ * @example I2CScanner.ino
+ * Scans the I2C bus on the SDA/SCL header pins every 5 s and prints every
+ * address from 0x08 to 0x77 that answers.
+ *
+ * Each address is probed with PhyduinoWire::beginTransmission() and
+ * PhyduinoWire::endTransmission() with no data; 0 means a device answered.
+ *
+ * @par Wiring
+ * One or more I2C devices on SDA, SCL, 3.3 V and GND.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * Device at 0x3C
+ * 1 device(s) found.
+ * @endcode
+ *
+ * @note The board has no I2C pull-up resistors, only the RP2040's weak
+ *       internal ones. Add 4.7 kOhm resistors to 3.3 V for long wires or
+ *       400 kHz.
+ */
+
+/**
+ * @example PeripheralReceiver.ino
+ * Makes the board an I2C peripheral at address 0x42. Prints the bytes a
+ * controller writes, and answers each read with a counter that goes up by one.
+ *
+ * Uses PhyduinoWire::begin(uint8_t) with PhyduinoWire::onReceive() and
+ * PhyduinoWire::onRequest().
+ *
+ * @par Wiring
+ * SDA, SCL and GND to another board running a controller sketch.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud: the bytes the controller wrote, as text.
+ *
+ * @note The callbacks run inside the I2C interrupt, so keep them short.
+ */

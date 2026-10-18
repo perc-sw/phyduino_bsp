@@ -2,8 +2,8 @@
  * @file tone.cpp
  * @brief tone(), noTone(): 50 % square wave from the pin's PWM slice.
  *
- * Only one tone plays at a time (Arduino convention). The paired GPIO on the
- * same PWM slice changes frequency too (see pwm.cpp).
+ * Only one tone plays at a time (Arduino convention). The other pins on the
+ * same PWM slice change frequency too (see pwm.cpp).
  */
 #include "Arduino.h"
 #include "wiring_private.h"

@@ -1,0 +1,386 @@
+/* ============================================================
+   uoft_doxygen.css
+   U of T Physics look for the Doxygen API pages (docs/wiki).
+
+   The design tokens and the header, breadcrumb and footer rules are
+   copied from docs/style/uoft_physics_perc_sw.css; keep them in step.
+   That file is not loaded here, because its global reset (margin and
+   padding 0 on everything) breaks Doxygen's own layout.
+   ============================================================ */
+
+/* ── Design tokens (from uoft_physics_perc_sw.css) ── */
+html {
+  --uot-blue:       #1E3765;
+  --uot-blue-dark:  #152849;
+  --uot-blue-mid:   #25355A;
+  --uot-cyan:       #007FA3;
+
+  --bg:         #F7F6F2;
+  --surface:    #FFFFFF;
+  --border:     #E0DDD6;
+  --border-med: #C8C5BC;
+  --text:       #1A1917;
+  --text-2:     #5C5A55;
+  --text-3:     #9B9890;
+
+  --accent-bg:   #E3F4F9;
+  --accent-text: #005F7A;
+  --accent-line: #A8D8E8;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+/* ── Doxygen colours and fonts mapped to the tokens ── */
+html {
+  --page-background-color: var(--bg);
+  --page-foreground-color: var(--text);
+  --page-link-color: var(--accent-text);
+  --page-visited-link-color: var(--accent-text);
+  --page-external-link-color: var(--accent-text);
+
+  --index-odd-item-bg-color: var(--surface);
+  --index-even-item-bg-color: var(--bg);
+  --index-header-color: var(--uot-blue);
+  --index-separator-color: var(--border-med);
+
+  --header-background-color: var(--surface);
+  --header-separator-color: var(--border);
+  --group-header-separator-color: var(--border);
+  --group-header-color: var(--uot-blue);
+  --footer-foreground-color: var(--text-3);
+  --title-background-color: var(--surface);
+  --title-separator-color: var(--border);
+
+  --blockquote-background-color: var(--accent-bg);
+  --blockquote-border-color: var(--uot-cyan);
+  --scrollbar-thumb-color: var(--border-med);
+  --scrollbar-background-color: var(--bg);
+
+  --icon-background-color: var(--uot-cyan);
+  --icon-folder-border-color: var(--uot-blue);
+  --icon-doc-border-color: var(--uot-blue);
+
+  --memdecl-background-color: var(--surface);
+  --memdecl-foreground-color: var(--text-2);
+  --memdecl-template-color: var(--uot-blue);
+  --memdecl-border-color: var(--border);
+  --memdef-border-color: var(--accent-line);
+  --memdef-title-background-color: var(--accent-bg);
+  --memdef-proto-background-color: #F1F9FC;
+  --memdef-proto-text-color: var(--uot-blue);
+  --memdef-param-name-color: #A32D2D;
+  --memdef-template-color: var(--uot-blue);
+
+  --table-cell-border-color: var(--border-med);
+  --table-header-background-color: var(--uot-blue);
+  --table-header-foreground-color: #FFFFFF;
+
+  --label-background-color: var(--uot-cyan);
+  --label-left-top-border-color: var(--uot-cyan);
+  --label-right-bottom-border-color: var(--accent-line);
+  --label-foreground-color: #FFFFFF;
+
+  --nav-background-color: var(--surface);
+  --nav-foreground-color: var(--uot-blue);
+  --nav-border-color: var(--border);
+  --nav-breadcrumb-separator-color: var(--border);
+  --nav-breadcrumb-active-bg: var(--accent-bg);
+  --nav-breadcrumb-color: var(--uot-blue);
+  --nav-text-normal-color: var(--uot-blue);
+  --nav-menu-button-color: var(--uot-blue);
+  --nav-menu-background-color: var(--surface);
+  --nav-menu-foreground-color: var(--text-2);
+  --nav-menu-active-bg: var(--accent-bg);
+  --nav-menu-active-color: var(--uot-cyan);
+  --nav-arrow-color: var(--border-med);
+  --nav-arrow-selected-color: var(--uot-cyan);
+
+  --toc-background-color: var(--surface);
+  --toc-border-color: var(--border);
+  --toc-header-color: var(--uot-blue);
+
+  --search-filter-highlight-bg-color: var(--uot-blue);
+  --search-results-foreground-color: var(--accent-text);
+  --search-box-border-color: var(--border-med);
+
+  --fragment-background-color: var(--surface);
+  --fragment-border-color: var(--border);
+  --fragment-lineno-link-fg-color: var(--accent-text);
+  --fragment-lineno-link-hover-fg-color: var(--accent-text);
+
+  --font-family-normal: var(--sans);
+  --font-family-title: var(--sans);
+  --font-family-nav: var(--sans);
+  --font-family-toc: var(--sans);
+  --font-family-search: var(--sans);
+  --font-family-monospace: var(--mono);
+}
+
+/* Menu bar sits on the page background, under the breadcrumb */
+#main-nav {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Page titles in U of T Blue, like h1 on the site */
+div.header .title {
+  color: var(--uot-blue);
+  font-weight: 500;
+}
+
+/* ── Side bar (tree view) ──
+   Doxygen's script pins the header and footer to the window and scrolls only
+   the content. The site header and footer are too tall for that, so the whole
+   page scrolls instead and the side bar sticks to the top of the window. The
+   !important rules override the heights the script sets on each element. */
+#side-nav {
+  position: sticky;
+  top: 0;
+  float: left;
+  height: auto !important;
+  max-height: 100vh;
+  /* Divider for when the tree is longer than the content; overlaps the
+     content's own divider by 1px so the two read as one line */
+  border-right: 1px solid var(--border);
+  margin-right: -1px;
+}
+
+#nav-tree {
+  height: auto !important;
+  max-height: 100vh;
+  background-color: var(--surface);
+  border-right: none;
+}
+
+#nav-tree .selected {
+  background-color: var(--accent-bg);
+}
+
+#nav-tree .selected a {
+  color: var(--accent-text);
+}
+
+.ui-resizable-e {
+  background-color: var(--border);
+}
+
+#container {
+  overflow: visible;
+}
+
+/* Divider runs the full length of the content, however short the tree is.
+   #container is a grid, so it already sits beside the floated side bar; the
+   margin the script adds for the side bar would leave a second gap. */
+#doc-content {
+  height: auto !important;
+  margin-left: 0 !important;
+  overflow: visible;
+  border-left: 1px solid var(--border);
+}
+
+/* "On this page" panel on the right sticks the same way, no taller than its
+   contents so short pages stay short */
+#page-nav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+/* Sections in view, marked by the script in footer.html */
+ul.page-outline li.vis {
+  background-color: var(--accent-bg);
+}
+
+/* Doxygen positions the contents absolutely; in flow, the panel takes their height */
+#page-nav-contents {
+  position: static;
+}
+
+/* Footer starts below the tree or the content, whichever is longer. On a
+   long page, the footer is painted over the sticky tree as it scrolls away. */
+#nav-path,
+.site-footer {
+  clear: both;
+  position: relative;
+  z-index: 2;
+}
+
+#nav-path {
+  background: var(--bg);
+}
+
+/* Mobile: no side bars; Doxygen's menu button gives the navigation */
+@media (max-width: 767px) {
+  #side-nav,
+  #page-nav {
+    display: none;
+  }
+
+  #doc-content {
+    border-left: none;
+  }
+
+  #container {
+    grid-template-columns: auto !important;
+  }
+}
+
+/* ── Site header (from uoft_physics_perc_sw.css) ── */
+.site-header {
+  background: var(--uot-blue-dark);
+  border-bottom: 3px solid var(--uot-cyan);
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  height: 120px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-logo-img {
+  height: 100px;
+  width: auto;
+}
+
+/* Title with the version under it; not in the site stylesheet */
+.header-title-block {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  line-height: 1.2;  /* Doxygen's 22px line height is too tight for the 32px title */
+}
+
+.header-version {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.header-board-title {
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+/* ── Breadcrumb bar ── */
+.breadcrumb-bar {
+  background: var(--uot-blue);
+  padding: 0 1.5rem;
+}
+
+.breadcrumb-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.breadcrumb-inner a {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color 0.1s;
+}
+
+.breadcrumb-inner a:hover { color: #fff; }
+
+.breadcrumb-inner .sep   { color: rgba(255, 255, 255, 0.35); }
+
+.breadcrumb-inner .current {
+  color: rgba(255, 255, 255, 0.90);
+  font-weight: 500;
+}
+
+/* ── Site footer ── */
+.site-footer {
+  background: var(--uot-blue-dark);
+  border-top: 3px solid var(--uot-cyan);
+  margin-top: 3rem;
+  padding: 1.5rem;
+}
+
+.footer-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+}
+
+.footer-social-media-list {
+  display: flex;
+  align-items: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  gap: 20px;
+}
+
+.footer-inner a       { font-family: Arial, Helvetica, sans-serif; color: rgba(255, 255, 255, 0.70); text-decoration: underline; }
+.footer-inner a:hover { color: rgba(255, 255, 255, 1); }
+
+/* ── Mobile (from uoft_physics_perc_sw.css) ── */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .header-logo-img {
+    height: 70px;
+  }
+
+  .header-title-block {
+    margin-left: 0;
+    align-items: center;
+  }
+
+  .header-board-title {
+    font-size: 22px;
+  }
+
+  .breadcrumb-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.5rem 0;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
