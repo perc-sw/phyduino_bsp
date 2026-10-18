@@ -29,6 +29,9 @@
 
 namespace stusb4500 {
 
+/// @addtogroup usbpd
+/// @{
+
 /**
  * @brief One sink profile (PDO): a voltage the board accepts and the current it draws.
  */
@@ -97,5 +100,7 @@ uint16_t contractMilliamps();
  * @return Voltage in mV.
  */
 uint32_t vbusMillivolts();
+
+/** @} */
 
 }  // namespace stusb4500

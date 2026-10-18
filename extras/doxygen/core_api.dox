@@ -89,6 +89,19 @@
  * @brief Pin levels and modes, bit order, and the Arduino integer types.
  */
 
+/*
+ * Not part of Common.h: the members are in the variant's stusb4500.h. Defined
+ * here so it comes after the Arduino topics (Topics follow INPUT order).
+ */
+
+/**
+ * @defgroup usbpd USB-PD power
+ * @brief stusb4500: sink profiles, renegotiation and the current contract.
+ *
+ * Needs `#include <stusb4500.h>`. See stusb4500.h for how the profiles work
+ * and the UsbPdPower.ino example.
+ */
+
 /* ============================================================================ */
 /*  Digital I/O                                                                  */
 /* ============================================================================ */
