@@ -3,7 +3,8 @@
  * platform/libraries/<library>/examples/ registered for it, with the formatted
  * description shown above each sketch's source. Doxygen does not read comments
  * in the sketches themselves, so keep each block here in step with that
- * sketch's header comment, with the list on the Examples page and with the
+ * sketch's header comment, with the list on the Examples page, with the
+ * sketches under Examples in DoxygenLayout.xml (the side menu) and with the
  * Included libraries table in docs/index.html.
  *
  * The Examples page replaces Doxygen's own list (hidden in DoxygenLayout.xml),

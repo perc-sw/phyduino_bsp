@@ -4,7 +4,8 @@
   missing, so the whole file is kept. Changes, all in navindex:
   - Doxygen's own Examples list is hidden: it can only show file names
     (AnalogMillivolts.ino). The Examples page in extras/doxygen/examples.dox
-    replaces it, as the last entry, where the hidden list was.
+    replaces it, as the last entry, where the hidden list was, with the
+    sketches under it. Keep that list in step with the Examples page.
   - Related pages are hidden: the only one is that Examples page.
 -->
 <doxygenlayout version="2.0">
@@ -49,7 +50,18 @@
       <tab type="globals" visible="yes" title="" intro=""/>
     </tab>
     <tab type="examples" visible="no" title="" intro=""/>
-    <tab type="user" visible="yes" url="@ref example_sketches" title="Examples"/>
+    <tab type="usergroup" visible="yes" url="@ref example_sketches" title="Examples">
+      <tab type="user" visible="yes" url="@ref AnalogMillivolts.ino" title="Analog Millivolts"/>
+      <tab type="user" visible="yes" url="@ref AnalogAveraging.ino" title="Analog Averaging"/>
+      <tab type="user" visible="yes" url="@ref AnalogDifferential.ino" title="Analog Differential"/>
+      <tab type="user" visible="yes" url="@ref AnalogReadMultiple.ino" title="Analog Read Multiple"/>
+      <tab type="user" visible="yes" url="@ref AnalogBurst.ino" title="Analog Burst"/>
+      <tab type="user" visible="yes" url="@ref AnalogBurstBackground.ino" title="Analog Burst Background"/>
+      <tab type="user" visible="yes" url="@ref UsbPdPower.ino" title="USB-PD Power"/>
+      <tab type="user" visible="yes" url="@ref SpiLoopback.ino" title="SPI Loopback"/>
+      <tab type="user" visible="yes" url="@ref I2CScanner.ino" title="I2C Scanner"/>
+      <tab type="user" visible="yes" url="@ref PeripheralReceiver.ino" title="Peripheral Receiver"/>
+    </tab>
   </navindex>
 
   <!-- Layout definition for a class page -->
