@@ -279,6 +279,11 @@
           <td>After 19: same setup as 14 but Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; plug in the 20 V charger. Then rebuild with Up to 20 V<span class="check-expected">VBUS &asymp; 5 V from plug-in, profiles 5.0V/2.0A; with Up to 20 V, VBUS &asymp; 20 V (menu changes working registers only; <code>r</code> in usbpd_nvm still shows 5 V only)</span></td>
           <td><span class="status todo">To do</span></td>
         </tr>
+        <tr>
+          <td>27 · UsbPdPower</td>
+          <td>Same setup as 14, but Tools &gt; USB-PD Power: 5 V only (default); send 20, then 9, then 5, then 7<span class="check-expected">At start: profiles 5.0V/2.00A, VBUS &asymp; 5 V; 20: &ldquo;Asking for up to 20 V&rdquo;, profiles 5.0V/2.00A 9.0V/1.00A 20.0V/0.50A, VBUS &asymp; 20 V (POK3 lit); 9: VBUS &asymp; 9 V (POK2 lit); 5: VBUS &asymp; 5 V; 7: &ldquo;Send 5, 9, 12, 15 or 20.&rdquo;</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
       </tbody>
     </table>
   </div>

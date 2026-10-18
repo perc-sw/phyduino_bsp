@@ -113,6 +113,32 @@
  */
 
 /**
+ * @example UsbPdPower.ino
+ * Prints the board's USB-PD power profiles, the charger's contract and the
+ * measured VBUS once a second. Send 5, 9, 12, 15 or 20 over Serial to ask a
+ * USB-PD charger for up to that many volts, with stusb4500::boardProfiles()
+ * and stusb4500::setProfiles().
+ *
+ * @par Wiring
+ * A USB-PD charger on the USB-C port for anything above 5 V; a PC port gives
+ * 5 V and no contract (offer 0). With a charger on the port, use Serial1
+ * (D1 TX, D0 RX, 115200) through a USB-serial adapter or a second board
+ * running a serial bridge: the sketch writes to, and reads from, both.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * Asking for up to 12 V
+ * profiles: 5.0V/2.00A 9.0V/1.00A 12.0V/0.83A   contract: offer 3, 830 mA   VBUS: 12.04 V
+ * @endcode
+ *
+ * @warning VBUS also feeds the VIN pin, so VIN follows the contract.
+ *          Disconnect anything on VIN that can't take the voltage asked for.
+ *          The request lasts until power-down; then Tools > USB-PD Power
+ *          applies again.
+ */
+
+/**
  * @example SpiLoopback.ino
  * SPI loopback test: sends a counter with SPI.transfer() every 500 ms and
  * prints the byte that comes back. With MOSI wired to MISO, every byte sent

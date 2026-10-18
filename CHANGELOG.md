@@ -13,8 +13,10 @@ Format: one section per version, newest first. Stage plan: README.md.
 - Upload by copying the UF2 to the BOOTSEL drive, no USB driver needed; picotool as
   fallback (`platform/tools/uf2_upload.*`, ADR 007).
 - SPI and Wire (controller + peripheral) libraries.
-- STUSB4500 USB-PD driver (`stusb4500.h`); default profiles 5 V/2 A, 9 V/1 A,
-  20 V/0.5 A loaded at start-up (working registers only, NVM untouched).
+- STUSB4500 USB-PD driver (`stusb4500.h`); profiles from Tools > USB-PD Power
+  (default 5 V only) loaded at start-up (working registers only, NVM untouched).
+  `UsbPdPower` example in the `Phyduino` library (File > Examples > Phyduino);
+  not yet run on hardware (checklist 27).
 - `sdk-builder/` generating the committed SDK bundle.
 - Release tooling (`package/`) and CI (`.github/`).
 - CMake verification build (`CMakeLists.txt`, `cmake/`): same flags as the
@@ -54,7 +56,7 @@ Format: one section per version, newest first. Stage plan: README.md.
   500 ksps with ADC divider + DMA; A3-A5 timer-paced up to 20 ksps, clock mode
   11 + DMA up to 300 ksps). Variants provide eight `variantAnalog*()` hooks (ADR
   003 extended); `max11635.h` gains averaging, scan, differential and bursts.
-  New bundled `Phyduino` library with six examples (File > Examples > Phyduino).
+  New bundled `Phyduino` library with six analog examples (File > Examples > Phyduino).
   Host-tested; not yet run on hardware (checklist 21-26, 25b is the clock
   mode 11 byte alignment).
 

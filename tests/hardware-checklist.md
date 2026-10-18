@@ -40,6 +40,7 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 16 | `usbpd_status` | Ordinary USB port (no PD) | contract offer 0, VBUS ≈ 5 V |
 | 19 | `usbpd_nvm` | New board, once: USB-PD Power "Use chip's stored settings"; send `r`, then `write5v`; unplug and replug | `r` shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after `write5v` the read-back shows 1 profile, 5 V/2.0 A, "OK: verified". Keep the printed `r` output as the board's backup |
 | 20 | `usbpd_status` | After 19: USB-PD Power "Use chip's stored settings", 20 V charger | VBUS ≈ 5 V from plug-in, profiles 5.0V/2.0A; then rebuilt with Up to 20 V: VBUS ≈ 20 V (the menu changes the working registers only; `r` in `usbpd_nvm` still shows 5 V only) |
+| 27 | `UsbPdPower` | Same setup as 14, but Tools > USB-PD Power: 5 V only (default); send `20`, then `9`, then `5`, then `7` | At start: profiles 5.0V/2.00A, VBUS ≈ 5 V; `20`: "Asking for up to 20 V", profiles 5.0V/2.00A 9.0V/1.00A 20.0V/0.50A, VBUS ≈ 20 V (POK3 lit); `9`: VBUS ≈ 9 V (POK2 lit); `5`: VBUS ≈ 5 V; `7`: "Send 5, 9, 12, 15 or 20." |
 
 ### Analog acquisition (`Phyduino` examples)
 
