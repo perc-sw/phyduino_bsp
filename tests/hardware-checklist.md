@@ -41,6 +41,18 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 19 | `usbpd_nvm` | New board, once: USB-PD Power "Use chip's stored settings"; send `r`, then `write5v`; unplug and replug | `r` shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after `write5v` the read-back shows 1 profile, 5 V/2.0 A, "OK: verified". Keep the printed `r` output as the board's backup |
 | 20 | `usbpd_status` | After 19: USB-PD Power "Use chip's stored settings", 20 V charger | VBUS ≈ 5 V from plug-in, profiles 5.0V/2.0A; then rebuilt with Up to 20 V: VBUS ≈ 20 V (the menu changes the working registers only; `r` in `usbpd_nvm` still shows 5 V only) |
 
+### Analog acquisition (`Phyduino` examples)
+
+| # | Sketch | Setup | Expected |
+|---|---|---|---|
+| 21 | `AnalogMillivolts` | AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200 | Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5 |
+| 22 | `AnalogAveraging` | Potentiometer wiper (or nothing) on A0 and A3; Serial Monitor 115200 | Spread shrinks as averaging rises from 1 to 32, on A0 and A3 |
+| 23 | `AnalogDifferential` | Potentiometer wiper on A3 and A0, A4 and A1 to GND; turn from 0 V up | A3 − A4 matches A3 in `AnalogMillivolts`, below and above 1024 mV (above it, two readings); A0 − A1 matches A0 |
+| 24 | `AnalogReadMultiple` | Serial Plotter 115200; AREF jumper to one analog pin at a time | Six traces; only the jumpered pin's trace rises to ≈ 2048 mV |
+| 25 | `AnalogBurst` | Wire D2 → A0 (sketch plays 500 Hz on D2) | Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048 |
+| 25b | `AnalogBurst` | As 25, but `PIN = A3`, `RATE_HZ = 200000` (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V) | Square wave between ≈ 0 and ≈ 3300 counts, 400 samples per period; edges rounded over ~10 samples (divider and the 10 nF input filter, about 50 µs); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate" ≈ 200000 Hz; afterwards `AnalogMillivolts` still reads A3 correctly |
+| 26 | `AnalogBurstBackground` | Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200 | LED blinks steadily at 2 Hz; ten lines a second; mean matches A3 in `AnalogMillivolts`, RMS of a few tenths of a mV |
+
 ## Wiring diagrams
 
 Tests not listed need no wiring.

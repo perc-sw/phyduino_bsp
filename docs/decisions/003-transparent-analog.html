@@ -51,6 +51,7 @@
 
   <div class="doc-text">
     <p><code>analogRead(A0..A5)</code> works on every header analog pin. Pins with no RP2040 GPIO behind them (Phyduino Pico A3–A5 → MAX11635) are routed by the core to the variant hook <code>variantAnalogRead()</code>.</p>
+    <p>Extended 2026-10-18: the analog acquisition functions (<code>analogReadAveraging()</code>, <code>analogReadMillivolts()</code>, <code>analogReadDifferentialMillivolts()</code>, <code>analogReadMultiple()</code>, <code>analogReadBurst()</code> / <code>analogStartBurst()</code>) work the same way on every analog pin. The core handles RP2040 ADC pins; variant pins go through the <code>variantAnalog*()</code> hooks declared in <code>Arduino.h</code>, which on the Phyduino Pico call the <code>max11635</code> driver.</p>
   </div>
 
   <div class="section-head"><h2>Why</h2></div>
@@ -62,7 +63,7 @@
   <div class="section-head"><h2>Cost</h2></div>
 
   <div class="doc-text">
-    <p>Full-scale voltage differs between pins (3.3 V vs 2.048 V on the Pico), which is documented in <a href="../boards/phyduino_pico.html"><code>docs/boards/phyduino_pico.html</code></a>. The driver must live in the variant (not a library) because the core calls it.</p>
+    <p>Full-scale voltage differs between pins (3.3 V vs 2.048 V on the Pico), which is documented in <a href="../boards/phyduino_pico.html"><code>docs/boards/phyduino_pico.html</code></a>. The driver must live in the variant (not a library) because the core calls it. Every variant must define all eight <code>variantAnalog*()</code> hooks, even with no external ADC (they then return 0 / false).</p>
   </div>
 
 </div><!-- end page-wrap -->

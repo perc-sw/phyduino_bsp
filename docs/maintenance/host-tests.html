@@ -61,7 +61,7 @@
   <div class="ds-table-wrap">
     <table class="ds-table">
       <tbody>
-        <tr><td><code>tests/host/test_*.cpp</code></td><td>One file per area: pins, digital, analog, PWM/tone, time/pulse/shift, interrupts, Serial1/2, SPI, Wire, variant chips, strings/random</td><td></td></tr>
+        <tr><td><code>tests/host/test_*.cpp</code></td><td>One file per area: pins, digital, analog, analog extras (averaging, differential, bursts), PWM/tone, time/pulse/shift, interrupts, Serial1/2, SPI, Wire, variant chips, strings/random</td><td></td></tr>
         <tr><td><code>tests/host/test_support.h</code></td><td>Include in every test: doctest + fake SDK + <code>Arduino.h</code>; <code>HostTest</code> fixture</td><td></td></tr>
         <tr><td><code>tests/host/fake_sdk/</code></td><td><code>fake_sdk.h/.cpp</code>: the SDK functions the code calls, backed by <code>fake::hw</code> (GPIO, ADC, PWM, UART, SPI, I2C, timer, alarms, IRQs)</td><td></td></tr>
         <tr><td><code>tests/host/models/</code></td><td>MAX11635 and STUSB4500 models attached to the fake SPI0 / I2C1</td><td></td></tr>

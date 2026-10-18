@@ -16,3 +16,18 @@ inline uint32_t rescaleBits(uint32_t value, int from_bits, int to_bits) {
     if (from_bits > to_bits)  return value >> (from_bits - to_bits);
     return value << (to_bits - from_bits);
 }
+
+// --- Analog (wiring_analog.cpp, analog_burst.cpp) ----------------------------------
+// Which ADC reads an Arduino pin.
+enum class AnalogSource : uint8_t {
+    None,     // not an analog pin
+    Rp2040,   // RP2040 ADC (GPIO26-29)
+    Variant,  // the board's own ADC, through the variantAnalog*() hooks
+};
+AnalogSource analogSourceOf(pin_size_t pin);
+
+// Current analogReadResolution() setting, in bits.
+int analogReadBits();
+
+// Waits while a burst is using `source`'s ADC (analog_burst.cpp).
+void analogWaitForBurst(AnalogSource source);

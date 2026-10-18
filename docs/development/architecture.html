@@ -87,12 +87,13 @@
         <tr><td>Which GPIO an Arduino pin is</td><td><code>platform/variants/&lt;board&gt;/pins_arduino.h</code> (the only pin map)</td><td></td></tr>
         <tr><td>Board start-up, on-board chips</td><td><code>platform/variants/&lt;board&gt;/variant.cpp</code> (+ chip drivers beside it, e.g. <code>max11635.*</code>, <code>stusb4500.*</code>)</td><td></td></tr>
         <tr><td>Phyduino Pico default USB-PD profiles</td><td><code>kDefaultPowerProfiles</code> in <code>platform/variants/phyduino_pico/variant.cpp</code></td><td></td></tr>
-        <tr><td>An Arduino function (<code>digitalWrite</code>, <code>analogRead</code>, …)</td><td><code>platform/cores/phyduino/wiring_*.cpp</code>, <code>pwm.cpp</code>, <code>tone.cpp</code> (one API area per file)</td><td></td></tr>
+        <tr><td>An Arduino function (<code>digitalWrite</code>, <code>analogRead</code>, …)</td><td><code>platform/cores/phyduino/wiring_*.cpp</code>, <code>pwm.cpp</code>, <code>tone.cpp</code>, <code>analog_burst.cpp</code> (one API area per file)</td><td></td></tr>
         <tr><td><code>Serial</code> (USB) / <code>Serial1</code>, <code>Serial2</code></td><td><code>cores/phyduino/SerialUSB.*</code>, <code>SerialUART.*</code></td><td></td></tr>
         <tr><td>USB name / VID / PID</td><td><code>platform/boards.txt</code>; descriptors in <code>cores/phyduino/usb/usb_descriptors.c</code></td><td></td></tr>
         <tr><td>Compiler flags, upload command</td><td><code>platform/platform.txt</code></td><td></td></tr>
         <tr><td>How the sketch reaches the board</td><td><code>platform/tools/uf2_upload.cmd</code> (Windows), <code>uf2_upload.sh</code> (Linux/macOS)</td><td></td></tr>
         <tr><td>SPI / Wire</td><td><code>platform/libraries/SPI</code>, <code>platform/libraries/Wire</code></td><td></td></tr>
+        <tr><td>Examples for core features (File &gt; Examples &gt; Phyduino)</td><td><code>platform/libraries/Phyduino/examples/</code> (examples only, no code; also listed in <code>extras/doxygen/examples.dox</code>)</td><td></td></tr>
         <tr><td>SDK settings (flash, boot2, clocks) or which SDK libraries are included</td><td><code>sdk-builder/boards/&lt;board&gt;.h</code>, <code>sdk-builder/CMakeLists.txt</code> → regenerate bundle</td><td></td></tr>
         <tr><td>TinyUSB class counts / buffers</td><td><code>sdk-builder/config/tusb_config.h</code> → regenerate bundle</td><td></td></tr>
         <tr><td>Release packaging / tool versions</td><td><code>package/make_release.py</code>, <code>package/tools.json</code></td><td></td></tr>
@@ -146,7 +147,7 @@
 
   <div class="doc-text">
     <ul>
-      <li>Hooks a variant must provide (<code>initVariant</code>, <code>variantAnalogRead</code>) have <strong>no weak default</strong> in the core. The core is linked from an archive, where a weak default could silently win; a missing hook is a link error instead.</li>
+      <li>Hooks a variant must provide (<code>initVariant</code> and the <code>variantAnalog*</code> functions in <code>Arduino.h</code>) have <strong>no weak default</strong> in the core. The core is linked from an archive, where a weak default could silently win; a missing hook is a link error instead.</li>
       <li>Upstream code is untouched: <code>extern/</code> (submodules) and <code>platform/cores/phyduino/api/</code> (vendored ArduinoCore-API, see <a href="../../platform/cores/phyduino/api/UPSTREAM.md"><code>UPSTREAM.md</code></a>).</li>
       <li>Design decisions and their reasons: <a href="../decisions/index.html"><code>docs/decisions/</code></a>.</li>
       <li>Step-by-step recipes for recurring jobs: <a href="../maintenance/index.html"><code>docs/maintenance/</code></a>.</li>

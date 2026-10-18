@@ -73,7 +73,7 @@
         <p><strong>Variant</strong>: <code>platform/variants/&lt;board&gt;/</code></p>
         <ul>
           <li><code>pins_arduino.h</code>: the pin table comment, <code>PINS_COUNT</code>, <code>PHYDUINO_PIN_TO_GPIO</code>, named pins, Serial/SPI/Wire pins and instances, on-board peripheral pins.</li>
-          <li><code>variant.cpp</code>: must define <code>initVariant()</code> and <code>variantAnalogRead()</code> (return 0 if the board has no external analog inputs).</li>
+          <li><code>variant.cpp</code>: must define <code>initVariant()</code> and the analog hooks declared in <code>Arduino.h</code>: <code>variantAnalogRead()</code>, <code>variantAnalogFullScaleMillivolts()</code>, <code>variantAnalogReadAveraging()</code>, <code>variantAnalogReadMultiple()</code>, <code>variantAnalogReadDifferential()</code>, <code>variantAnalogStartBurst()</code>, <code>variantAnalogBurstDone()</code> and <code>variantAnalogStopBurst()</code>. A board with no external analog inputs returns 0 / false from each (<code>variantAnalogBurstDone()</code> returns true).</li>
         </ul>
       </div>
     </li>

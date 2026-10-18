@@ -27,6 +27,8 @@ typedef unsigned int uint;
 #define PICO_LOWEST_IRQ_PRIORITY 0xFF
 #define UART0_IRQ 20
 #define UART1_IRQ 21
+#define DREQ_SPI0_TX 16
+#define DREQ_ADC 36
 
 enum gpio_function_t {
     GPIO_FUNC_SPI = 1, GPIO_FUNC_UART = 2, GPIO_FUNC_I2C = 3, GPIO_FUNC_PWM = 4,
@@ -113,6 +115,7 @@ struct Spi {
     uint baud = 0;
     spi_cpol_t cpol = SPI_CPOL_0;
     spi_cpha_t cpha = SPI_CPHA_0;
+    uint data_bits = 8;
     std::vector<uint8_t> sent;   // every byte clocked out
     // Byte clocked in for each byte clocked out. Default: returns 0.
     std::function<uint8_t(uint8_t out)> device;
@@ -139,11 +142,34 @@ struct Alarm {
     void* data;
 };
 
+struct DmaChannel {
+    bool claimed = false;
+    bool started = false;
+    bool done = false;
+    uint dreq = 0;
+    bool read_increment = true;
+    bool write_increment = false;
+    volatile void* write = nullptr;
+    const volatile void* read = nullptr;
+    uint32_t count = 0;
+};
+
 struct Hardware {
     Gpio gpio[NUM_BANK0_GPIOS];
     bool adc_initialised = false;
     uint adc_selected = 0;
     uint16_t adc_values[5] = {0, 0, 0, 0, 0};   // 12-bit, per ADC input
+    // Optional: value of each ADC conversion (overrides adc_values), e.g. a ramp.
+    std::function<uint16_t(uint input)> adc_sample;
+    uint32_t adc_conversions = 0;   // adc_read() calls plus DMA samples
+    bool adc_fifo_enabled = false;
+    bool adc_fifo_dreq = false;
+    float adc_clkdiv = 0;
+    float adc_clkdiv_at_run = 0;    // divider when adc_run(true) was last called
+    bool adc_running = false;
+    DmaChannel dma[12];
+    // DMA transfers finish this many dma_channel_is_busy() polls after starting.
+    int dma_busy_polls = 0;
     PwmSlice pwm[8];
     Uart uart[2];
     Spi spi[2];
@@ -153,6 +179,7 @@ struct Hardware {
     uint32_t us_per_time_read = 1;  // time moves on each time_us_*() read, so busy-waits end
     std::vector<Alarm> alarms;
     alarm_id_t next_alarm_id = 1;
+    bool in_alarm = false;          // alarms do not nest, like interrupts of one priority
     irq_handler_t irq_handlers[32] = {};
     bool irq_enabled[32] = {};
     gpio_irq_callback_t gpio_callback = nullptr;
@@ -186,6 +213,18 @@ void busy_wait_at_least_cycles(uint32_t cycles);
 alarm_id_t add_alarm_in_ms(uint32_t ms, alarm_callback_t callback, void* data, bool fire_if_past);
 alarm_id_t add_alarm_in_us(uint64_t us, alarm_callback_t callback, void* data, bool fire_if_past);
 bool cancel_alarm(alarm_id_t id);
+struct repeating_timer;
+typedef struct repeating_timer repeating_timer_t;
+typedef bool (*repeating_timer_callback_t)(repeating_timer_t* rt);
+struct repeating_timer {
+    int64_t delay_us;
+    repeating_timer_callback_t callback;
+    void* user_data;
+    alarm_id_t alarm_id;
+};
+bool add_repeating_timer_us(int64_t delay_us, repeating_timer_callback_t callback, void* user_data,
+                            repeating_timer_t* out);
+bool cancel_repeating_timer(repeating_timer_t* timer);
 
 // --- hardware/gpio.h ---------------------------------------------------------------
 void gpio_init(uint gpio);
@@ -205,6 +244,36 @@ void adc_init();
 void adc_gpio_init(uint gpio);
 void adc_select_input(uint input);
 uint16_t adc_read();
+void adc_fifo_setup(bool en, bool dreq_en, uint16_t dreq_thresh, bool err_in_fifo, bool byte_shift);
+void adc_fifo_drain();
+void adc_set_clkdiv(float clkdiv);
+void adc_run(bool run);
+namespace fake {
+struct AdcHw { uint32_t fifo; };
+extern AdcHw adc_regs;
+}
+#define adc_hw (&fake::adc_regs)
+
+// --- hardware/dma.h ---------------------------------------------------------------------
+enum dma_channel_transfer_size { DMA_SIZE_8 = 0, DMA_SIZE_16 = 1, DMA_SIZE_32 = 2 };
+struct dma_channel_config {
+    uint size;
+    bool read_increment;
+    bool write_increment;
+    uint dreq;
+};
+int dma_claim_unused_channel(bool required);
+void dma_channel_unclaim(uint channel);
+dma_channel_config dma_channel_get_default_config(uint channel);
+void channel_config_set_transfer_data_size(dma_channel_config* c, dma_channel_transfer_size size);
+void channel_config_set_read_increment(dma_channel_config* c, bool incr);
+void channel_config_set_write_increment(dma_channel_config* c, bool incr);
+void channel_config_set_dreq(dma_channel_config* c, uint dreq);
+void dma_channel_configure(uint channel, const dma_channel_config* config, volatile void* write_addr,
+                           const volatile void* read_addr, uint transfer_count, bool trigger);
+void dma_start_channel_mask(uint32_t chan_mask);
+bool dma_channel_is_busy(uint channel);
+void dma_channel_abort(uint channel);
 
 // --- hardware/pwm.h / clocks.h -------------------------------------------------------
 uint pwm_gpio_to_slice_num(uint gpio);
@@ -248,6 +317,13 @@ void spi_set_format(spi_inst_t* spi, uint bits, spi_cpol_t cpol, spi_cpha_t cpha
 int spi_write_blocking(spi_inst_t* spi, const uint8_t* src, size_t len);
 int spi_read_blocking(spi_inst_t* spi, uint8_t repeated_tx, uint8_t* dst, size_t len);
 int spi_write_read_blocking(spi_inst_t* spi, const uint8_t* src, uint8_t* dst, size_t len);
+int spi_write16_read16_blocking(spi_inst_t* spi, const uint16_t* src, uint16_t* dst, size_t len);
+bool spi_is_readable(spi_inst_t* spi);
+uint spi_get_dreq(spi_inst_t* spi, bool is_tx);
+namespace fake {
+struct SpiHw { uint32_t dr; };
+}
+fake::SpiHw* spi_get_hw(spi_inst_t* spi);
 
 // --- hardware/i2c.h / pico/i2c_slave.h -------------------------------------------------
 uint i2c_init(i2c_inst_t* i2c, uint baud);

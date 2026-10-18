@@ -18,6 +18,7 @@ set(FAKE_SDK_HEADERS
     pico/i2c_slave.h
     hardware/adc.h
     hardware/clocks.h
+    hardware/dma.h
     hardware/gpio.h
     hardware/i2c.h
     hardware/irq.h

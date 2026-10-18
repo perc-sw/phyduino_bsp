@@ -18,31 +18,63 @@ void Max11635Model::attach() {
     fake::hw.on_gpio_put = [this](unsigned gpio, bool value) { onGpioPut(gpio, value); };
 }
 
+uint16_t Max11635Model::convertChannel(uint8_t channel) {
+    auto value = [this](uint8_t ch) -> int { return sample ? sample(ch) : channel_value[ch]; };
+    if (channel > 3) return 0;
+    const uint8_t pair_bit = static_cast<uint8_t>(0x80 >> (channel / 2));
+    if (channel % 2 == 0 && (unipolar_register & pair_bit)) {          // unipolar wins
+        const int diff = value(channel) - value(channel + 1);
+        return static_cast<uint16_t>(diff < 0 ? 0 : diff > 4095 ? 4095 : diff);
+    }
+    if (channel % 2 == 0 && (bipolar_register & pair_bit)) {           // two's complement
+        int diff = value(channel) - value(channel + 1);
+        diff = diff < -2048 ? -2048 : diff > 2047 ? 2047 : diff;
+        return static_cast<uint16_t>(diff & 0x0FFF);
+    }
+    return static_cast<uint16_t>(value(channel) & 0x0FFF);
+}
+
+void Max11635Model::pushResult(uint16_t result) {
+    out_.push_back(static_cast<uint8_t>(result >> 8));
+    out_.push_back(static_cast<uint8_t>(result));
+    conversions++;
+}
+
 uint8_t Max11635Model::onByte(uint8_t out) {
     if (fake::hw.gpio[kAdcCs].out_level) return 0;  // not selected
 
-    if (result_bytes_left_ > 0) {                   // clocking out a result
-        result_bytes_left_--;
-        const uint8_t b = result_bytes_left_ == 1 ? static_cast<uint8_t>(result_ >> 8)
-                                                  : static_cast<uint8_t>(result_);
-        if (result_bytes_left_ == 0) fake::hw.gpio[kAdcEoc].input_level = true;
-        return b;
+    // DOUT shifts out the oldest waiting byte while DIN shifts in `out`.
+    uint8_t reply = 0;
+    if (!out_.empty()) {
+        reply = out_.front();
+        out_.pop_front();
+        if (out_.empty() && !clockMode11()) fake::hw.gpio[kAdcEoc].input_level = true;
     }
-    if (expect_unipolar_byte_) {
-        expect_unipolar_byte_ = false;
-        unipolar_register = out;
-        return 0;
+
+    if (expect_ != Expect::Command) {                // data byte after a setup byte
+        (expect_ == Expect::Unipolar ? unipolar_register : bipolar_register) = out;
+        expect_ = Expect::Command;
+        return reply;
     }
+    if (out == 0) return reply;                      // read clocks, not a command
+
     commands.push_back(out);
     if (out & 0x80) {                                // conversion register
-        channel_ = (out >> 3) & 0x0F;
+        channel_ = (out >> 3) & 0x07;
+        scan_ = (out >> 1) & 0x03;
+        if (clockMode11() && respond) pushResult(convertChannel(channel_));
     } else if ((out & 0xC0) == 0x40) {               // setup register
         setup_register = out;
-        expect_unipolar_byte_ = (out & 0x03) == 0x02;
+        if ((out & 0x03) == 0x02) expect_ = Expect::Unipolar;
+        if ((out & 0x03) == 0x03) expect_ = Expect::Bipolar;
+    } else if ((out & 0xE0) == 0x20) {               // averaging register
+        averaging_register = out;
     } else if ((out & 0xF0) == 0x10) {               // reset register
-        if ((out & 0x08) == 0) resets++;
+        out_.clear();
+        if (out & 0x08) fifo_resets++;
+        else            resets++;
     }
-    return 0;
+    return reply;
 }
 
 void Max11635Model::onGpioPut(unsigned gpio, bool value) {
@@ -51,9 +83,15 @@ void Max11635Model::onGpioPut(unsigned gpio, bool value) {
         cnvst_low_ = true;
     } else if (cnvst_low_) {                         // rising edge ends the CNVST pulse
         cnvst_low_ = false;
-        if (!respond) return;
-        result_ = channel_ < 4 ? (channel_value[channel_] & 0x0FFF) : 0;
-        result_bytes_left_ = 2;
+        cnvst_pulses++;
+        if (!respond || clockMode11()) return;
+        if (scan_ == 0) {                            // channels 0..N
+            for (uint8_t ch = 0; ch <= channel_; ch++) pushResult(convertChannel(ch));
+        } else if (scan_ == 1) {                     // channels N..3
+            for (uint8_t ch = channel_; ch <= 3; ch++) pushResult(convertChannel(ch));
+        } else {                                     // N once (scan 11; 10 not modelled)
+            pushResult(convertChannel(channel_));
+        }
         fake::hw.gpio[kAdcEoc].input_level = false;  // conversion done
     }
 }

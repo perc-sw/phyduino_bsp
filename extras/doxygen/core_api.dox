@@ -33,10 +33,14 @@
 
 /**
  * @defgroup core_analog Analog I/O
- * @brief analogRead(), analogWrite() (PWM) and their settings.
+ * @brief analogRead(), analogWrite() (PWM) and their settings, plus
+ *        averaging, millivolts, differential, several pins at once and
+ *        fixed-rate bursts on every analog pin.
  *
  * A0-A2 use the RP2040 ADC (0-3.3 V); A3-A5 use the on-board MAX11635 ADC
- * (0-2.048 V). analogWrite() is PWM and works on every pin except A3-A5.
+ * (0-2.048 V). Every function here works on all six, so a sketch does not
+ * need to know which ADC a pin uses. analogWrite() is PWM and works on every
+ * pin except A3-A5. Examples: File → Examples → Phyduino.
  */
 
 /**

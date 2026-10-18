@@ -7,6 +7,112 @@
  */
 
 /**
+ * @example AnalogMillivolts.ino
+ * Prints the voltage on every analog pin, in millivolts, once a second, and
+ * the full scale of each pin at start-up.
+ *
+ * A0-A2 (RP2040 ADC) read 0-3300 mV and A3-A5 (on-board MAX11635) read
+ * 0-2048 mV; analogReadMillivolts() and analogFullScaleMillivolts() handle
+ * the difference, so the same code works on every pin.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * A0 1650 mV   A1 3 mV   A2 0 mV   A3 1024 mV   A4 0 mV   A5 0 mV
+ * @endcode
+ */
+
+/**
+ * @example AnalogAveraging.ino
+ * Shows how averaging steadies a reading: for averaging 1, 4, 8, 16 and 32,
+ * takes 100 readings of A0 and A3 and prints the lowest, the highest and the
+ * spread, in 12-bit ADC steps.
+ *
+ * analogReadAveraging() applies to every analog pin: A3-A5 average inside
+ * the external ADC, A0-A2 take the samples one after another.
+ *
+ * @par Wiring
+ * Optional: a steady voltage, e.g. a potentiometer wiper, on A0 (0-3.3 V)
+ * and A3 (0-2.048 V).
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * Averaging 1:   A0 2041-2058 (spread 17)   A3 1022-1025 (spread 3)
+ * Averaging 32:   A0 2048-2050 (spread 2)   A3 1023-1023 (spread 0)
+ * @endcode
+ */
+
+/**
+ * @example AnalogDifferential.ino
+ * Measures the voltage between two pins twice a second, with
+ * analogReadDifferentialMillivolts():
+ * - A3 - A4: true differential; the on-board ADC samples both pins at the
+ *   same instant, so noise common to both cancels. ±1024 mV in 0.5 mV steps.
+ * - A0 - A1: computed from two readings a few µs apart; fine for slow signals.
+ *
+ * @par Wiring
+ * The two points to measure between, e.g. the ends of a resistor, on A3 and
+ * A4 (each 0-2.048 V) or A0 and A1 (each 0-3.3 V).
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, for example:
+ * @code{.unparsed}
+ * A3 - A4: 251 mV    A0 - A1: -12 mV
+ * @endcode
+ */
+
+/**
+ * @example AnalogReadMultiple.ino
+ * Reads all six analog pins together with analogReadMultiple() and streams
+ * them, in millivolts, to the Serial Plotter 20 times a second. A3-A5 are
+ * read in one scan of the external ADC, A0-A2 back to back on the RP2040 ADC.
+ *
+ * @par Output
+ * Tools → Serial Plotter at 115200 baud, one line per reading:
+ * @code{.unparsed}
+ * A0:1650,A1:3,A2:0,A3:1024,A4:0,A5:0
+ * @endcode
+ */
+
+/**
+ * @example AnalogBurst.ino
+ * Captures 500 samples of A0 at 20000 samples per second with
+ * analogReadBurst(), plots them in the Serial Plotter and prints the rate,
+ * lowest, highest and mean. The hardware takes the samples at evenly spaced
+ * times, so the plot shows the true waveform.
+ *
+ * @par Wiring
+ * A wire from D2 to A0: the sketch plays a 500 Hz test tone on D2. Or a
+ * signal generator on A0 (0-3.3 V), and remove the tone() line.
+ *
+ * @par Output
+ * Tools → Serial Plotter at 115200 baud: a square wave, then a line such as
+ * @code{.unparsed}
+ * Rate 20000 Hz, lowest 3, highest 4093, mean 2049
+ * @endcode
+ *
+ * @par Notes
+ * Highest rates: A0-A2 500000 samples/s, A3-A5 300000 samples/s. Change
+ * `PIN`, `RATE_HZ` and `SAMPLES` at the top of the sketch.
+ */
+
+/**
+ * @example AnalogBurstBackground.ino
+ * Samples A3 continuously in the background with analogStartBurst() and
+ * analogBurstDone(), in blocks of 1000 samples at 10000 samples per second.
+ * One buffer fills while the other is processed ("double buffering"), and
+ * the built-in LED blinks to show that loop() is never blocked. Prints the
+ * mean and the RMS of each block, in millivolts.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud, ten lines a second, for example:
+ * @code{.unparsed}
+ * Mean 1023.6 mV, RMS 0.41 mV
+ * @endcode
+ */
+
+/**
  * @example SpiLoopback.ino
  * SPI loopback test: sends a counter with SPI.transfer() every 500 ms and
  * prints the byte that comes back. With MOSI wired to MISO, every byte sent

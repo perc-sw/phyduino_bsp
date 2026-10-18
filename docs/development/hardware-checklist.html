@@ -283,6 +283,49 @@
     </table>
   </div>
 
+  <div class="section-head"><h2>Analog acquisition (Phyduino examples)</h2></div>
+  <div class="ds-table-wrap">
+    <table class="ds-table">
+      <tbody>
+        <tr>
+          <td>21 · AnalogMillivolts</td>
+          <td>AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200<span class="check-expected">Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>22 · AnalogAveraging</td>
+          <td>Potentiometer wiper (or nothing) on A0 and A3; Serial Monitor 115200<span class="check-expected">Spread shrinks as averaging rises from 1 to 32, on A0 and A3</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>23 · AnalogDifferential</td>
+          <td>Potentiometer wiper on A3 and A0, A4 and A1 to GND; turn from 0 V up<span class="check-expected">A3 − A4 matches A3 in <code>AnalogMillivolts</code>, below and above 1024 mV (above it, two readings); A0 − A1 matches A0</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>24 · AnalogReadMultiple</td>
+          <td>Serial Plotter 115200; AREF jumper to one analog pin at a time<span class="check-expected">Six traces; only the jumpered pin's trace rises to ≈ 2048 mV</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>25 · AnalogBurst</td>
+          <td>Wire D2 → A0 (sketch plays 500 Hz on D2)<span class="check-expected">Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>25b · AnalogBurst</td>
+          <td>As 25, but <code>PIN = A3</code>, <code>RATE_HZ = 200000</code> (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V)<span class="check-expected">Square wave between ≈ 0 and ≈ 3300 counts, 400 samples per period; edges rounded over ~10 samples (divider and the 10 nF input filter, about 50 µs); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate" ≈ 200000 Hz; afterwards <code>AnalogMillivolts</code> still reads A3 correctly</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+        <tr>
+          <td>26 · AnalogBurstBackground</td>
+          <td>Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200<span class="check-expected">LED blinks steadily at 2 Hz; ten lines a second; mean matches A3 in <code>AnalogMillivolts</code>, RMS of a few tenths of a mV</span></td>
+          <td><span class="status todo">To do</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="section-head"><h2>Notes</h2></div>
   <div class="ds-table-wrap">
     <table class="ds-table">

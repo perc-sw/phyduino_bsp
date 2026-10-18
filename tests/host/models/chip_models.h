@@ -9,27 +9,47 @@
 #pragma once
 
 #include <cstdint>
+#include <deque>
+#include <functional>
 #include <vector>
 
 /// MAX11635 12-bit ADC on SPI0 (CS GPIO21, CNVST GPIO18, EOC GPIO19).
-/// Conversion: command byte 1cccc11x selects channel; a CNVST low pulse
-/// converts; EOC goes low; the next two bytes read clock out the 12-bit result.
+///
+/// Clock mode 00: the conversion register (1 cccc ss x) selects channel N and
+/// scan mode (11 = N once, 00 = channels 0..N); a CNVST low pulse converts;
+/// EOC goes low; the following bytes read clock the results out of the FIFO,
+/// 2 bytes each. Unipolar/bipolar registers (after a setup byte with DIFFSEL
+/// 10/11) make AIN0/AIN1 or AIN2/AIN3 a differential pair.
+///
+/// Clock mode 11 (setup CKSEL = 11): each conversion byte starts a
+/// conversion whose 16-bit result comes out on the next two bytes clocked,
+/// while CS stays low.
 struct Max11635Model {
-    uint16_t channel_value[4] = {0, 0, 0, 0};   // 12-bit result per channel
+    uint16_t channel_value[4] = {0, 0, 0, 0};   // 12-bit single-ended result per channel
+    /// Optional: value of each conversion (overrides channel_value), e.g. a ramp.
+    std::function<uint16_t(uint8_t channel)> sample;
     bool respond = true;                         // false: chip missing (EOC never falls)
-    std::vector<uint8_t> commands;               // command bytes received (not read clocks)
+    std::vector<uint8_t> commands;               // command bytes received (not data or read clocks)
     uint8_t setup_register = 0;
-    uint8_t unipolar_register = 0xFF;
+    uint8_t unipolar_register = 0;              // power-up state: every register 0
+    uint8_t bipolar_register = 0;
+    uint8_t averaging_register = 0;
     int resets = 0;
+    int fifo_resets = 0;
+    int cnvst_pulses = 0;
+    int conversions = 0;                         // results produced (each averaged result counts once)
 
     void attach();   // hooks into fake::hw; call after fake::reset()
 
 private:
     uint8_t channel_ = 0;
-    bool expect_unipolar_byte_ = false;
-    int result_bytes_left_ = 0;
-    uint16_t result_ = 0;
+    uint8_t scan_ = 3;
+    enum class Expect { Command, Unipolar, Bipolar } expect_ = Expect::Command;
+    std::deque<uint8_t> out_;                    // bytes waiting on DOUT
     bool cnvst_low_ = false;
+    bool clockMode11() const { return (setup_register & 0x30) == 0x30; }
+    uint16_t convertChannel(uint8_t channel);
+    void pushResult(uint16_t result);
     uint8_t onByte(uint8_t out);
     void onGpioPut(unsigned gpio, bool value);
 };

@@ -12,7 +12,9 @@ uart_inst_t uart_instances[2] = {{0}, {1}};
 spi_inst_t  spi_instances[2]  = {{0}, {1}};
 i2c_inst_t  i2c_instances[2]  = {{0}, {1}};
 Hardware hw;
+AdcHw adc_regs = {0};
 static UartHw uart_hw[2] = {{{0}}, {{1}}};
+static SpiHw spi_hw[2] = {{0}, {0}};
 
 void reset() {
     hw = Hardware{};
@@ -20,6 +22,10 @@ void reset() {
 
 void advance_us(uint64_t us) {
     const uint64_t target = hw.now_us + us;
+    if (hw.in_alarm) {           // time read inside an alarm callback: no nested alarms
+        hw.now_us = target;
+        return;
+    }
     for (;;) {
         // Earliest alarm due by `target`.
         auto due = std::min_element(hw.alarms.begin(), hw.alarms.end(),
@@ -28,12 +34,14 @@ void advance_us(uint64_t us) {
         const Alarm alarm = *due;
         hw.alarms.erase(due);
         hw.now_us = std::max(hw.now_us, alarm.at_us);
+        hw.in_alarm = true;
         const int64_t again = alarm.callback(alarm.id, alarm.data);
+        hw.in_alarm = false;
         if (again > 0) {
             hw.alarms.push_back({alarm.id, alarm.at_us + static_cast<uint64_t>(again), alarm.callback, alarm.data});
         }
     }
-    hw.now_us = target;
+    hw.now_us = std::max(hw.now_us, target);
 }
 
 void raise_irq(uint irq) {
@@ -85,6 +93,21 @@ alarm_id_t add_alarm_in_us(uint64_t us, alarm_callback_t callback, void* data, b
 alarm_id_t add_alarm_in_ms(uint32_t ms, alarm_callback_t callback, void* data, bool fire_if_past) {
     return add_alarm_in_us(static_cast<uint64_t>(ms) * 1000, callback, data, fire_if_past);
 }
+static int64_t repeatingTimerAlarm(alarm_id_t, void* data) {
+    auto* timer = static_cast<repeating_timer_t*>(data);
+    const int64_t period = timer->delay_us < 0 ? -timer->delay_us : timer->delay_us;
+    return timer->callback(timer) ? period : 0;
+}
+bool add_repeating_timer_us(int64_t delay_us, repeating_timer_callback_t callback, void* user_data,
+                            repeating_timer_t* out) {
+    out->delay_us = delay_us;
+    out->callback = callback;
+    out->user_data = user_data;
+    out->alarm_id = add_alarm_in_us(static_cast<uint64_t>(delay_us < 0 ? -delay_us : delay_us),
+                                    repeatingTimerAlarm, out, true);
+    return true;
+}
+bool cancel_repeating_timer(repeating_timer_t* timer) { return cancel_alarm(timer->alarm_id); }
 bool cancel_alarm(alarm_id_t id) {
     const auto before = hw.alarms.size();
     hw.alarms.erase(std::remove_if(hw.alarms.begin(), hw.alarms.end(),
@@ -128,7 +151,98 @@ void adc_gpio_init(uint gpio) {
     gpio_disable_pulls(gpio);
 }
 void adc_select_input(uint input) { hw.adc_selected = input; }
-uint16_t adc_read() { return hw.adc_values[hw.adc_selected]; }
+static uint16_t adcConvert() {
+    hw.adc_conversions++;
+    return hw.adc_sample ? hw.adc_sample(hw.adc_selected) : hw.adc_values[hw.adc_selected];
+}
+uint16_t adc_read() { return adcConvert(); }
+void adc_fifo_setup(bool en, bool dreq_en, uint16_t, bool, bool) {
+    hw.adc_fifo_enabled = en;
+    hw.adc_fifo_dreq = dreq_en;
+}
+void adc_fifo_drain() {}
+void adc_set_clkdiv(float clkdiv) { hw.adc_clkdiv = clkdiv; }
+void adc_run(bool run) {
+    hw.adc_running = run;
+    if (run) hw.adc_clkdiv_at_run = hw.adc_clkdiv;
+}
+
+// --- dma ---------------------------------------------------------------------------------
+// Transfers run all at once when polled: the ADC FIFO (DREQ_ADC) fills the
+// buffer from adc_sample/adc_values; an SPI RX channel runs together with the
+// TX channel of the same SPI, 16-bit frames through the SPI device.
+static uint16_t spiTransfer16(int index, uint16_t out);
+
+static int polls_left[12] = {};
+int dma_claim_unused_channel(bool) {
+    for (int i = 0; i < 12; i++) {
+        if (!hw.dma[i].claimed) {
+            hw.dma[i] = fake::DmaChannel{};
+            hw.dma[i].claimed = true;
+            polls_left[i] = 0;
+            return i;
+        }
+    }
+    return -1;
+}
+void dma_channel_unclaim(uint channel) { hw.dma[channel].claimed = false; }
+dma_channel_config dma_channel_get_default_config(uint) { return {DMA_SIZE_32, true, false, 0x3F}; }
+void channel_config_set_transfer_data_size(dma_channel_config* c, dma_channel_transfer_size size) { c->size = size; }
+void channel_config_set_read_increment(dma_channel_config* c, bool incr) { c->read_increment = incr; }
+void channel_config_set_write_increment(dma_channel_config* c, bool incr) { c->write_increment = incr; }
+void channel_config_set_dreq(dma_channel_config* c, uint dreq) { c->dreq = dreq; }
+void dma_channel_configure(uint channel, const dma_channel_config* config, volatile void* write_addr,
+                           const volatile void* read_addr, uint transfer_count, bool trigger) {
+    auto& c = hw.dma[channel];
+    c.dreq = config->dreq;
+    c.read_increment = config->read_increment;
+    c.write_increment = config->write_increment;
+    c.write = write_addr;
+    c.read = read_addr;
+    c.count = transfer_count;
+    c.done = false;
+    c.started = trigger;
+}
+void dma_start_channel_mask(uint32_t mask) {
+    for (int i = 0; i < 12; i++) {
+        if (mask & (1u << i)) hw.dma[i].started = true;
+    }
+}
+bool dma_channel_is_busy(uint channel) {
+    auto& c = hw.dma[channel];
+    if (!c.started || c.done) return false;
+    if (polls_left[channel] < hw.dma_busy_polls) {
+        polls_left[channel]++;
+        return true;
+    }
+    polls_left[channel] = 0;
+    auto* out = static_cast<volatile uint16_t*>(c.write);
+    if (c.dreq == DREQ_ADC) {
+        if (!hw.adc_running || !hw.adc_fifo_dreq) return true;
+        for (uint32_t i = 0; i < c.count; i++) out[c.write_increment ? i : 0] = adcConvert();
+    } else if (c.dreq >= DREQ_SPI0_TX && c.dreq < DREQ_SPI0_TX + 4 && (c.dreq - DREQ_SPI0_TX) % 2 == 1) {
+        const uint tx_dreq = c.dreq - 1;
+        fake::DmaChannel* tx = nullptr;
+        for (auto& other : hw.dma) {
+            if (other.claimed && other.started && !other.done && other.dreq == tx_dreq) tx = &other;
+        }
+        if (tx == nullptr) return true;
+        const int index = static_cast<int>(tx_dreq - DREQ_SPI0_TX) / 2;
+        const auto* in = static_cast<const volatile uint16_t*>(tx->read);
+        for (uint32_t i = 0; i < c.count; i++) {
+            out[c.write_increment ? i : 0] = spiTransfer16(index, in[tx->read_increment ? i : 0]);
+        }
+        tx->done = true;
+    } else {
+        return true;  // nothing paces it in the fake
+    }
+    c.done = true;
+    return false;
+}
+void dma_channel_abort(uint channel) {
+    hw.dma[channel].started = false;
+    polls_left[channel] = 0;
+}
 
 // --- pwm / clocks --------------------------------------------------------------------------
 uint pwm_gpio_to_slice_num(uint gpio) { return (gpio >> 1) & 7; }
@@ -180,7 +294,8 @@ uint spi_init(spi_inst_t* spi, uint baud) {
 }
 void spi_deinit(spi_inst_t* spi) { hw.spi[spi->index].enabled = false; }
 uint spi_set_baudrate(spi_inst_t* spi, uint baud) { hw.spi[spi->index].baud = baud; return baud; }
-void spi_set_format(spi_inst_t* spi, uint, spi_cpol_t cpol, spi_cpha_t cpha, spi_order_t) {
+void spi_set_format(spi_inst_t* spi, uint bits, spi_cpol_t cpol, spi_cpha_t cpha, spi_order_t) {
+    hw.spi[spi->index].data_bits = bits;
     hw.spi[spi->index].cpol = cpol;
     hw.spi[spi->index].cpha = cpha;
 }
@@ -196,6 +311,21 @@ int spi_write_read_blocking(spi_inst_t* spi, const uint8_t* src, uint8_t* dst, s
     for (size_t i = 0; i < len; i++) dst[i] = spiTransfer(spi, src[i]);  // src == dst is allowed
     return static_cast<int>(len);
 }
+
+static uint16_t spiTransfer16(int index, uint16_t out) {
+    const uint8_t high = spiTransfer(&fake::spi_instances[index], static_cast<uint8_t>(out >> 8));
+    const uint8_t low = spiTransfer(&fake::spi_instances[index], static_cast<uint8_t>(out));
+    return static_cast<uint16_t>(high << 8 | low);
+}
+int spi_write16_read16_blocking(spi_inst_t* spi, const uint16_t* src, uint16_t* dst, size_t len) {
+    for (size_t i = 0; i < len; i++) dst[i] = spiTransfer16(spi->index, src[i]);
+    return static_cast<int>(len);
+}
+bool spi_is_readable(spi_inst_t*) { return false; }
+uint spi_get_dreq(spi_inst_t* spi, bool is_tx) {
+    return DREQ_SPI0_TX + 2u * static_cast<uint>(spi->index) + (is_tx ? 0u : 1u);
+}
+fake::SpiHw* spi_get_hw(spi_inst_t* spi) { return &fake::spi_hw[spi->index]; }
 
 // --- i2c ---------------------------------------------------------------------------------------------
 uint i2c_init(i2c_inst_t* i2c, uint baud) {

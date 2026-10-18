@@ -20,7 +20,7 @@ Format: one section per version, newest first. Stage plan: README.md.
 - CMake verification build (`CMakeLists.txt`, `cmake/`): same flags as the
   Arduino build, read from platform.txt/boards.txt, with `-Werror`. Not shipped.
 - PC-side unit tests (`tests/host/`, doctest): core, variant drivers and
-  libraries against a fake pico-sdk with MAX11635/STUSB4500 models; 71 cases.
+  libraries against a fake pico-sdk with MAX11635/STUSB4500 models; 87 cases.
 - GPL-3.0 licence (`LICENSE`, also in the release zip); bundled upstream
   licences in `platform/licenses/`.
 - `Arduino.h` declares `itoa()`/`utoa()`/`ltoa()`/`ultoa()` and `dtostrf()`.
@@ -44,6 +44,19 @@ Format: one section per version, newest first. Stage plan: README.md.
 - Pre-release reminder: a post-commit hook (`.githooks/`) runs
   `package/prerelease_reminder.py`, which lists the CHANGELOG entries since the
   last tag once there are 10 or more.
+- Analog acquisition on every analog pin (A0-A5, whichever ADC):
+  `analogReadAveraging()` (1/4/8/16/32; in hardware on the MAX11635),
+  `analogReadMillivolts()`, `analogFullScaleMillivolts()`,
+  `analogReadDifferentialMillivolts()` (A3-A4 true simultaneous differential,
+  ±1.024 V; other pairs from two readings), `analogReadMultiple()` (one MAX11635
+  scan for A3-A5), and fixed-rate bursts `analogReadBurst()` /
+  `analogStartBurst()` / `analogBurstDone()` / `analogStopBurst()` (A0-A2 up to
+  500 ksps with ADC divider + DMA; A3-A5 timer-paced up to 20 ksps, clock mode
+  11 + DMA up to 300 ksps). Variants provide eight `variantAnalog*()` hooks (ADR
+  003 extended); `max11635.h` gains averaging, scan, differential and bursts.
+  New bundled `Phyduino` library with six examples (File > Examples > Phyduino).
+  Host-tested; not yet run on hardware (checklist 21-26, 25b is the clock
+  mode 11 byte alignment).
 
 ### Changed
 - Default USB-PD request is now 5 V only (was up to 20 V): VIN is 5 V unless
