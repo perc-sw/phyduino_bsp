@@ -11,7 +11,9 @@
 Arduino IDE support for the University of Toronto Department of Physics
 student-workshop boards. It is a standalone Arduino core built directly on the
 Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
-(`#include "hardware/pwm.h"`) side by side.
+(`#include "hardware/pwm.h"`) side by side, run code on both RP2040 cores
+(`setup1()`/`loop1()`), and, from **Tools → Operating System**, use FreeRTOS
+(SMP on both cores) or ARM's CMSIS-RTOS2 API on top of it.
 
 | Board | MCU | Status |
 |---|---|---|
@@ -49,4 +51,5 @@ Changes per version: [CHANGELOG.md](CHANGELOG.md).
 
 GNU General Public License v3.0, see [LICENSE](LICENSE). Bundled upstream code keeps its own licence
 (texts in [platform/licenses/](platform/licenses/)):
-pico-sdk and TinyUSB (BSD-3-Clause / MIT), ArduinoCore-API (LGPL-2.1).
+pico-sdk and TinyUSB (BSD-3-Clause / MIT), ArduinoCore-API (LGPL-2.1), FreeRTOS kernel (MIT)
+and its RP2040 port (BSD-3-Clause), CMSIS-FreeRTOS and CMSIS_6 (Apache-2.0).
