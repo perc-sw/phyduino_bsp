@@ -192,12 +192,16 @@ FreeRTOS and CMSIS-RTOS2 sketches, **SPI** and **Wire** for those libraries.
  * See @ref core_multicore.
  *
  * @par Output
- * Serial Monitor at 115200 baud; the LED flashes twice a second:
+ * Only core 0 prints. In the Serial Monitor at 115200 baud, setup() prints
+ * one line, then loop() prints a line every second, counting up from 0:
  * @code{.unparsed}
  * setup() runs on core 0
  * loop() on core 0: 0
  * loop() on core 0: 1
+ * loop() on core 0: 2
  * @endcode
+ * Core 1's output is the LED: 100 ms on, 400 ms off, the whole time core 0
+ * is printing.
  */
 
 /**
@@ -214,8 +218,8 @@ FreeRTOS and CMSIS-RTOS2 sketches, **SPI** and **Wire** for those libraries.
  *
  * @par Output
  * Serial Monitor at 115200 baud. The counts are always these; the times,
- * shown here as `<t>`, depend on Tools > CPU Speed, and the last one is
- * several seconds:
+ * shown here as `<t>`, depend on Tools > CPU Speed; the last one takes
+ * about 20 s at the default 133 MHz:
  * @code{.unparsed}
  * Work sent to core 1.
  * Primes below 1000: 168 (<t> ms on core 1)
@@ -260,9 +264,9 @@ FreeRTOS and CMSIS-RTOS2 sketches, **SPI** and **Wire** for those libraries.
  * Needs Tools > Operating System > FreeRTOS (SMP).
  *
  * A sampling task reads A0 exactly every 100 ms (vTaskDelayUntil()) and puts
- * each reading on a queue; loop() waits for readings and prints them. The
- * sampling task has the higher priority, so its timing holds even while
- * loop() is busy printing. See @ref core_freertos.
+ * each reading on a queue. loop() is a task too: it waits for readings and
+ * prints them. The sampling task has the higher priority, so its timing holds
+ * even while loop() is busy printing. See @ref core_freertos.
  *
  * @par Wiring
  * A voltage to measure on A0, e.g. a potentiometer wiper (0-3.3 V).

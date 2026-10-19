@@ -2,8 +2,9 @@
 // Needs Tools > Operating System > FreeRTOS (SMP).
 //
 // A sampling task reads A0 exactly every 100 ms and puts each reading on a
-// queue; loop() waits for readings and prints them. The sampling task has the
-// higher priority, so its timing holds even while loop() is busy printing.
+// queue. loop() is a task too: it waits for readings and prints them. The
+// sampling task has the higher priority, so its timing holds even while
+// loop() is busy printing.
 
 #include <FreeRTOS.h>
 #include <queue.h>

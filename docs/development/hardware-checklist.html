@@ -295,27 +295,27 @@
         <tr>
           <td>28 · MulticoreBasics</td>
           <td>Tools &gt; Operating System: None; Serial Monitor 115200<span class="check-expected">&ldquo;setup() runs on core 0&rdquo;, then &ldquo;loop() on core 0: n&rdquo; once a second; LED flashes 100 ms on, 400 ms off at the same time</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>29 · MulticoreFifo</td>
-          <td>As 28<span class="check-expected">LED blinks at 2 Hz throughout; four answers in order: 168, 1229, 9592, 78498 primes, the last taking seconds</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>As 28<span class="check-expected">LED blinks at 2 Hz throughout; four answers in order: 168, 1229, 9592, 78498 primes, the last about 20 s after the third (133 MHz)</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>30 · multicore_idle</td>
           <td>As 28<span class="check-expected">&ldquo;PASS&rdquo; once a second; echo = round + 1; count while idle +0, after resume a large number; LED blinks</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>31 · multicore_idle, MulticoreBasics</td>
           <td>As 28 and 30, but Tools &gt; Operating System: FreeRTOS (SMP)<span class="check-expected">Same results as 28 and 30</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>32 · FreeRtosTasks</td>
           <td>FreeRTOS; Serial Monitor 115200<span class="check-expected">LED toggles every 250 ms; &ldquo;countTask on core 0/1: n&rdquo; once a second; every 5 s a list with loop, blink, count, IDLE0, IDLE1, Tmr Svc; Cores 0x1 for loop, 0xffffffff for blink and count; no task&#x27;s Stack column near 0</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>33 · FreeRtosQueue</td>
@@ -325,7 +325,7 @@
         <tr>
           <td>34 · serial_echo</td>
           <td>FreeRTOS; type, then Upload another sketch with the port selected<span class="check-expected">Echo works; the IDE&#x27;s 1200-baud reset still starts the upload (no BOOTSEL button)</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
         <tr>
           <td>35 · CmsisRtos2Threads</td>
@@ -335,7 +335,7 @@
         <tr>
           <td>36 · FreeRtosTasks, MulticoreBasics</td>
           <td>As 35 (CMSIS-RTOS2 option)<span class="check-expected">Same results as 32 and 28, except that Prio is 23 for loop and 55 for Tmr Svc</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td><span class="status pass">Passed 10-19</span></td>
         </tr>
       </tbody>
     </table>
@@ -390,7 +390,20 @@
       <tbody>
         <tr>
           <td>Board tested</td>
-          <td>One Phyduino Pico, 2026-10-05, 2026-10-08 and 2026-10-09 (dates in the table are 2026).</td>
+          <td>One Phyduino Pico, 2026-10-05, 2026-10-08, 2026-10-09, 2026-10-18 and
+            2026-10-19 (dates in the table are 2026).</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Multicore 28–32, 34, 36</td>
+          <td>2026-10-19, board on COM5. 29: the 78498 answer took 20.1 s on core 1
+            at 133 MHz. 30–31: count while idle +0 in every round; after resume
+            about 11 390 counts in 10 ms without FreeRTOS, 10 800–11 100 with it.
+            36: Prio 23 for loop, 55 for Tmr Svc; least free stack (words) loop 1940,
+            count 902, blink 488; 32 the same with Prio 1 for loop. 34: echo checked in
+            Tera Term (needs DTR on: with it off the board drops everything it sends),
+            then Arduino IDE Upload of Blink with COM5 selected, no button. 33 and 35
+            not run yet.</td>
           <td></td>
         </tr>
         <tr>

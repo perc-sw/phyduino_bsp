@@ -47,7 +47,7 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | # | Sketch | Setup | Expected |
 |---|---|---|---|
 | 28 | `MulticoreBasics` | Tools > Operating System: None; Serial Monitor 115200 | "setup() runs on core 0", then "loop() on core 0: n" once a second; LED flashes 100 ms on, 400 ms off at the same time |
-| 29 | `MulticoreFifo` | As 28 | LED blinks at 2 Hz throughout; four answers in order: 168, 1229, 9592, 78498 primes, the last taking seconds |
+| 29 | `MulticoreFifo` | As 28 | LED blinks at 2 Hz throughout; four answers in order: 168, 1229, 9592, 78498 primes, the last about 20 s after the third (133 MHz) |
 | 30 | `multicore_idle` | As 28 | "PASS" once a second; echo = round + 1; count while idle +0, after resume a large number; LED blinks |
 | 31 | `multicore_idle`, `MulticoreBasics` | As 28 and 30, but Tools > Operating System: FreeRTOS (SMP) | Same results as 28 and 30 |
 | 32 | `FreeRtosTasks` | FreeRTOS; Serial Monitor 115200 | LED toggles every 250 ms; "countTask on core 0/1: n" once a second; every 5 s a list with loop, blink, count, IDLE0, IDLE1, Tmr Svc; Cores 0x1 for loop, 0xffffffff for blink and count; no task's Stack column near 0 |

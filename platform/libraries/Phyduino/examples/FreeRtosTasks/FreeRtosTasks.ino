@@ -2,8 +2,9 @@
 //
 // setup() starts two tasks: one blinks the LED, the other prints a count.
 // loop() is a task too; every five seconds it prints the list of tasks, with
-// the cores each one is allowed on (0x1 core 0, 0x2 core 1, 0xffffffff either). Each task waits with vTaskDelay() (delay()
-// does the same with FreeRTOS), which leaves the cores free for the others.
+// the cores each one is allowed on (0x1 core 0, 0x2 core 1, 0xffffffff
+// either). Each task waits with vTaskDelay() (delay() does the same with
+// FreeRTOS), which leaves the cores free for the others.
 
 #include <FreeRTOS.h>
 #include <task.h>

@@ -5,8 +5,12 @@ Format: one section per version, newest first. Stage plan: README.md.
 ## Unreleased: v0.1.1 (Stage 2: FreeRTOS and multi-core)
 
 Design: ADR 009 (docs/decisions/009-multicore-freertos.html) and ADR 010
-(docs/decisions/010-cmsis-rtos2.html). Built and host-tested; not yet run on
-hardware (checklist 28-36).
+(docs/decisions/010-cmsis-rtos2.html). Built and host-tested. Hardware
+checklist (2026-10-19, one Phyduino Pico): 28-32, 34 and 36 passed
+(MulticoreBasics with all three Operating System options, MulticoreFifo
+without FreeRTOS, `multicore_idle` with None and FreeRTOS, FreeRtosTasks with
+FreeRTOS and CMSIS-RTOS2, `serial_echo` and the IDE's 1200-baud upload reset
+with FreeRTOS); 33 and 35 not yet run.
 
 ### Added
 - Second core, arduino-pico compatible: a sketch that defines `setup1()` and
