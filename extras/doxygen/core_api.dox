@@ -6,7 +6,7 @@
  * Each entry gives the usual Arduino meaning plus what is different on
  * Phyduino boards. Keep it in step with the implementations in
  * platform/cores/phyduino/ (wiring_*.cpp, pwm.cpp, tone.cpp, random.cpp,
- * main.cpp); Doxygen warns if a declaration here no longer matches Common.h.
+ * main.cpp, freertos.cpp); Doxygen warns if a declaration here no longer matches Common.h.
  */
 
 /**
@@ -81,7 +81,171 @@
  * @brief setup(), loop() and the start-up order.
  *
  * Start-up: init() (core), then initVariant() (board), then setup() once,
- * then loop() forever.
+ * then loop() forever. A sketch that also defines setup1() and loop1() runs
+ * them on the second core at the same time (@ref core_multicore).
+ */
+
+/**
+ * @defgroup core_multicore Multicore
+ * @brief setup1(), loop1() and `rp2040`: running code on both RP2040 cores.
+ *
+ * The RP2040 has two cores. setup() and loop() run on core 0. If the sketch
+ * also defines setup1() and loop1(), core 1 runs them at the same time:
+ *
+ * @code
+ * void setup()  { Serial.begin(115200); }
+ * void loop()   { Serial.println(rp2040.fifo.pop()); }   // waits for core 1
+ * void setup1() {}
+ * void loop1()  { rp2040.fifo.push(analogRead(A0)); delay(500); }
+ * @endcode
+ *
+ * The names are those of the arduino-pico core, so multicore sketches written
+ * for it build here too (ADR 009).
+ *
+ * | | Tools > Operating System: None | FreeRTOS (SMP), or with CMSIS-RTOS2 |
+ * |---|---|---|
+ * | setup()/loop() | core 0, 4 KB stack | task pinned to core 0, 8 KB stack, priority 1 (CMSIS-RTOS2: osPriorityNormal) |
+ * | setup1()/loop1() | core 1, 4 KB stack, started just before setup() | task pinned to core 1, 8 KB stack, priority 1 (CMSIS-RTOS2: osPriorityNormal) |
+ * | delay() | waits, calling yield() | blocks the task: other tasks run |
+ *
+ * Both cores share the pins, peripherals and memory:
+ * - Variables shared between the cores must be `volatile`, or passed through
+ *   `rp2040.fifo`.
+ * - `Serial` (USB) can be used from both cores. `Serial1` and `Serial2` can
+ *   be read on either core, whichever called begin().
+ * - Other peripherals (analog pins, `SPI`, `Wire`, a PWM pin or `tone()`)
+ *   should be used from one core at a time.
+ * - noInterrupts() stops interrupts on the calling core only.
+ * - Do not use the pico-sdk's multicore_fifo_*() functions: the hardware FIFO
+ *   is used by rp2040.idleOtherCore() and by FreeRTOS.
+ */
+
+/**
+ * @defgroup core_freertos FreeRTOS
+ * @brief Tools > Operating System > FreeRTOS (SMP): tasks, queues and semaphores on both cores.
+ *
+ * Choosing FreeRTOS (SMP) in Tools > Operating System builds the sketch with
+ * the FreeRTOS kernel (ADR 009). A sketch then includes the FreeRTOS headers
+ * it uses: `FreeRTOS.h` first, then `task.h`, `queue.h`, `semphr.h`,
+ * `event_groups.h`, `timers.h`, `stream_buffer.h` or `message_buffer.h`. The
+ * functions are described in the
+ * [FreeRTOS kernel API reference](https://www.freertos.org/Documentation/02-Kernel/04-API-references/01-Task-creation/00-TaskHandle).
+ * Without the menu option, including `FreeRTOS.h` stops the build with a
+ * message naming the menu. FreeRTOS (SMP) + CMSIS-RTOS2 gives the same
+ * kernel and settings, plus ARM's CMSIS-RTOS2 API (@ref core_cmsis_rtos2).
+ *
+ * setup()/loop() and setup1()/loop1() become tasks (see @ref core_multicore).
+ * One scheduler runs tasks on both cores; xTaskCreate() lets a task run on
+ * either, xTaskCreateAffinitySet() or vTaskCoreAffinitySet() pins it to one.
+ *
+ * | Setting | Value |
+ * |---|---|
+ * | Cores | 2 (SMP); the tick runs on core 0 |
+ * | Tick | 1 ms (`configTICK_RATE_HZ` 1000), so pdMS_TO_TICKS(ms) is ms |
+ * | Priorities | 0 (idle) to 55 (`configMAX_PRIORITIES` 56, the number CMSIS-RTOS2 needs); loop() and loop1() run at 1 (23 with CMSIS-RTOS2), the timer task at 55 |
+ * | Pre-emption | On, with time slicing between tasks of equal priority |
+ * | Stack sizes | In 4-byte words: xTaskCreate(f, "name", 1024, ...) gives 4 KB; minimum 256 |
+ * | Memory | heap_3: tasks and queues come from the same heap as `new`, malloc() and String (rp2040.getFreeHeap()) |
+ * | Static allocation | Also available (xTaskCreateStatic()) |
+ * | Kernel objects | Mutexes, recursive mutexes, counting semaphores, queue sets, task notifications (3 per task), software timers, event groups, stream and message buffers |
+ * | Diagnostics | uxTaskGetStackHighWaterMark(), vTaskListTasks(), uxTaskGetSystemState() |
+ *
+ * The configuration is built into the package (`FreeRTOSConfig.h` in
+ * `sdk-builder/freertos/`); a sketch cannot change it.
+ *
+ * What changes in the Arduino functions:
+ * - delay() blocks the calling task, so other tasks run; delayMicroseconds()
+ *   still busy-waits.
+ * - The default yield() lets other tasks of the same priority run.
+ * - pico-sdk mutexes, semaphores, queues and sleep_ms() block the task
+ *   instead of spinning.
+ * - A task that never waits (no delay(), vTaskDelay() or blocking queue call)
+ *   keeps lower-priority tasks on its core from running.
+ *
+ * Errors stop the board (USB Serial disconnects): a task overflowing its
+ * stack, running out of heap memory, or a failed kernel check. A sketch can
+ * define its own `vApplicationStackOverflowHook(TaskHandle_t, char*)` and
+ * `vApplicationMallocFailedHook()` (both `extern "C"`) to do something else.
+ */
+
+/**
+ * @defgroup core_cmsis_rtos2 CMSIS-RTOS2
+ * @brief Tools > Operating System > FreeRTOS (SMP) + CMSIS-RTOS2: ARM's standard RTOS API, on FreeRTOS.
+ *
+ * CMSIS-RTOS2 is the RTOS API of ARM's Cortex-M software standard (CMSIS),
+ * used by Keil MDK, STM32Cube and others, so code written for it on other
+ * Cortex-M boards runs here unchanged. Choosing FreeRTOS (SMP) + CMSIS-RTOS2
+ * in Tools > Operating System builds the sketch with FreeRTOS, as
+ * @ref core_freertos describes, plus ARM's CMSIS-RTOS2 layer for FreeRTOS
+ * (CMSIS-FreeRTOS; ADR 010). A sketch includes `cmsis_os2.h`. The functions
+ * are described in the
+ * [CMSIS-RTOS2 API reference](https://arm-software.github.io/CMSIS_6/latest/RTOS2/group__CMSIS__RTOS.html).
+ * Without the menu option, including `cmsis_os2.h` stops the build with a
+ * message naming the menu option.
+ *
+ * @code
+ * #include <cmsis_os2.h>
+ *
+ * void blink(void*) {
+ *     for (;;) { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); osDelay(500); }
+ * }
+ *
+ * void setup() {
+ *     pinMode(LED_BUILTIN, OUTPUT);
+ *     osThreadNew(blink, nullptr, nullptr);  // default attributes: osPriorityNormal, 1 KB stack
+ * }
+ *
+ * void loop() {}
+ * @endcode
+ *
+ * Differences from CMSIS-RTOS2 on other systems:
+ * - The kernel is already running when setup() starts. osKernelInitialize()
+ *   and osKernelStart() are not needed; they return `osError`.
+ * - setup()/loop() and setup1()/loop1() are threads at `osPriorityNormal`
+ *   (see @ref core_multicore), the default for osThreadNew().
+ * - `osPriority_t` p is FreeRTOS priority p - 1: `osPriorityIdle` (1) is the
+ *   idle priority 0, `osPriorityNormal` (24) is 23, `osPriorityISR` (56) is
+ *   55, the FreeRTOS timer task's priority.
+ * - `stack_size` in `osThreadAttr_t` is in bytes (FreeRTOS's xTaskCreate()
+ *   takes 4-byte words); 0 or no attributes gives 1 KB.
+ * - A tick is 1 ms: osDelay(), timeouts and osKernelGetTickCount() count
+ *   milliseconds; osKernelGetTickFreq() is 1000.
+ * - osKernelGetSysTimerFreq() is the CPU clock (Tools > CPU Speed).
+ *   osKernelGetSysTimerCount() counts CPU clock cycles on core 0, but on core
+ *   1 it only moves on once per tick, because the tick timer runs on core 0.
+ * - `affinity_mask` in `osThreadAttr_t` and osThreadSetAffinityMask() pin a
+ *   thread to cores (`osThreadProcessor(0)`, `osThreadProcessor(1)`, or
+ *   both ORed together); 0 means either core.
+ * - FreeRTOS functions can be used in the same sketch: an `osThreadId_t` is
+ *   a FreeRTOS `TaskHandle_t`.
+ * - Errors stop the board, with the same hook functions as @ref core_freertos.
+ *
+ * Functions provided:
+ *
+ * | Group | Functions |
+ * |---|---|
+ * | Kernel | osKernelInitialize(), osKernelGetInfo(), osKernelGetState(), osKernelStart(), osKernelLock(), osKernelUnlock(), osKernelRestoreLock(), osKernelGetTickCount(), osKernelGetTickFreq(), osKernelGetSysTimerCount(), osKernelGetSysTimerFreq() |
+ * | Threads | osThreadNew(), osThreadGetName(), osThreadGetId(), osThreadGetState(), osThreadGetStackSpace(), osThreadSetPriority(), osThreadGetPriority(), osThreadYield(), osThreadSuspend(), osThreadResume(), osThreadExit(), osThreadTerminate(), osThreadGetCount(), osThreadEnumerate(), osThreadSetAffinityMask(), osThreadGetAffinityMask() |
+ * | Thread flags | osThreadFlagsSet(), osThreadFlagsClear(), osThreadFlagsGet(), osThreadFlagsWait() |
+ * | Waiting | osDelay(), osDelayUntil() |
+ * | Timers | osTimerNew(), osTimerGetName(), osTimerStart(), osTimerStop(), osTimerIsRunning(), osTimerDelete() |
+ * | Event flags | osEventFlagsNew(), osEventFlagsSet(), osEventFlagsClear(), osEventFlagsGet(), osEventFlagsWait(), osEventFlagsDelete() |
+ * | Mutexes | osMutexNew(), osMutexAcquire(), osMutexRelease(), osMutexGetOwner(), osMutexDelete() |
+ * | Semaphores | osSemaphoreNew(), osSemaphoreAcquire(), osSemaphoreRelease(), osSemaphoreGetCount(), osSemaphoreDelete() |
+ * | Memory pools | osMemoryPoolNew(), osMemoryPoolGetName(), osMemoryPoolAlloc(), osMemoryPoolFree(), osMemoryPoolGetCapacity(), osMemoryPoolGetBlockSize(), osMemoryPoolGetCount(), osMemoryPoolGetSpace(), osMemoryPoolDelete() |
+ * | Message queues | osMessageQueueNew(), osMessageQueuePut(), osMessageQueueGet(), osMessageQueueGetCapacity(), osMessageQueueGetMsgSize(), osMessageQueueGetCount(), osMessageQueueGetSpace(), osMessageQueueReset(), osMessageQueueDelete() |
+ *
+ * Not provided by the FreeRTOS layer (the build fails with "undefined
+ * reference" if a sketch uses one): osKernelSuspend(), osKernelResume(),
+ * osThreadGetStackSize(), osThreadJoin(), osThreadDetach(),
+ * osEventFlagsGetName(), osMutexGetName(), osSemaphoreGetName(),
+ * osMessageQueueGetName(), and the CMSIS-RTOS2 2.3 safety features:
+ * osKernelProtect(), osKernelDestroyClass(), osThreadGetClass(),
+ * osThreadGetZone(), osThreadSuspendClass(), osThreadResumeClass(),
+ * osThreadTerminateZone(), osThreadFeedWatchdog(),
+ * osThreadProtectPrivileged() and osFaultResume(). The attributes
+ * `osThreadJoinable` and `osMutexRobust` make osThreadNew() and osMutexNew()
+ * return NULL.
  */
 
 /**
@@ -327,6 +491,8 @@
  * @brief Waits a number of milliseconds.
  *
  * Interrupts, USB Serial and tones keep running. Calls yield() while waiting.
+ * With FreeRTOS it blocks the calling task, so other tasks run meanwhile
+ * (@ref core_freertos).
  */
 
 /**
@@ -381,28 +547,32 @@
 /**
  * @fn void setup(void)
  * @ingroup core_sketch
- * @brief Written by the sketch: runs once after reset.
+ * @brief Written by the sketch: runs once after reset, on core 0.
  *
  * USB Serial is already running; add `while (!Serial) {}` to wait for the
- * Serial Monitor before printing.
+ * Serial Monitor before printing. With FreeRTOS, setup() and loop() run in a
+ * task (@ref core_freertos).
  */
 
 /**
  * @fn void loop(void)
  * @ingroup core_sketch
- * @brief Written by the sketch: runs over and over after setup().
+ * @brief Written by the sketch: runs over and over after setup(), on core 0.
  */
 
 /**
  * @fn void yield(void)
  * @ingroup core_sketch
- * @brief Called while delay() or USB Serial is waiting. Does nothing unless the sketch defines its own.
+ * @brief Called while delay() or USB Serial is waiting.
+ *
+ * Does nothing unless the sketch defines its own; with FreeRTOS, it lets
+ * other tasks of the same priority run.
  */
 
 /**
  * @fn void init(void)
  * @ingroup core_sketch
- * @brief Core start-up, before setup(): sets the CPU speed (Tools > CPU Speed), the ADC and USB.
+ * @brief Core start-up, before setup(): sets the CPU speed (Tools > CPU Speed), the ADC, USB and the inter-core FIFO.
  */
 
 /**

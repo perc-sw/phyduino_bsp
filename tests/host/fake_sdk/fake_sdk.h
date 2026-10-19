@@ -183,7 +183,16 @@ struct Hardware {
     irq_handler_t irq_handlers[32] = {};
     bool irq_enabled[32] = {};
     gpio_irq_callback_t gpio_callback = nullptr;
-    int interrupts_disabled = 0;
+    int interrupts_disabled = 0;     // also counts open critical sections
+    // Multicore: the core the code under test is "running on", and core 1's state.
+    uint core_num = 0;
+    void (*core1_entry)() = nullptr;     // last multicore_launch_core1() entry
+    int core1_launches = 0;
+    int core1_resets = 0;
+    bool lockout_victim[2] = {false, false};
+    int lockout_starts = 0;
+    int lockout_ends = 0;
+    bool lockout_active = false;
     // Called on every gpio_put(), after the latch changes (chip models hook in here).
     std::function<void(uint gpio, bool value)> on_gpio_put;
 };
@@ -289,6 +298,39 @@ void irq_remove_handler(uint irq, irq_handler_t handler);
 void irq_set_enabled(uint irq, bool enabled);
 uint32_t save_and_disable_interrupts();
 void restore_interrupts(uint32_t status);
+void __wfe();
+void tight_loop_contents();
+uint get_core_num();
+
+// --- pico/critical_section.h -------------------------------------------------------------
+struct critical_section_t { bool initialised; };
+void critical_section_init(critical_section_t* crit_sec);
+bool critical_section_is_initialized(critical_section_t* crit_sec);
+void critical_section_enter_blocking(critical_section_t* crit_sec);
+void critical_section_exit(critical_section_t* crit_sec);
+
+// --- pico/util/queue.h -------------------------------------------------------------------
+// A real queue, but single-threaded: the blocking calls throw instead of
+// waiting forever (full on add, empty on remove).
+struct queue_t {
+    uint element_size = 0;
+    uint element_count = 0;
+    std::deque<std::vector<uint8_t>> items;
+};
+void queue_init(queue_t* q, uint element_size, uint element_count);
+bool queue_try_add(queue_t* q, const void* data);
+bool queue_try_remove(queue_t* q, void* data);
+void queue_add_blocking(queue_t* q, const void* data);
+void queue_remove_blocking(queue_t* q, void* data);
+uint queue_get_level(queue_t* q);
+
+// --- pico/multicore.h ----------------------------------------------------------------------
+void multicore_launch_core1(void (*entry)());
+void multicore_reset_core1();
+void multicore_lockout_victim_init();
+bool multicore_lockout_victim_is_initialized(uint core_num);
+void multicore_lockout_start_blocking();
+void multicore_lockout_end_blocking();
 
 // --- hardware/uart.h -------------------------------------------------------------------
 namespace fake {

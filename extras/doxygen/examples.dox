@@ -19,8 +19,8 @@
 Example sketches for Phyduino boards. Each page below explains what the sketch
 does, how to wire it and what it prints, followed by its source. The same
 sketches are in the Arduino IDE under **File → Examples → Examples for
-Phyduino Pico** once Phyduino Pico is selected: **Phyduino** for the analog and
-USB-PD sketches, **SPI** and **Wire** for those libraries.
+Phyduino Pico** once Phyduino Pico is selected: **Phyduino** for the analog, USB-PD, multicore,
+FreeRTOS and CMSIS-RTOS2 sketches, **SPI** and **Wire** for those libraries.
 
 | Example | What it shows |
 |---|---|
@@ -31,6 +31,11 @@ USB-PD sketches, **SPI** and **Wire** for those libraries.
 | @ref AnalogBurst.ino "Analog Burst" | A fixed-rate burst of samples, to see a waveform |
 | @ref AnalogBurstBackground.ino "Analog Burst Background" | Continuous sampling in the background |
 | @ref UsbPdPower.ino "USB-PD Power" | Asking a USB-PD charger for a higher voltage |
+| @ref MulticoreBasics.ino "Multicore Basics" | Two sketches at once, one on each core |
+| @ref MulticoreFifo.ino "Multicore FIFO" | Handing work to the second core through rp2040.fifo |
+| @ref FreeRtosTasks.ino "FreeRTOS Tasks" | FreeRTOS tasks side by side, and the task list (needs FreeRTOS) |
+| @ref FreeRtosQueue.ino "FreeRTOS Queue" | Passing measurements between tasks through a queue (needs FreeRTOS) |
+| @ref CmsisRtos2Threads.ino "CMSIS-RTOS2 Threads" | Threads and a message queue with ARM's CMSIS-RTOS2 API (needs FreeRTOS + CMSIS-RTOS2) |
 | @ref SpiLoopback.ino "SPI Loopback" | An SPI loopback test |
 | @ref I2CScanner.ino "I2C Scanner" | Finding the devices on the I2C bus |
 | @ref PeripheralReceiver.ino "Peripheral Receiver" | The board as an I2C peripheral |
@@ -173,6 +178,129 @@ USB-PD sketches, **SPI** and **Wire** for those libraries.
  *          Disconnect anything on VIN that can't take the voltage asked for.
  *          The request lasts until power-down; then Tools > USB-PD Power
  *          applies again.
+ */
+
+/**
+ * @example MulticoreBasics.ino
+ * @htmlonly<span class="example-title" hidden>Multicore Basics example sketch</span>@endhtmlonly
+ * Runs two sketches at once, one on each core of the RP2040. setup() and
+ * loop() run on core 0 as usual; defining setup1() and loop1() starts core 1,
+ * which runs them at the same time. Core 0 prints a count every second while
+ * core 1 blinks the LED: neither one's delay() holds up the other.
+ *
+ * Works with Tools > Operating System set to None or FreeRTOS (SMP).
+ * See @ref core_multicore.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud; the LED flashes twice a second:
+ * @code{.unparsed}
+ * setup() runs on core 0
+ * loop() on core 0: 0
+ * loop() on core 0: 1
+ * @endcode
+ */
+
+/**
+ * @example MulticoreFifo.ino
+ * @htmlonly<span class="example-title" hidden>Multicore FIFO example sketch</span>@endhtmlonly
+ * Hands slow work to the second core and gets the answers back through
+ * `rp2040.fifo`. Core 0 sends four numbers; core 1 counts the primes below
+ * each one and sends back the count and how long it took. Core 0 is free in
+ * the meantime: it keeps the LED blinking and prints each answer as it
+ * arrives.
+ *
+ * A value pushed on one core is popped on the other; pop() waits until there
+ * is one, pop_nb() and available() do not wait. See @ref core_multicore.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud. The counts are always these; the times,
+ * shown here as `<t>`, depend on Tools > CPU Speed, and the last one is
+ * several seconds:
+ * @code{.unparsed}
+ * Work sent to core 1.
+ * Primes below 1000: 168 (<t> ms on core 1)
+ * Primes below 10000: 1229 (<t> ms on core 1)
+ * Primes below 100000: 9592 (<t> ms on core 1)
+ * Primes below 1000000: 78498 (<t> ms on core 1)
+ * @endcode
+ */
+
+/**
+ * @example FreeRtosTasks.ino
+ * @htmlonly<span class="example-title" hidden>FreeRTOS Tasks example sketch</span>@endhtmlonly
+ * Runs FreeRTOS tasks side by side. Needs Tools > Operating System >
+ * FreeRTOS (SMP).
+ *
+ * setup() starts two tasks: one blinks the LED, the other prints a count.
+ * loop() is a task too; every five seconds it prints the list of tasks with
+ * vTaskListTasks(). Each task waits with vTaskDelay() (delay() does the same
+ * with FreeRTOS), which leaves the cores free for the others. See
+ * @ref core_freertos.
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud: a "countTask on core 0: n" or "countTask on
+ * core 1: n" line every second (the count task may run on either core), and
+ * every five seconds one line per task: loop, blink, count, the two idle
+ * tasks IDLE0 and IDLE1, and the FreeRTOS timer task Tmr Svc. The columns:
+ *
+ * | Column | Meaning |
+ * |---|---|
+ * | Name | Task name |
+ * | State | X running, R ready, B blocked (waiting), S suspended, D deleted |
+ * | Prio | Priority, 0 (idle) to 55 |
+ * | Stack | The least free stack the task has had, in 4-byte words: near 0 means too small |
+ * | Num | Task number, in order of creation |
+ * | Cores | Cores the task may run on: 0x1 core 0, 0x2 core 1, 0xffffffff either |
+ */
+
+/**
+ * @example FreeRtosQueue.ino
+ * @htmlonly<span class="example-title" hidden>FreeRTOS Queue example sketch</span>@endhtmlonly
+ * Passes measurements from one FreeRTOS task to another through a queue.
+ * Needs Tools > Operating System > FreeRTOS (SMP).
+ *
+ * A sampling task reads A0 exactly every 100 ms (vTaskDelayUntil()) and puts
+ * each reading on a queue; loop() waits for readings and prints them. The
+ * sampling task has the higher priority, so its timing holds even while
+ * loop() is busy printing. See @ref core_freertos.
+ *
+ * @par Wiring
+ * A voltage to measure on A0, e.g. a potentiometer wiper (0-3.3 V).
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud:
+ * @code{.unparsed}
+ * 1203 ms: A0 = 1650 mV
+ * 1303 ms: A0 = 1651 mV
+ * @endcode
+ */
+
+/**
+ * @example CmsisRtos2Threads.ino
+ * @htmlonly<span class="example-title" hidden>CMSIS-RTOS2 Threads example sketch</span>@endhtmlonly
+ * Runs threads with ARM's CMSIS-RTOS2 API, which works the same on any
+ * CMSIS-RTOS2 system. Needs Tools > Operating System > FreeRTOS (SMP) +
+ * CMSIS-RTOS2.
+ *
+ * The kernel is already running when setup() starts, so osKernelInitialize()
+ * and osKernelStart() are not needed. setup() prints the kernel's name
+ * (osKernelGetInfo()) and starts two threads with osThreadNew(): one blinks
+ * the LED with osDelay(), the other reads A0 exactly every 100 ms
+ * (osDelayUntil()) and puts each reading in a message queue. The sampling
+ * thread runs at osPriorityAboveNormal, above loop()'s osPriorityNormal, so
+ * its timing holds while loop() waits for readings with osMessageQueueGet()
+ * and prints them. See @ref core_cmsis_rtos2.
+ *
+ * @par Wiring
+ * A voltage to measure on A0, e.g. a potentiometer wiper (0-3.3 V).
+ *
+ * @par Output
+ * Serial Monitor at 115200 baud; the LED flashes once a second:
+ * @code{.unparsed}
+ * Kernel: FreeRTOS V11.1.0+
+ * 1203 ms: A0 = 1650 mV
+ * 1303 ms: A0 = 1651 mV
+ * @endcode
  */
 
 /**

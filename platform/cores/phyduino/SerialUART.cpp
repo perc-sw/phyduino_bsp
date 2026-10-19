@@ -5,7 +5,7 @@
 #include "Arduino.h"
 #include "hardware/gpio.h"
 #include "hardware/irq.h"
-#include "hardware/sync.h"
+#include "pico/critical_section.h"
 
 SerialUARTClass Serial1(uart0, PIN_SERIAL1_TX, PIN_SERIAL1_RX);
 SerialUARTClass Serial2(uart1, PIN_SERIAL2_TX, PIN_SERIAL2_RX);
@@ -26,6 +26,7 @@ static uart_parity_t parity(uint16_t config) {
 
 void SerialUARTClass::begin(unsigned long baud, uint16_t config) {
     end();
+    if (!critical_section_is_initialized(&rx_lock_)) critical_section_init(&rx_lock_);
     uart_init(uart_, baud);
     uart_set_format(uart_, dataBits(config), stopBits(config), parity(config));
     uart_set_fifo_enabled(uart_, true);
@@ -54,31 +55,38 @@ void SerialUARTClass::end() {
 }
 
 void SerialUARTClass::handleRxInterrupt() {
+    critical_section_enter_blocking(&rx_lock_);
     while (uart_is_readable(uart_)) {
         const uint8_t c = static_cast<uint8_t>(uart_get_hw(uart_)->dr);
         if (!rx_buffer_.isFull()) rx_buffer_.store_char(c);  // drop on overflow
     }
+    critical_section_exit(&rx_lock_);
 }
 
-// The ring buffer is shared with the IRQ, so reads briefly mask interrupts.
+// The ring buffer is shared with the IRQ, which may run on the other core: a
+// critical section (interrupts off on this core + a spin lock) covers both.
+// Before begin() there is no lock, and nothing to read.
 int SerialUARTClass::available() {
-    const uint32_t saved = save_and_disable_interrupts();
+    if (!started_) return 0;
+    critical_section_enter_blocking(&rx_lock_);
     const int n = rx_buffer_.available();
-    restore_interrupts(saved);
+    critical_section_exit(&rx_lock_);
     return n;
 }
 
 int SerialUARTClass::peek() {
-    const uint32_t saved = save_and_disable_interrupts();
+    if (!started_) return -1;
+    critical_section_enter_blocking(&rx_lock_);
     const int c = rx_buffer_.peek();
-    restore_interrupts(saved);
+    critical_section_exit(&rx_lock_);
     return c;
 }
 
 int SerialUARTClass::read() {
-    const uint32_t saved = save_and_disable_interrupts();
+    if (!started_) return -1;
+    critical_section_enter_blocking(&rx_lock_);
     const int c = rx_buffer_.read_char();
-    restore_interrupts(saved);
+    critical_section_exit(&rx_lock_);
     return c;
 }
 

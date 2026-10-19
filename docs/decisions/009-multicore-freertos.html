@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>ADR 009: Multicore and FreeRTOS: arduino-pico API, FreeRTOS from a Tools menu · Phyduino Board Support · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Board Support</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Board Support</a> - <a href="./index.html">Design decisions</a> - 009</span>
+      <p class="board-desc"><strong>Multicore and FreeRTOS: arduino-pico API, FreeRTOS from a Tools menu</strong></p>
+      <div class="spec-row"><span class="spec-pill">ADR 009</span><span class="spec-pill">v0.1.1</span></div>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Decision</h2></div>
+
+  <div class="doc-text">
+    <p><strong>Multicore API.</strong> Sketches use the second RP2040 core the way the arduino-pico core (Earle Philhower) does: defining <code>setup1()</code> and <code>loop1()</code> starts core 1, which runs them at the same time as <code>setup()</code> and <code>loop()</code> on core 0. The <code>rp2040</code> object gives <code>rp2040.fifo</code> (push, push_nb, pop, pop_nb, available), <code>idleOtherCore()</code>, <code>resumeOtherCore()</code>, <code>restartCore1()</code>, <code>cpuid()</code>, <code>f_cpu()</code> and the heap sizes. The FIFO is a pair of pico-sdk queues in RAM, one per direction, not the hardware SIO FIFO: that is left to the SDK's multicore lockout (used by <code>idleOtherCore()</code>) and to FreeRTOS.</p>
+    <p><strong>FreeRTOS on/off.</strong> Tools &gt; Operating System chooses <em>None</em> (default) or <em>FreeRTOS (SMP)</em>. FreeRTOS selects a second prebuilt SDK bundle, <code>platform/system/&lt;board&gt;_freertos/</code>, built by <code>sdk-builder/</code> with <code>PHYDUINO_OS=freertos</code>: the pico-sdk compiled with the FreeRTOS RP2040 port's SDK hooks, plus the kernel (heap_3), configured by <code>sdk-builder/freertos/FreeRTOSConfig.h</code>. Its <code>compile_flags.txt</code> defines <code>PHYDUINO_FREERTOS=1</code>, which the core tests.</p>
+    <p><strong>Scheduling.</strong> SMP on both cores. <code>setup()</code>/<code>loop()</code> is a task pinned to core 0 and <code>setup1()</code>/<code>loop1()</code> a task pinned to core 1, each with an 8 KB stack at priority 1 (<code>osPriorityNormal</code> with CMSIS-RTOS2, ADR 010). Other tasks may run on either core or be pinned. <code>delay()</code> blocks the task; <code>yield()</code> lets tasks of the same priority run.</p>
+    <p><strong>Kernel source.</strong> The Raspberry Pi fork of FreeRTOS-Kernel, as the submodule <code>extern/FreeRTOS-Kernel</code>.</p>
+  </div>
+
+  <div class="section-head"><h2>Why</h2></div>
+
+  <div class="doc-text">
+    <p><strong>arduino-pico compatibility.</strong> Most RP2040 multicore tutorials and course material use <code>setup1()</code>/<code>loop1()</code> and <code>rp2040.fifo</code>; students can use them unchanged. An own API would be simpler to document but would cut them off from that material, and the SDK alone (<code>pico/multicore.h</code>) gives no sketch structure.</p>
+    <p><strong>A menu and a second bundle, not a library.</strong> For SDK mutexes, semaphores, queues and <code>sleep_ms()</code> to block a task instead of spinning, every SDK source must be compiled with the port's adapter header (<code>PICO_CONFIG_RTOS_ADAPTER_HEADER</code>), and the size of SDK lock types changes with it. A library compiled with the sketch cannot do that to the prebuilt <code>libpico.a</code> (ADR 002), so FreeRTOS needs its own build of the SDK. A menu also makes the choice explicit: a sketch that includes <code>FreeRTOS.h</code> without it gets an error saying which menu to set (a stub header in the plain bundle), not a link error.</p>
+    <p><strong>SMP.</strong> One scheduler for both cores is what FreeRTOS on the RP2040 is normally taught with, uses both cores without the sketch deciding where each task runs, and still allows pinning. Pinning <code>loop()</code> and <code>loop1()</code> keeps the multicore API meaning the same in both modes.</p>
+    <p><strong>Raspberry Pi fork.</strong> The fork is what the pico-sdk examples use and already has the RP2350 Arm and RISC-V ports needed for v0.2.0 and v0.2.1.</p>
+  </div>
+
+  <div class="section-head"><h2>Cost</h2></div>
+
+  <div class="doc-text">
+    <p>A second committed bundle (about 10 MB in the repository, also in the release zip), regenerated whenever the SDK, TinyUSB, the kernel or <code>FreeRTOSConfig.h</code> changes. The kernel configuration is fixed at bundle build time: a sketch cannot change it. The fork has no release tags, so the submodule is pinned to a commit. Sketches must not use the SDK's <code>multicore_fifo_*()</code> functions or <code>multicore_lockout_victim_init()</code> on a core the core already set up, since the hardware FIFO belongs to the lockout and to FreeRTOS. The PC-side tests cover only the no-OS build; FreeRTOS behaviour needs hardware tests (checklist 28-34). Peripherals other than USB <code>Serial</code> and the <code>Serial1</code>/<code>Serial2</code> receive buffers are not locked: each should be used from one core or task at a time.</p>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

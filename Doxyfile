@@ -18,6 +18,7 @@ INPUT                  = platform/cores/phyduino/Arduino.h \
                          platform/cores/phyduino/api/Common.h \
                          platform/cores/phyduino/SerialUSB.h \
                          platform/cores/phyduino/SerialUART.h \
+                         platform/cores/phyduino/RP2040.h \
                          platform/variants/phyduino_pico/pins_arduino.h \
                          platform/variants/phyduino_pico/max11635.h \
                          platform/variants/phyduino_pico/stusb4500.h \

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="https://www.physics.utoronto.ca/static/utphy_themes/favicon/favicon.ico">
+<title>ADR 010: CMSIS-RTOS2 as a third Operating System option, on the FreeRTOS bundle · Phyduino Board Support · U of T Physics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<!-- Shared stylesheet: copied unchanged from ../phyduino_pico/docs/style/ -->
+<link rel="stylesheet" href="../style/uoft_physics_perc_sw.css">
+<!-- Additions for text pages; the shared stylesheet stays identical to phyduino_pico's -->
+<link rel="stylesheet" href="../style/doc_pages.css">
+</head>
+<body>
+
+<!-- ── U of T Physics site header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/">
+      <img class="header-logo-img" src="../images/uoft_physics_plrs_logo.png" alt="University of Toronto Department of Physics">
+    </a>
+    <span class="header-board-title">Phyduino Board Support</span>
+  </div>
+</header>
+
+<!-- breadcrumb -->
+<div class="breadcrumb-bar" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="https://www.physics.utoronto.ca/">Physics</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://www.physics.utoronto.ca/physics-at-uoft/services/plrs/electronic-support-services/">Electronic Support Services</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <a href="https://plrs.physics.utoronto.ca/course-listing/">Introduction to Electronics</a>
+  </div>
+</div>
+
+<!-- ── Page content ── -->
+<div class="page-wrap doc-page">
+
+  <div class="board-hero">
+    <div class="board-hero-text">
+      <span class="board-tag"><a href="../index.html">Phyduino Board Support</a> - <a href="./index.html">Design decisions</a> - 010</span>
+      <p class="board-desc"><strong>CMSIS-RTOS2 as a third Operating System option, on the FreeRTOS bundle</strong></p>
+      <div class="spec-row"><span class="spec-pill">ADR 010</span><span class="spec-pill">v0.1.1</span></div>
+    </div>
+  </div>
+
+  <div class="section-head"><h2>Decision</h2></div>
+
+  <div class="doc-text">
+    <p><strong>What.</strong> ARM's CMSIS-RTOS2 API (<code>cmsis_os2.h</code>: <code>osThreadNew()</code>, <code>osDelay()</code>, message queues, mutexes, semaphores, event and thread flags, timers, memory pools) is available on top of FreeRTOS, through ARM's own wrapper, CMSIS-FreeRTOS.</p>
+    <p><strong>How it is chosen.</strong> A third Tools &gt; Operating System option, <em>FreeRTOS (SMP) + CMSIS-RTOS2</em>. It uses the same bundle as <em>FreeRTOS (SMP)</em> (<code>platform/system/&lt;board&gt;_freertos/</code>) and adds two settings: <code>build.os.flags=-DPHYDUINO_CMSIS_RTOS2=1</code> and <code>build.os.libs</code>, which links that bundle's <code>lib/libcmsis_os2.a</code>. The bundle's <code>cmsis_os2.h</code> stops the build with a message naming the menu option unless <code>PHYDUINO_CMSIS_RTOS2</code> is set; ARM's header is under <code>include/cmsis_rtos2/</code>. FreeRTOS's own API stays available in the same sketch.</p>
+    <p><strong>Kernel settings.</strong> The FreeRTOS configuration, shared by both FreeRTOS options, now has 56 priorities (<code>configMAX_PRIORITIES</code>), the number the wrapper requires: CMSIS priority <em>p</em> is FreeRTOS priority <em>p</em>&nbsp;-&nbsp;1. <code>configCPU_CLOCK_HZ</code> reads <code>clk_sys</code> at run time, so <code>osKernelGetSysTimerFreq()</code> follows Tools &gt; CPU Speed.</p>
+    <p><strong>The sketch's threads.</strong> The scheduler is started by the core before <code>setup()</code>, as with FreeRTOS (ADR 009), so <code>osKernelInitialize()</code> and <code>osKernelStart()</code> are not needed (they return <code>osError</code>). With this option <code>loop()</code> and <code>loop1()</code> run at <code>osPriorityNormal</code> (FreeRTOS 23), the default priority of <code>osThreadNew()</code>; with plain FreeRTOS they stay at 1.</p>
+    <p><strong>Source.</strong> The wrapper (<code>cmsis_os2.c</code>, <code>freertos_os2.h</code>, <code>freertos_mpool.h</code>) from CMSIS-FreeRTOS v11.3.0 and the API headers (<code>cmsis_os2.h</code>, <code>os_tick.h</code>) from CMSIS_6 v6.4.0, copied unchanged into <code>sdk-builder/cmsis-rtos2/</code>, with a short RP2040 file for the OS Tick functions the wrapper uses (<code>osKernelGetSysTimerCount()</code>).</p>
+  </div>
+
+  <div class="section-head"><h2>Why</h2></div>
+
+  <div class="doc-text">
+    <p><strong>CMSIS-RTOS2.</strong> It is the RTOS API of ARM's Cortex-M software standard and of tools such as Keil MDK and STM32Cube, so code and course material written for it on other Cortex-M boards runs here unchanged.</p>
+    <p><strong>An option, not always on.</strong> <code>libpico.a</code> is linked whole (every object is kept), so the wrapper cannot go in it without giving every FreeRTOS sketch its weak hook functions and its kernel-state bookkeeping. A separate archive that only this option links keeps plain FreeRTOS exactly as before, and the menu makes the choice visible, as for FreeRTOS.</p>
+    <p><strong>The same bundle, not a third one.</strong> The wrapper needs no change to the SDK or the kernel beyond configuration values both FreeRTOS options can share, so it costs a 125 KB archive (mostly debug information, not flash) instead of another 10 MB bundle. 56 priorities instead of 8 costs about 1 KB of RAM (one list per priority).</p>
+    <p><strong>Copied, not submodules.</strong> The CMSIS-FreeRTOS repository also carries a full FreeRTOS kernel, with paths longer than a default Git checkout on Windows accepts, so cloning this repository with submodules would fail there. Only five files are needed.</p>
+    <p><strong>loop() at osPriorityNormal.</strong> CMSIS-RTOS2 code expects its main thread and new threads to share <code>osPriorityNormal</code>. At FreeRTOS priority 1, any default thread that never waits would stop <code>loop()</code> from running at all.</p>
+  </div>
+
+  <div class="section-head"><h2>Cost</h2></div>
+
+  <div class="doc-text">
+    <p>The copied files are updated by hand (<code>sdk-builder/cmsis-rtos2/README.md</code>). The FreeRTOS priority range in the documentation changes from 0-7 to 0-55. A wrapper call made from <code>setup()</code> sees the kernel already running, which differs from ordinary CMSIS-RTOS2 start-up code (<code>osKernelInitialize()</code>, create threads, <code>osKernelStart()</code>). <code>osKernelGetSysTimerCount()</code> has <code>clk_sys</code> resolution on core 0 but steps once per tick (1 ms) on core 1, because the tick timer (SysTick) runs only on core 0 and each core's SysTick is private. A thread's <code>stack_size</code> is in bytes, while FreeRTOS's <code>xTaskCreate()</code> takes words. CMSIS-RTOS2 behaviour needs hardware tests (checklist 35-36).</p>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <a href="https://www.physics.utoronto.ca">
+    <img class="footer-logo" src="https://www.physics.utoronto.ca/static/utphy_themes/images/Physics-Logo-White.png" alt="University of Toronto Department of Physics">
+    </a>
+    <div class="social-media">
+      <ul class="footer-social-media-list">
+        <li title="send email">
+          <a href="mailto:physics.perc@utoronto.ca" aria-label="send email" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+              <path d="M3 7l9 6l9 -6"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="facebook">
+          <a href="https://www.facebook.com/PhysicsUofT/" aria-label="visit facebook page" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-facebook">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="X, formerly known as twitter">
+          <a href="https://twitter.com/uoftphysics" aria-label="visit x formerly known as twitter" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+              <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+            </svg>
+          </a>
+        </li>
+        <li title="instagram">
+          <a href="https://www.instagram.com/uoftphysics" aria-label="visit instagram" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-instagram"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"></path><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path><path d="M16.5 7.5v.01"></path></svg>
+          </a>
+        </li>
+        <li title="youtube">
+          <a href="https://www.youtube.com//channel/UCH2J2YJx3nfN1KygnB1ub4w" aria-label="visit youtube" class="dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"></path><path d="M10 9l5 3l-5 3z"></path></svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

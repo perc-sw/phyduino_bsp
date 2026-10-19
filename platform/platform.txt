@@ -18,8 +18,15 @@ compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
 tools.picotool.path={runtime.tools.picotool.path}
 
 # Prebuilt pico-sdk bundle for the selected board. (Not build.system.path:
-# arduino-cli reserves that name.)
-build.sdk.path={runtime.platform.path}/system/{build.variant}
+# arduino-cli reserves that name.) Tools > Operating System > FreeRTOS sets
+# build.sdk.os_suffix=_freertos (boards.txt): the bundle with the SDK built for
+# FreeRTOS, which also holds the kernel (docs/decisions/009-multicore-freertos.html).
+# FreeRTOS + CMSIS-RTOS2 also sets build.os.flags (-DPHYDUINO_CMSIS_RTOS2=1)
+# and build.os.libs (that bundle's libcmsis_os2.a; docs/decisions/010-cmsis-rtos2.html).
+build.sdk.os_suffix=
+build.sdk.path={runtime.platform.path}/system/{build.variant}{build.sdk.os_suffix}
+build.os.flags=
+build.os.libs=
 
 # --- Tools ---------------------------------------------------------------------
 compiler.c.cmd=arm-none-eabi-gcc
@@ -60,16 +67,16 @@ compiler.S.extra_flags=
 compiler.ldflags=
 
 # --- Compile -------------------------------------------------------------------
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.c.extra_flags} {includes} "{source_file}" -o "{object_file}"
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.cpp.extra_flags} {includes} "{source_file}" -o "{object_file}"
-recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} {compiler.cpu.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {compiler.S.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {build.os.flags} {compiler.c.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.cpu.flags} {compiler.optimize.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {build.os.flags} {compiler.cpp.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} {compiler.cpu.flags} {compiler.sdk.flags} {compiler.arduino.defines} {build.extra_flags} {build.os.flags} {compiler.S.extra_flags} {includes} "{source_file}" -o "{object_file}"
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" rcs "{archive_file_path}" "{object_file}"
 
 # --- Link ----------------------------------------------------------------------
 # libpico.a is linked --whole-archive: the SDK registers its start-up code in
 # special sections nothing refers to by name, so a normal archive search would
 # silently drop it. --gc-sections still removes anything unused.
-recipe.c.combine.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpu.flags} {compiler.optimize.flags} "@{build.sdk.path}/link_flags.txt" "-L{build.sdk.path}" "-T{build.sdk.path}/memmap.ld" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} "{build.sdk.path}/lib/boot2.o" -Wl,--start-group "{archive_file_path}" -Wl,--whole-archive "{build.sdk.path}/lib/libpico.a" -Wl,--no-whole-archive -lstdc++ -lm -lc -Wl,--end-group
+recipe.c.combine.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpu.flags} {compiler.optimize.flags} "@{build.sdk.path}/link_flags.txt" "-L{build.sdk.path}" "-T{build.sdk.path}/memmap.ld" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} "{build.sdk.path}/lib/boot2.o" -Wl,--start-group "{archive_file_path}" {build.os.libs} -Wl,--whole-archive "{build.sdk.path}/lib/libpico.a" -Wl,--no-whole-archive -lstdc++ -lm -lc -Wl,--end-group
 
 # --- Outputs -------------------------------------------------------------------
 recipe.objcopy.uf2.pattern="{tools.picotool.path}/picotool" uf2 convert "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.uf2" --family {build.chip}

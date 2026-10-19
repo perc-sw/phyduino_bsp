@@ -14,8 +14,11 @@ set(BOARD_VARIANT phyduino_pico)
 # implement what it needs in fake_sdk.h / fake_sdk.cpp.
 set(FAKE_SDK_HEADERS
     pico.h
+    pico/critical_section.h
+    pico/multicore.h
     pico/time.h
     pico/i2c_slave.h
+    pico/util/queue.h
     hardware/adc.h
     hardware/clocks.h
     hardware/dma.h
@@ -35,12 +38,14 @@ endforeach()
 
 # --- Code under test --------------------------------------------------------------------
 # Everything in the core, variant and libraries, except files that need the
-# real USB stack (TinyUSB, ArduinoCore-API PluggableUSB) or are the program entry point.
+# real USB stack (TinyUSB, ArduinoCore-API PluggableUSB), the linker's heap
+# symbols (heap.cpp) or are the program entry point. (freertos.cpp compiles to
+# nothing here: the tests are the no-OS build.)
 file(GLOB_RECURSE CODE_UNDER_TEST CONFIGURE_DEPENDS
     "${PLATFORM_DIR}/cores/phyduino/*.cpp"
     "${PLATFORM_DIR}/variants/${BOARD_VARIANT}/*.cpp"
     "${PLATFORM_DIR}/libraries/*/src/*.cpp")
-list(FILTER CODE_UNDER_TEST EXCLUDE REGEX "/cores/phyduino/(main\\.cpp|SerialUSB\\.cpp|usb/|api/PluggableUSB\\.cpp)")
+list(FILTER CODE_UNDER_TEST EXCLUDE REGEX "/cores/phyduino/(main\\.cpp|heap\\.cpp|SerialUSB\\.cpp|usb/|api/PluggableUSB\\.cpp)")
 
 # Same Arduino defines as the board build (ARDUINO_*, F_CPU, USB_*), from platform.txt/boards.txt.
 include("${CMAKE_SOURCE_DIR}/cmake/arduino_properties.cmake")

@@ -13,6 +13,22 @@
       }
     },
     {
+      "name": "phyduino_pico_freertos",
+      "displayName": "Phyduino Pico (RP2040), FreeRTOS - verification build",
+      "inherits": "phyduino_pico",
+      "cacheVariables": {
+        "PHYDUINO_MENUS": "os=freertos"
+      }
+    },
+    {
+      "name": "phyduino_pico_cmsis",
+      "displayName": "Phyduino Pico (RP2040), FreeRTOS + CMSIS-RTOS2 - verification build",
+      "inherits": "phyduino_pico",
+      "cacheVariables": {
+        "PHYDUINO_MENUS": "os=cmsis"
+      }
+    },
+    {
       "name": "host-tests",
       "displayName": "PC-side unit tests (fake pico-sdk)",
       "generator": "Ninja",
@@ -30,6 +46,14 @@
       "configurePreset": "phyduino_pico"
     },
     {
+      "name": "phyduino_pico_freertos",
+      "configurePreset": "phyduino_pico_freertos"
+    },
+    {
+      "name": "phyduino_pico_cmsis",
+      "configurePreset": "phyduino_pico_cmsis"
+    },
+    {
       "name": "host-tests",
       "configurePreset": "host-tests"
     }
@@ -45,6 +69,32 @@
         {
           "type": "build",
           "name": "phyduino_pico"
+        }
+      ]
+    },
+    {
+      "name": "phyduino_pico_freertos",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "phyduino_pico_freertos"
+        },
+        {
+          "type": "build",
+          "name": "phyduino_pico_freertos"
+        }
+      ]
+    },
+    {
+      "name": "phyduino_pico_cmsis",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "phyduino_pico_cmsis"
+        },
+        {
+          "type": "build",
+          "name": "phyduino_pico_cmsis"
         }
       ]
     },

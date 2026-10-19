@@ -5,6 +5,7 @@
 #include "fake_sdk.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace fake {
 
@@ -258,6 +259,66 @@ void irq_remove_handler(uint irq, irq_handler_t) { hw.irq_handlers[irq] = nullpt
 void irq_set_enabled(uint irq, bool enabled) { hw.irq_enabled[irq] = enabled; }
 uint32_t save_and_disable_interrupts() { return static_cast<uint32_t>(hw.interrupts_disabled++); }
 void restore_interrupts(uint32_t) { hw.interrupts_disabled--; }
+void __wfe() {}
+void tight_loop_contents() {}
+uint get_core_num() { return hw.core_num; }
+
+// --- critical sections ---------------------------------------------------------------
+void critical_section_init(critical_section_t* crit_sec) { crit_sec->initialised = true; }
+bool critical_section_is_initialized(critical_section_t* crit_sec) { return crit_sec->initialised; }
+void critical_section_enter_blocking(critical_section_t* crit_sec) {
+    if (!crit_sec->initialised) throw std::logic_error("critical section used before critical_section_init()");
+    hw.interrupts_disabled++;
+}
+void critical_section_exit(critical_section_t*) { hw.interrupts_disabled--; }
+
+// --- queues ------------------------------------------------------------------------------
+void queue_init(queue_t* q, uint element_size, uint element_count) {
+    q->element_size = element_size;
+    q->element_count = element_count;
+    q->items.clear();
+}
+bool queue_try_add(queue_t* q, const void* data) {
+    if (q->element_count == 0) throw std::logic_error("queue used before queue_init()");
+    if (q->items.size() >= q->element_count) return false;
+    const auto* bytes = static_cast<const uint8_t*>(data);
+    q->items.emplace_back(bytes, bytes + q->element_size);
+    return true;
+}
+bool queue_try_remove(queue_t* q, void* data) {
+    if (q->element_count == 0) throw std::logic_error("queue used before queue_init()");
+    if (q->items.empty()) return false;
+    std::copy(q->items.front().begin(), q->items.front().end(), static_cast<uint8_t*>(data));
+    q->items.pop_front();
+    return true;
+}
+void queue_add_blocking(queue_t* q, const void* data) {
+    if (!queue_try_add(q, data)) throw std::runtime_error("queue_add_blocking() on a full queue would wait forever");
+}
+void queue_remove_blocking(queue_t* q, void* data) {
+    if (!queue_try_remove(q, data)) throw std::runtime_error("queue_remove_blocking() on an empty queue would wait forever");
+}
+uint queue_get_level(queue_t* q) { return static_cast<uint>(q->items.size()); }
+
+// --- multicore -----------------------------------------------------------------------------
+void multicore_launch_core1(void (*entry)()) {
+    hw.core1_entry = entry;
+    hw.core1_launches++;
+}
+void multicore_reset_core1() {
+    hw.core1_resets++;
+    hw.lockout_victim[1] = false;  // as the SDK does
+}
+void multicore_lockout_victim_init() { hw.lockout_victim[hw.core_num] = true; }
+bool multicore_lockout_victim_is_initialized(uint core_num) { return hw.lockout_victim[core_num]; }
+void multicore_lockout_start_blocking() {
+    hw.lockout_starts++;
+    hw.lockout_active = true;
+}
+void multicore_lockout_end_blocking() {
+    hw.lockout_ends++;
+    hw.lockout_active = false;
+}
 
 // --- uart ---------------------------------------------------------------------------------------
 uint uart_init(uart_inst_t* u, uint baud) {

@@ -42,6 +42,20 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 | 20 | `usbpd_status` | After 19: USB-PD Power "Use chip's stored settings", 20 V charger | VBUS ≈ 5 V from plug-in, profiles 5.0V/2.0A; then rebuilt with Up to 20 V: VBUS ≈ 20 V (the menu changes the working registers only; `r` in `usbpd_nvm` still shows 5 V only) |
 | 27 | `UsbPdPower` | Same setup as 14, but Tools > USB-PD Power: 5 V only (default); send `20`, then `9`, then `5`, then `7` | At start: profiles 5.0V/2.00A, VBUS ≈ 5 V; `20`: "Asking for up to 20 V", profiles 5.0V/2.00A 9.0V/1.00A 20.0V/0.50A, VBUS ≈ 20 V (POK3 lit); `9`: VBUS ≈ 9 V (POK2 lit); `5`: VBUS ≈ 5 V; `7`: "Send 5, 9, 12, 15 or 20." |
 
+### Multicore, FreeRTOS and CMSIS-RTOS2 (v0.1.1)
+
+| # | Sketch | Setup | Expected |
+|---|---|---|---|
+| 28 | `MulticoreBasics` | Tools > Operating System: None; Serial Monitor 115200 | "setup() runs on core 0", then "loop() on core 0: n" once a second; LED flashes 100 ms on, 400 ms off at the same time |
+| 29 | `MulticoreFifo` | As 28 | LED blinks at 2 Hz throughout; four answers in order: 168, 1229, 9592, 78498 primes, the last taking seconds |
+| 30 | `multicore_idle` | As 28 | "PASS" once a second; echo = round + 1; count while idle +0, after resume a large number; LED blinks |
+| 31 | `multicore_idle`, `MulticoreBasics` | As 28 and 30, but Tools > Operating System: FreeRTOS (SMP) | Same results as 28 and 30 |
+| 32 | `FreeRtosTasks` | FreeRTOS; Serial Monitor 115200 | LED toggles every 250 ms; "countTask on core 0/1: n" once a second; every 5 s a list with loop, blink, count, IDLE0, IDLE1, Tmr Svc; Cores 0x1 for loop, 0xffffffff for blink and count; no task's Stack column near 0 |
+| 33 | `FreeRtosQueue` | FreeRTOS; potentiometer wiper (or AREF) on A0 | A line every 100 ms, times 100 ms apart; A0 matches `AnalogMillivolts`; no "Queue full" |
+| 34 | `serial_echo` | FreeRTOS; type, then Upload another sketch with the port selected | Echo works; the IDE's 1200-baud reset still starts the upload (no BOOTSEL button) |
+| 35 | `CmsisRtos2Threads` | Tools > Operating System: FreeRTOS (SMP) + CMSIS-RTOS2; potentiometer wiper (or AREF) on A0 | "Kernel: FreeRTOS V11.1.0+"; LED flashes once a second (100 ms on); a line every 100 ms, times 100 ms apart; A0 matches `AnalogMillivolts`; no "Queue full" |
+| 36 | `FreeRtosTasks`, `MulticoreBasics` | As 35 (CMSIS-RTOS2 option) | Same results as 32 and 28, except that Prio is 23 for loop and 55 for Tmr Svc |
+
 ### Analog acquisition (`Phyduino` examples)
 
 | # | Sketch | Setup | Expected |

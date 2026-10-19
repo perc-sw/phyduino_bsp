@@ -58,6 +58,11 @@
       <tab type="user" visible="yes" url="@ref AnalogBurst.ino" title="Analog Burst"/>
       <tab type="user" visible="yes" url="@ref AnalogBurstBackground.ino" title="Analog Burst Background"/>
       <tab type="user" visible="yes" url="@ref UsbPdPower.ino" title="USB-PD Power"/>
+      <tab type="user" visible="yes" url="@ref MulticoreBasics.ino" title="Multicore Basics"/>
+      <tab type="user" visible="yes" url="@ref MulticoreFifo.ino" title="Multicore FIFO"/>
+      <tab type="user" visible="yes" url="@ref FreeRtosTasks.ino" title="FreeRTOS Tasks"/>
+      <tab type="user" visible="yes" url="@ref FreeRtosQueue.ino" title="FreeRTOS Queue"/>
+      <tab type="user" visible="yes" url="@ref CmsisRtos2Threads.ino" title="CMSIS-RTOS2 Threads"/>
       <tab type="user" visible="yes" url="@ref SpiLoopback.ino" title="SPI Loopback"/>
       <tab type="user" visible="yes" url="@ref I2CScanner.ino" title="I2C Scanner"/>
       <tab type="user" visible="yes" url="@ref PeripheralReceiver.ino" title="Peripheral Receiver"/>

@@ -2,9 +2,11 @@
 # settings as the Arduino build (platform.txt and boards.txt stay the only
 # place they are written).
 #
-#   arduino_load_properties(<platform dir> <board id>)
+#   arduino_load_properties(<platform dir> <board id> [<menu>=<option>...])
 #       Loads platform.txt, then boards.txt entries for <board id> (prefix
 #       stripped), then platform.local.txt. Later files win, as in Arduino.
+#       Each <menu>=<option> (e.g. os=freertos) applies that Tools menu
+#       option's settings; other menus keep the board's defaults.
 #   arduino_set_property(<key> <value>)
 #       Adds or overrides a property (e.g. runtime.platform.path).
 #   arduino_property(<out var> <key>)
@@ -16,22 +18,30 @@ function(arduino_set_property key value)
     set_property(GLOBAL PROPERTY "ARDUINO_PROP_${key}" "${value}")
 endfunction()
 
-function(_arduino_load_file path board)
+function(_arduino_load_file path board menus)
     if(NOT EXISTS "${path}")
         return()
     endif()
     file(STRINGS "${path}" lines)
     foreach(line IN LISTS lines)
         if(NOT line MATCHES "^([A-Za-z0-9_.-]+)=(.*)$")
-            continue()  # comment, blank or menu line
+            continue()  # comment or blank line
         endif()
         set(key "${CMAKE_MATCH_1}")
         set(value "${CMAKE_MATCH_2}")
         if(board)
             if(NOT key MATCHES "^${board}\\.(.+)$")
-                continue()  # another board's setting
+                continue()  # another board's setting, or a menu title
             endif()
             set(key "${CMAKE_MATCH_1}")
+            if(key MATCHES "^menu\\.([^.]+)\\.([^.]+)\\.(.+)$")
+                if(NOT "${CMAKE_MATCH_1}=${CMAKE_MATCH_2}" IN_LIST menus)
+                    continue()  # a menu option that is not selected
+                endif()
+                set(key "${CMAKE_MATCH_3}")
+            elseif(key MATCHES "^menu\\.")
+                continue()  # a menu option's display name
+            endif()
         endif()
         arduino_set_property("${key}" "${value}")
     endforeach()
@@ -45,9 +55,9 @@ function(arduino_load_properties platform_dir board)
     if(NOT known)
         message(FATAL_ERROR "Board '${board}' is not defined in ${platform_dir}/boards.txt")
     endif()
-    _arduino_load_file("${platform_dir}/platform.txt" "")
-    _arduino_load_file("${platform_dir}/boards.txt" "${board}")
-    _arduino_load_file("${platform_dir}/platform.local.txt" "")
+    _arduino_load_file("${platform_dir}/platform.txt" "" "")
+    _arduino_load_file("${platform_dir}/boards.txt" "${board}" "${ARGN}")
+    _arduino_load_file("${platform_dir}/platform.local.txt" "" "")
 endfunction()
 
 function(arduino_property out key)

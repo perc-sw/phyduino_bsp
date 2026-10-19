@@ -31,3 +31,18 @@ int analogReadBits();
 
 // Waits while a burst is using `source`'s ADC (analog_burst.cpp).
 void analogWaitForBurst(AnalogSource source);
+
+// --- Multicore and FreeRTOS (RP2040.cpp, freertos.cpp) -----------------------------
+// Whether the sketch defines setup1() or loop1(), i.e. wants core 1.
+inline bool sketchUsesCore1() { return setup1 != nullptr || loop1 != nullptr; }
+
+// Without FreeRTOS: starts core 1 on setup1()/loop1() if the sketch wants it.
+void startCore1();
+
+// With FreeRTOS: creates the sketch's tasks and starts the scheduler. Never returns.
+void startFreeRtos();
+
+// With FreeRTOS: rp2040.idleOtherCore() (false if it could not, e.g. out of
+// memory) and rp2040.resumeOtherCore().
+bool freeRtosIdleOtherCore();
+void freeRtosResumeOtherCore();

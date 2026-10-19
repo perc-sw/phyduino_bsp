@@ -2,6 +2,58 @@
 
 Format: one section per version, newest first. Stage plan: README.md.
 
+## Unreleased: v0.1.1 (Stage 2: FreeRTOS and multi-core)
+
+Design: ADR 009 (docs/decisions/009-multicore-freertos.html) and ADR 010
+(docs/decisions/010-cmsis-rtos2.html). Built and host-tested; not yet run on
+hardware (checklist 28-36).
+
+### Added
+- Second core, arduino-pico compatible: a sketch that defines `setup1()` and
+  `loop1()` runs them on core 1 at the same time as `setup()`/`loop()`.
+- `rp2040` object (`RP2040.h`): `rp2040.fifo` (`push()`, `push_nb()`, `pop()`,
+  `pop_nb()`, `available()`; 16 values each way, in RAM), `idleOtherCore()`,
+  `resumeOtherCore()`, `restartCore1()`, `cpuid()`, `f_cpu()`,
+  `getTotalHeap()`, `getUsedHeap()`, `getFreeHeap()`.
+- Tools > Operating System menu: None (default) or FreeRTOS (SMP). FreeRTOS
+  links a second SDK bundle, `platform/system/phyduino_pico_freertos/`,
+  with the SDK built for the FreeRTOS RP2040 port (SDK mutexes and
+  `sleep_ms()` block the task) and the kernel (heap_3). `setup()`/`loop()`
+  and `setup1()`/`loop1()` run as tasks pinned to cores 0 and 1 (8 KB
+  stacks, priority 1). Configuration: `sdk-builder/freertos/FreeRTOSConfig.h`.
+- FreeRTOS kernel: submodule `extern/FreeRTOS-Kernel` (Raspberry Pi fork,
+  4f7299d, V11.1.0+); licences in `platform/licenses/`.
+- With FreeRTOS, `delay()` blocks the calling task and the default `yield()`
+  lets tasks of the same priority run. Stack overflow, out of memory and
+  failed kernel checks stop the board (weak hooks a sketch can replace).
+- Including `FreeRTOS.h` without the menu option stops the build with
+  "FreeRTOS is off. Choose Tools > Operating System > FreeRTOS (SMP)".
+- Phyduino library examples MulticoreBasics, MulticoreFifo, FreeRtosTasks
+  and FreeRtosQueue; test sketch `tests/sketches/multicore_idle`.
+- `sdk-builder/`: `PHYDUINO_OS=freertos` and preset `phyduino_pico_freertos`.
+  CMake verification build: preset `phyduino_pico_freertos` and
+  `PHYDUINO_MENUS` (any Tools menu option). `tests/compile_all.py` adds
+  `os=freertos` for sketches that include `FreeRTOS.h`. CI builds both.
+- Host tests for the FIFO, core 1 start-up, `idleOtherCore()` and
+  `restartCore1()`; 95 cases.
+- CMSIS-RTOS2: Tools > Operating System > FreeRTOS (SMP) + CMSIS-RTOS2 adds
+  ARM's CMSIS-RTOS2 API (`#include <cmsis_os2.h>`) on the same FreeRTOS
+  bundle, through ARM's CMSIS-FreeRTOS wrapper (v11.3.0, with CMSIS_6 v6.4.0
+  headers) in `lib/libcmsis_os2.a`, linked only with this option. `loop()`
+  and `loop1()` run at `osPriorityNormal`. Sources copied into
+  `sdk-builder/cmsis-rtos2/`; licences in `platform/licenses/`. Including
+  `cmsis_os2.h` without the option stops the build with a message naming it.
+- Phyduino library example CmsisRtos2Threads. CMake verification preset
+  `phyduino_pico_cmsis`; `tests/compile_all.py` adds `os=cmsis` for sketches
+  that include `cmsis_os2.h`; CI builds it.
+
+### Changed
+- FreeRTOS: 56 priorities (0-55, was 0-7), as CMSIS-RTOS2 requires; the
+  timer task is at 55. `configCPU_CLOCK_HZ` follows Tools > CPU Speed.
+- `Serial1`/`Serial2` receive buffers are guarded by a critical section
+  (spin lock) instead of masking interrupts, so either core can read a port
+  whichever core called `begin()`.
+
 ## Unreleased: v0.1.0 (Stage 1: Phyduino Pico board package)
 
 ### Added

@@ -52,6 +52,11 @@
     <p>From the repo root:</p>
     <pre class="code"><code>cmake --workflow --preset phyduino_pico</code></pre>
     <p>Output in <code>build/phyduino_pico/</code>: <code>&lt;sketch&gt;.elf</code>, <code>.map</code>, <code>.uf2</code> (if picotool is found) and <code>compile_commands.json</code>. Build one sketch with <code>cmake --build --preset phyduino_pico --target blink</code>.</p>
+    <p>The same with Tools &gt; Operating System &gt; FreeRTOS, into <code>build/phyduino_pico_freertos/</code>:</p>
+    <pre class="code"><code>cmake --workflow --preset phyduino_pico_freertos</code></pre>
+    <p>With FreeRTOS + CMSIS-RTOS2, into <code>build/phyduino_pico_cmsis/</code>:</p>
+    <pre class="code"><code>cmake --workflow --preset phyduino_pico_cmsis</code></pre>
+    <p>Other Tools menu options are set with <code>-DPHYDUINO_MENUS="os=freertos;cpu=200"</code> (menu ids and option ids from <code>boards.txt</code>); unset menus keep the board's defaults. Sketches that include <code>FreeRTOS.h</code> are skipped unless <code>os=freertos</code> or <code>os=cmsis</code>, and sketches that include <code>cmsis_os2.h</code> unless <code>os=cmsis</code>.</p>
     <p>Needs CMake ≥ 3.21, Ninja and the Arm toolchain. The compiler is found via <code>-DPHYDUINO_TOOLCHAIN_PATH=...</code>, else <code>compiler.path</code> in <code>platform/platform.local.txt</code> (the same file as the Arduino dev setup), else <code>PATH</code>.</p>
   </div>
 

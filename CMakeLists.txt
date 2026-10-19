@@ -5,6 +5,11 @@
 #       warnings, using the flags in platform/platform.txt + boards.txt and the
 #       committed SDK bundle.          Guide: docs/maintenance/cmake-verify.html
 #
+#   cmake --workflow --preset phyduino_pico_freertos   The same with Tools >
+#       Operating System > FreeRTOS (FreeRTOS SDK bundle; every sketch).
+#   cmake --workflow --preset phyduino_pico_cmsis      The same with FreeRTOS
+#       + CMSIS-RTOS2 (also the CMSIS-RTOS2 sketches).
+#
 #   cmake --workflow --preset host-tests      PC-side unit tests: the same
 #       sources compiled for this PC against a fake pico-sdk.
 #                                      Guide: docs/maintenance/host-tests.html
@@ -31,10 +36,11 @@ endif()
 project(phyduino_verify LANGUAGES C CXX)
 
 set(PHYDUINO_BOARD "phyduino_pico" CACHE STRING "Board id from platform/boards.txt")
+set(PHYDUINO_MENUS "" CACHE STRING "Tools menu options as a list, e.g. os=freertos;cpu=200")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/phyduino.cmake)
-phyduino_setup(${PHYDUINO_BOARD})
+phyduino_setup(${PHYDUINO_BOARD} ${PHYDUINO_MENUS})
 
 # Optional .uf2 output, using the same picotool as the Arduino build.
 arduino_property(picotool_dir tools.picotool.path)

@@ -18,9 +18,9 @@ jobs:
       - uses: ./.github/actions/setup-build
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"
-      - name: Compile sketches, other Tools menu options (C++ Standard, CPU Speed, Optimize, USB-PD Power)
+      - name: Compile sketches, other Tools menu options (C++ Standard, CPU Speed, Optimize, USB-PD Power, Operating System)
         run: |
-          for opt in cppstd=gnu14 cppstd=gnu20 cppstd=gnu23 cpu=50 cpu=200 opt=O2 opt=O3 opt=Og usbpd=20v usbpd=nvm; do
+          for opt in cppstd=gnu14 cppstd=gnu20 cppstd=gnu23 cpu=50 cpu=200 opt=O2 opt=O3 opt=Og usbpd=20v usbpd=nvm os=freertos os=cmsis; do
             echo "::group::$opt"
             python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG" \
               --fqbn "phyduino:rp2:phyduino_pico:$opt" || exit 1
@@ -38,6 +38,10 @@ jobs:
         run: sudo apt-get install -y ninja-build
       - name: CMake verification build
         run: cmake --workflow --preset phyduino_pico
+      - name: CMake verification build, FreeRTOS
+        run: cmake --workflow --preset phyduino_pico_freertos
+      - name: CMake verification build, FreeRTOS + CMSIS-RTOS2
+        run: cmake --workflow --preset phyduino_pico_cmsis
 
   host-tests:
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)

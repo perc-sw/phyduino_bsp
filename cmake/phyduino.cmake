@@ -5,10 +5,13 @@
 # boards.txt (arduino_properties.cmake), plus strict warnings on our own code.
 # Nothing here ships: the release zip contains only platform/.
 #
-#   phyduino_setup(<board id>)
-#       Creates targets phyduino_core and phyduino_lib_<Library> for one board.
+#   phyduino_setup(<board id> [<menu>=<option>...])
+#       Creates targets phyduino_core and phyduino_lib_<Library> for one board,
+#       with the given Tools menu options (e.g. os=freertos).
 #   phyduino_add_sketch(<sketch dir>)
 #       Builds <name>.elf (+ .uf2 if picotool is found) from a sketch folder.
+#       A sketch that includes FreeRTOS.h is skipped unless os=freertos or
+#       os=cmsis; one that includes cmsis_os2.h unless os=cmsis.
 #
 # Guide: docs/maintenance/cmake-verify.html
 include_guard(GLOBAL)
@@ -25,7 +28,7 @@ endif()
 
 # --- Board setup -----------------------------------------------------------------
 function(phyduino_setup board)
-    arduino_load_properties("${PHYDUINO_PLATFORM_DIR}" "${board}")
+    arduino_load_properties("${PHYDUINO_PLATFORM_DIR}" "${board}" ${ARGN})
 
     # Values the Arduino IDE would provide at build time.
     arduino_set_property(runtime.platform.path "${PHYDUINO_PLATFORM_DIR}")
@@ -39,12 +42,24 @@ function(phyduino_setup board)
     if(NOT EXISTS "${sdk}/lib/libpico.a")
         message(FATAL_ERROR "SDK bundle missing: ${sdk} (see docs/maintenance/update-pico-sdk.html)")
     endif()
+    file(STRINGS "${sdk}/compile_flags.txt" freertos REGEX "^-DPHYDUINO_FREERTOS=1$")
+    if(freertos)
+        set(PHYDUINO_FREERTOS ON PARENT_SCOPE)
+    else()
+        set(PHYDUINO_FREERTOS OFF PARENT_SCOPE)
+    endif()
+    arduino_property_args(os_flags build.os.flags)
+    if("-DPHYDUINO_CMSIS_RTOS2=1" IN_LIST os_flags)
+        set(PHYDUINO_CMSIS_RTOS2 ON PARENT_SCOPE)
+    else()
+        set(PHYDUINO_CMSIS_RTOS2 OFF PARENT_SCOPE)
+    endif()
 
     # Compile flags shared by C and C++, minus what CMake handles itself
     # (-c, -MMD) and Arduino's default -w (we want warnings here).
     arduino_property_args(common
         compiler.cpu.flags compiler.optimize.flags compiler.sdk.flags
-        compiler.arduino.defines build.extra_flags)
+        compiler.arduino.defines build.extra_flags build.os.flags)
     arduino_property_args(c_only   compiler.c.flags)
     arduino_property_args(cpp_only compiler.cpp.flags)
     foreach(list_var c_only cpp_only)
@@ -65,6 +80,8 @@ function(phyduino_setup board)
     set(PHYDUINO_LINK_OPTIONS
         ${link_cpu} "@${sdk}/link_flags.txt" "-L${sdk}" "-T${sdk}/memmap.ld" PARENT_SCOPE)
     set(PHYDUINO_SDK_PATH "${sdk}" PARENT_SCOPE)
+    arduino_property_args(os_libs build.os.libs)
+    set(PHYDUINO_OS_LIBS "${os_libs}" PARENT_SCOPE)
     arduino_property(chip build.chip)
     set(PHYDUINO_CHIP "${chip}" PARENT_SCOPE)
 
@@ -94,7 +111,7 @@ function(phyduino_setup board)
         list(APPEND libraries "${name}")
     endforeach()
     set(PHYDUINO_LIBRARIES "${libraries}" PARENT_SCOPE)
-    message(STATUS "Phyduino: board ${board}, libraries: ${libraries}")
+    message(STATUS "Phyduino: board ${board} [${ARGN}], SDK bundle ${sdk}, libraries: ${libraries}")
 endfunction()
 
 # Strict warnings on our sources; vendored ArduinoCore-API (core/api) compiles quietly.
@@ -129,6 +146,14 @@ function(phyduino_add_sketch dir)
     set(used_libs "")
     foreach(ino IN LISTS inos)
         file(READ "${ino}" body)
+        if(NOT PHYDUINO_FREERTOS AND body MATCHES "#include[ \t]*[<\"]FreeRTOS\\.h[>\"]")
+            message(STATUS "Phyduino: ${name} needs FreeRTOS, skipped (build with os=freertos)")
+            return()
+        endif()
+        if(NOT PHYDUINO_CMSIS_RTOS2 AND body MATCHES "#include[ \t]*[<\"]cmsis_os2\\.h[>\"]")
+            message(STATUS "Phyduino: ${name} needs CMSIS-RTOS2, skipped (build with os=cmsis)")
+            return()
+        endif()
         string(APPEND text "#line 1 \"${ino}\"\n${body}\n")
         foreach(lib IN LISTS PHYDUINO_LIBRARIES)
             if(body MATCHES "#include[ \t]*[<\"]${lib}\\.h[>\"]")
@@ -156,7 +181,7 @@ function(phyduino_add_sketch dir)
     target_link_libraries(${name} PRIVATE
         "${PHYDUINO_SDK_PATH}/lib/boot2.o"
         -Wl,--start-group
-        ${used_libs} phyduino_core
+        ${used_libs} phyduino_core ${PHYDUINO_OS_LIBS}
         -Wl,--whole-archive "${PHYDUINO_SDK_PATH}/lib/libpico.a" -Wl,--no-whole-archive
         stdc++ m c
         -Wl,--end-group)

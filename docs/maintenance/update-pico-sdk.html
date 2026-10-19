@@ -61,9 +61,10 @@ git -C extern/pico-sdk submodule update --init lib/tinyusb</code></pre>
     <li class="step">
       <span class="step-num">2</span>
       <div class="step-body">
-        <p>Regenerate the bundle for every board (from <code>sdk-builder/</code>):</p>
-        <pre class="code"><code>cmake --workflow --preset phyduino_pico</code></pre>
-        <p>This rewrites <code>platform/system/phyduino_pico/</code> completely. If it stops with "Two SDK include dirs provide different files with the same name", the new SDK added a clashing header; the message names it.</p>
+        <p>Regenerate both bundles for every board, without and with FreeRTOS (from <code>sdk-builder/</code>):</p>
+        <pre class="code"><code>cmake --workflow --preset phyduino_pico
+cmake --workflow --preset phyduino_pico_freertos</code></pre>
+        <p>These rewrite <code>platform/system/phyduino_pico/</code> and <code>platform/system/phyduino_pico_freertos/</code> completely. The FreeRTOS one is also regenerated after moving <code>extern/FreeRTOS-Kernel</code> (the Raspberry Pi fork; it has no tags, so check out a commit) or editing <code>sdk-builder/freertos/FreeRTOSConfig.h</code> or the CMSIS-RTOS2 files in <code>sdk-builder/cmsis-rtos2/</code> (copied from ARM's CMSIS-FreeRTOS and CMSIS_6; to update them, follow its <code>README.md</code>); a sketch cannot change that configuration. If it stops with "Two SDK include dirs provide different files with the same name", the new SDK added a clashing header; the message names it.</p>
       </div>
     </li>
     <li class="step">
@@ -75,19 +76,19 @@ git -C extern/pico-sdk submodule update --init lib/tinyusb</code></pre>
     <li class="step">
       <span class="step-num">4</span>
       <div class="step-body">
-        <p><code>python tests/compile_all.py</code>. Fix any core code the new SDK broke.</p>
+        <p><code>python tests/compile_all.py</code>, and again with <code>--fqbn phyduino:rp2:phyduino_pico:os=freertos</code> and <code>--fqbn phyduino:rp2:phyduino_pico:os=cmsis</code>. Fix any core code the new SDK broke.</p>
       </div>
     </li>
     <li class="step">
       <span class="step-num">5</span>
       <div class="step-body">
-        <p>Hardware-test (<a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a>): at least Blink, Serial echo, upload via 1200-baud touch.</p>
+        <p>Hardware-test (<a href="../development/hardware-checklist.html"><code>tests/hardware-checklist.md</code></a>): at least Blink, Serial echo, upload via 1200-baud touch, and items 30-36 (multicore, FreeRTOS and CMSIS-RTOS2).</p>
       </div>
     </li>
     <li class="step">
       <span class="step-num">6</span>
       <div class="step-body">
-        <p>Refresh <code>platform/licenses/pico-sdk.txt</code> and <code>tinyusb.txt</code> from <code>extern/pico-sdk/</code> (<code>LICENSE.TXT</code>, <code>lib/tinyusb/LICENSE</code>) in case they changed.</p>
+        <p>Refresh <code>platform/licenses/pico-sdk.txt</code> and <code>tinyusb.txt</code> from <code>extern/pico-sdk/</code> (<code>LICENSE.TXT</code>, <code>lib/tinyusb/LICENSE</code>), and <code>FreeRTOS-Kernel.txt</code> and <code>FreeRTOS-RP2040-port.txt</code> from <code>extern/FreeRTOS-Kernel/</code> (<code>LICENSE.md</code>, <code>portable/ThirdParty/GCC/RP2040/LICENSE.md</code>), in case they changed. <code>CMSIS-FreeRTOS.txt</code> and <code>CMSIS_6.txt</code> come from the <code>LICENSE</code> files in <code>sdk-builder/cmsis-rtos2/</code>.</p>
       </div>
     </li>
     <li class="step">

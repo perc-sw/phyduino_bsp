@@ -66,6 +66,10 @@
    every compile gets:
      @system/&lt;board&gt;/compile_flags.txt   (SDK -D defines)
      -isystem system/&lt;board&gt;/include     (all SDK + TinyUSB headers)
+   (Tools &gt; Operating System &gt; FreeRTOS: system/&lt;board&gt;_freertos/ instead,
+    the SDK built for FreeRTOS plus the kernel; <a href="../decisions/009-multicore-freertos.html">ADR 009</a>.
+    FreeRTOS + CMSIS-RTOS2: the same bundle, also linking its lib/libcmsis_os2.a;
+    <a href="../decisions/010-cmsis-rtos2.html">ADR 010</a>)
    ▼
  link ──► objects + core.a
        + system/&lt;board&gt;/lib/boot2.o
@@ -151,7 +155,7 @@
       <li>Upstream code is untouched: <code>extern/</code> (submodules) and <code>platform/cores/phyduino/api/</code> (vendored ArduinoCore-API, see <a href="../../platform/cores/phyduino/api/UPSTREAM.md"><code>UPSTREAM.md</code></a>).</li>
       <li>Design decisions and their reasons: <a href="../decisions/index.html"><code>docs/decisions/</code></a>.</li>
       <li>Step-by-step recipes for recurring jobs: <a href="../maintenance/index.html"><code>docs/maintenance/</code></a>.</li>
-      <li>Two ways to build the same code: arduino-cli (<code>tests/compile_all.py</code>) and CMake (<code>cmake --workflow --preset phyduino_pico</code>, strict warnings), plus PC-side unit tests (<code>cmake --workflow --preset host-tests</code>). All three run in CI. If <code>recipe.c.combine.pattern</code> changes, update the link step in <code>cmake/phyduino.cmake</code> too.</li>
+      <li>Two ways to build the same code: arduino-cli (<code>tests/compile_all.py</code>) and CMake (<code>cmake --workflow --preset phyduino_pico</code>, <code>phyduino_pico_freertos</code> for the FreeRTOS bundle and <code>phyduino_pico_cmsis</code> for CMSIS-RTOS2; strict warnings), plus PC-side unit tests (<code>cmake --workflow --preset host-tests</code>). All three run in CI. If <code>recipe.c.combine.pattern</code> changes, update the link step in <code>cmake/phyduino.cmake</code> too.</li>
     </ul>
   </div>
 

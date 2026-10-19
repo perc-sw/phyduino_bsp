@@ -1,6 +1,7 @@
 # GENERATED — do not edit
 
-This folder is the pico-sdk prebuilt for the **phyduino_pico** board (rp2040).
+This folder is the pico-sdk prebuilt for the **phyduino_pico** board (rp2040),
+operating system: **none**.
 It is written by `sdk-builder/` and committed so the Arduino IDE works straight
 after cloning.
 

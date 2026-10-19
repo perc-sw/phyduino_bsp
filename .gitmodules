@@ -7,3 +7,6 @@
 [submodule "extern/doctest"]
 	path = extern/doctest
 	url = https://github.com/doctest/doctest.git
+[submodule "extern/FreeRTOS-Kernel"]
+	path = extern/FreeRTOS-Kernel
+	url = https://github.com/raspberrypi/FreeRTOS-Kernel.git

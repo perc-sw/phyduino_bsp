@@ -8,12 +8,22 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "PHYDUINO_BOARD": "phyduino_pico",
+        "PHYDUINO_OS": "none",
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "phyduino_pico_freertos",
+      "displayName": "Phyduino Pico (RP2040) with FreeRTOS",
+      "inherits": "phyduino_pico",
+      "cacheVariables": {
+        "PHYDUINO_OS": "freertos"
       }
     }
   ],
   "buildPresets": [
-    { "name": "phyduino_pico", "configurePreset": "phyduino_pico" }
+    { "name": "phyduino_pico", "configurePreset": "phyduino_pico" },
+    { "name": "phyduino_pico_freertos", "configurePreset": "phyduino_pico_freertos" }
   ],
   "workflowPresets": [
     {
@@ -21,6 +31,13 @@
       "steps": [
         { "type": "configure", "name": "phyduino_pico" },
         { "type": "build",     "name": "phyduino_pico" }
+      ]
+    },
+    {
+      "name": "phyduino_pico_freertos",
+      "steps": [
+        { "type": "configure", "name": "phyduino_pico_freertos" },
+        { "type": "build",     "name": "phyduino_pico_freertos" }
       ]
     }
   ]

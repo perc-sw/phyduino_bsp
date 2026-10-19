@@ -6,6 +6,7 @@ menu.cpu=CPU Speed
 menu.opt=Optimize
 menu.cppstd=C++ Standard
 menu.usbpd=USB-PD Power (VIN)
+menu.os=Operating System
 
 ###############################################################################
 # Phyduino Pico (RP2040)  — docs/boards/phyduino_pico.html
@@ -95,3 +96,21 @@ phyduino_pico.menu.usbpd.20v=Up to 20 V
 phyduino_pico.menu.usbpd.20v.build.usbpd_max_mv=20000
 phyduino_pico.menu.usbpd.nvm=Use chip's stored settings (NVM)
 phyduino_pico.menu.usbpd.nvm.build.usbpd_max_mv=0
+
+# Tools > Operating System. FreeRTOS links the FreeRTOS SDK bundle
+# (system/phyduino_pico_freertos/, PHYDUINO_FREERTOS=1): setup()/loop() and
+# setup1()/loop1() become tasks on cores 0 and 1 (SMP on both cores).
+# FreeRTOS + CMSIS-RTOS2 uses the same bundle, adds ARM's CMSIS-RTOS2 API
+# (PHYDUINO_CMSIS_RTOS2=1, lib/libcmsis_os2.a; docs/decisions/010-cmsis-rtos2.html).
+phyduino_pico.menu.os.none=None (default)
+phyduino_pico.menu.os.none.build.sdk.os_suffix=
+phyduino_pico.menu.os.none.build.os.flags=
+phyduino_pico.menu.os.none.build.os.libs=
+phyduino_pico.menu.os.freertos=FreeRTOS (SMP)
+phyduino_pico.menu.os.freertos.build.sdk.os_suffix=_freertos
+phyduino_pico.menu.os.freertos.build.os.flags=
+phyduino_pico.menu.os.freertos.build.os.libs=
+phyduino_pico.menu.os.cmsis=FreeRTOS (SMP) + CMSIS-RTOS2
+phyduino_pico.menu.os.cmsis.build.sdk.os_suffix=_freertos
+phyduino_pico.menu.os.cmsis.build.os.flags=-DPHYDUINO_CMSIS_RTOS2=1
+phyduino_pico.menu.os.cmsis.build.os.libs="{build.sdk.path}/lib/libcmsis_os2.a"

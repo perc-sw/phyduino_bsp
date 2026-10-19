@@ -36,7 +36,7 @@ all documentation starts at [docs/index.html](docs/index.html).
 | Stage | Version | Scope |
 |---|---|---|
 | 1 | v0.1.0 | Phyduino Pico board package with integrated pico-sdk |
-| 2 | v0.1.1 | FreeRTOS and multi-core |
+| 2 | v0.1.1 | FreeRTOS (and CMSIS-RTOS2) and multi-core |
 | 3 | v0.2.0 | Phyduino Pico2 (RP2350B, Arm); libraries updated |
 | 4 | v0.2.1 | RISC-V build option for Phyduino Pico2 |
 

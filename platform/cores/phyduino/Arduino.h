@@ -21,7 +21,8 @@
 /// @ingroup core_interrupts
 /// Disables interrupts, for example while reading a variable an interrupt changes.
 /// Keep the section short: USB Serial, attachInterrupt() functions and tone()
-/// durations wait until interrupts() (millis() keeps counting).
+/// durations wait until interrupts() (millis() keeps counting). Only the
+/// calling core is affected: the other core keeps running (@ref core_multicore).
 #define noInterrupts()  __asm volatile("cpsid i" ::: "memory")
 
 #ifdef __cplusplus
@@ -275,5 +276,8 @@ void variantAnalogStopBurst();
 // --- Serial ports ----------------------------------------------------------------
 #include "SerialUSB.h"
 #include "SerialUART.h"
+
+// --- Multicore: setup1()/loop1(), rp2040.fifo -----------------------------------
+#include "RP2040.h"
 
 #endif  // __cplusplus

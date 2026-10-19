@@ -4,13 +4,15 @@
  *
  * Pins come from pins_arduino.h (PIN_SERIAL1_TX/RX, PIN_SERIAL2_TX/RX).
  * Received bytes are buffered by an interrupt; writes block until queued in
- * the 32-byte hardware FIFO.
+ * the 32-byte hardware FIFO. Either core may use a port, whichever core
+ * called begin(); bytes written from both cores at once can interleave.
  */
 #pragma once
 
 #include "api/HardwareSerial.h"
 #include "api/RingBuffer.h"
 #include "hardware/uart.h"
+#include "pico/critical_section.h"
 
 /**
  * @brief Serial port on one RP2040 UART; sketches use Serial1 and Serial2.
@@ -96,6 +98,7 @@ private:
     pin_size_t rx_pin_;
     bool started_ = false;
     arduino::RingBufferN<256> rx_buffer_;
+    critical_section_t rx_lock_ = {};  // guards rx_buffer_; set up by the first begin()
 };
 
 /// UART0 on D1 (TX) and D0 (RX).
