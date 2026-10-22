@@ -159,7 +159,10 @@ uint32_t startTimedBurst(uint8_t channel, uint32_t sample_rate_hz) {
 // as 16-bit frames [conversion byte, 0x00], the result of conversion i is the
 // low byte of received frame i followed by the high byte of frame i + 1 (four
 // leading zeros, then 12 bits). One extra frame of zeros clocks out the last
-// result without starting another conversion.
+// result without starting another conversion. SPI mode 3, not 0: in mode 0 the
+// RP2040's SPI adds 1.5 SCLK between frames (17.5 per sample, about 9 % slow);
+// in mode 3 frames run back to back. The chip accepts either (datasheet,
+// "3-Wire Serial Interface").
 uint32_t startClockedBurst(uint8_t channel, uint32_t sample_rate_hz) {
     uint32_t sclk = sample_rate_hz * kSclkPerSample;
     if (sclk > kMaxClockedSclkHz) sclk = kMaxClockedSclkHz;
@@ -167,7 +170,7 @@ uint32_t startClockedBurst(uint8_t channel, uint32_t sample_rate_hz) {
 
     writeByte(kRegSetup | kClockMode11 | kRefExternal);  // no unipolar/bipolar byte follows
     const uint actual_sclk = spi_set_baudrate(PHYDUINO_EXT_ADC_SPI, sclk);
-    spi_set_format(PHYDUINO_EXT_ADC_SPI, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    spi_set_format(PHYDUINO_EXT_ADC_SPI, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
     clocked_tx_word = static_cast<uint16_t>(conversionByte(channel, kNoScan) << 8);
 
     dma_tx = dma_claim_unused_channel(true);
