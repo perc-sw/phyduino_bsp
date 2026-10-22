@@ -319,8 +319,8 @@
         </tr>
         <tr>
           <td>33 · FreeRtosQueue</td>
-          <td>FreeRTOS; potentiometer wiper (or AREF) on A0<span class="check-expected">A line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo;</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>FreeRTOS; potentiometer wiper (or AREF) on A0<span class="check-expected">A line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1807 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
+          <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
           <td>34 · serial_echo</td>
@@ -329,8 +329,8 @@
         </tr>
         <tr>
           <td>35 · CmsisRtos2Threads</td>
-          <td>Tools &gt; Operating System: FreeRTOS (SMP) + CMSIS-RTOS2; potentiometer wiper (or AREF) on A0<span class="check-expected">&ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;; LED flashes once a second (100 ms on); a line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo;</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Tools &gt; Operating System: FreeRTOS (SMP) + CMSIS-RTOS2; potentiometer wiper (or AREF) on A0<span class="check-expected">&ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;; LED flashes once a second (100 ms on); a line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: &ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;, LED flashing once a second, 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1808 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
+          <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
           <td>36 · FreeRtosTasks, MulticoreBasics</td>
@@ -347,38 +347,38 @@
       <tbody>
         <tr>
           <td>21 · AnalogMillivolts</td>
-          <td>AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200<span class="check-expected">Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200<span class="check-expected">Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5 (got A0 2029–2058, A1 2035–2039, A2 2036–2041 mV, about 0.5 % low; A3, A4, A5 2047 mV)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>22 · AnalogAveraging</td>
-          <td>Potentiometer wiper (or nothing) on A0 and A3; Serial Monitor 115200<span class="check-expected">Spread shrinks as averaging rises from 1 to 32, on A0 and A3</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Potentiometer across 3.3 V and GND, wiper on A0; a second potentiometer across AREF and GND, wiper on A3; Serial Monitor 115200. Not AREF on A0 or a 3.3 V potentiometer on A3: each then follows the other ADC's reference and carries the slow ≈ 1 % drift of the 3.3 V rail, which averaging cannot remove<span class="check-expected">Spread shrinks as averaging rises from 1 to 32: clearly on A0 (≈ 10 → 1), only slightly on A3 (the MAX11635 is already quiet, ≈ 5 → 3) (got A0 spread 8–11, 4–5, 2–3, 2, 1–2 counts; A3 4–5, 7, 6, 4, 3. With AREF on A0 and a 3.3 V potentiometer on A3 the spread stayed 20–55 counts at every setting)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>23 · AnalogDifferential</td>
-          <td>Potentiometer wiper on A3 and A0, A4 and A1 to GND; turn from 0 V up<span class="check-expected">A3 − A4 matches A3 in <code>AnalogMillivolts</code>, below and above 1024 mV (above it, two readings); A0 − A1 matches A0</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Potentiometer wiper on A3 and A0 (one potentiometer for both, or one each; keep A3 under 2.048 V, e.g. a potentiometer across AREF and GND), A4 and A1 to GND; turn from 0 V up<span class="check-expected">A3 − A4 matches A3 in <code>AnalogMillivolts</code>, below and above 1024 mV (above it, two readings); A0 − A1 matches A0 (got A3 − A4 870 and 1799 mV against A3 875 and 1802 mV, a few mV lower with the sketch's averaging 16; A0 − A1 1048 mV against A0 1058 − A1 8 mV; one potentiometer each)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>24 · AnalogReadMultiple</td>
-          <td>Serial Plotter 115200; AREF jumper to one analog pin at a time<span class="check-expected">Six traces; only the jumpered pin's trace rises to ≈ 2048 mV</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Serial Plotter 115200; AREF jumper to one analog pin at a time, or known, different voltages on several pins at once (e.g. the wiring of 23)<span class="check-expected">Six traces, ≈ 20 lines a second; only the jumpered pin's trace rises to ≈ 2048 mV (or each trace matches that pin in <code>AnalogMillivolts</code>) (got, wired as 23: A0 1056, A1 8, A3 1801, A4 0 mV, each matching <code>AnalogMillivolts</code>; 59 lines in 3 s)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>25 · AnalogBurst</td>
-          <td>Wire D2 → A0 (sketch plays 500 Hz on D2)<span class="check-expected">Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Wire D2 → A0 (sketch plays 500 Hz on D2)<span class="check-expected">Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048 (1950–2050: 500 samples are 12.5 periods, so it depends on where the burst starts) (got "Rate 20000 Hz", exactly 40 samples per period every time, duty 48–50 %, levels 9–11 and 4067–4080, no samples mid-edge, mean 1961–2050)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>25b · AnalogBurst</td>
-          <td>As 25, but <code>PIN = A3</code>, <code>RATE_HZ = 200000</code> (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V)<span class="check-expected">Square wave between ≈ 0 and ≈ 3300 counts, 400 samples per period; edges rounded over ~10 samples (divider and the 10 nF input filter, about 50 µs); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate" ≈ 200000 Hz; afterwards <code>AnalogMillivolts</code> still reads A3 correctly</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>As 25, but <code>PIN = A3</code>, <code>RATE_HZ = 200000</code> (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V)<span class="check-expected">Square wave between ≈ 0 and ≈ 3200–3300 counts (1.60–1.65 V, resistor tolerance); edges settle within ~8 samples (divider and the input filter); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate 197916 Hz" (nearest SPI clock to 200000); every burst the same. Rate / 500 ≈ 396 samples per period (edges ≈ 198 samples apart; 181 would mean the SPI is back in mode 0, which adds a gap between frames) (got lowest 0, highest 3234–3252, edges exactly 198 samples apart, no glitches in 2000 samples; on 10-21, before the fix, 181 apart)</span></td>
+          <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
           <td>26 · AnalogBurstBackground</td>
-          <td>Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200<span class="check-expected">LED blinks steadily at 2 Hz; ten lines a second; mean matches A3 in <code>AnalogMillivolts</code>, RMS of a few tenths of a mV</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200<span class="check-expected">LED blinks steadily at 2 Hz, from when the Serial Monitor opens (<code>setup()</code> waits for it); ten lines a second; mean matches A3 in <code>AnalogMillivolts</code>, RMS of a few tenths of a mV (got 199 lines in 20 s, mean 1803.9 mV against A3 1801–1806 mV, RMS 0.20–0.23 mV)</span></td>
+          <td><span class="status pass">Passed 10-21</span></td>
         </tr>
       </tbody>
     </table>
@@ -390,8 +390,8 @@
       <tbody>
         <tr>
           <td>Board tested</td>
-          <td>One Phyduino Pico, 2026-10-05, 2026-10-08, 2026-10-09, 2026-10-18 and
-            2026-10-19 (dates in the table are 2026).</td>
+          <td>One Phyduino Pico, 2026-10-05, 2026-10-08, 2026-10-09, 2026-10-18,
+            2026-10-19, 2026-10-21 and 2026-10-22 (dates in the table are 2026).</td>
           <td></td>
         </tr>
         <tr>
@@ -404,6 +404,19 @@
             Tera Term (needs DTR on: with it off the board drops everything it sends),
             then Arduino IDE Upload of Blink with COM5 selected, no button. 33 and 35
             not run yet.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Analog 21–26</td>
+          <td>2026-10-21, board on COM5. Built with the CMake preset <code>phyduino_pico</code>; UF2
+            made with picotool 2.0.0, because the installed 2.2.0-a4 crashed on <code>uf2 convert</code>
+            on that PC (see Windows Smart App Control). 3.3 V rail: slow drift of about ±1 % (≈ ±30 mV,
+            from AREF read on A0), seen on A0–A2 whenever the source does not follow the rail. A3 reads
+            lower with averaging, about 7.5 mV at 32 against 1 in every round, with a potentiometer as
+            the source; probably the source impedance, not yet checked with a stiff source. 25b: the
+            MAX11635 clock mode 11 burst sampled at ≈ 181 kHz while it reported 197 916 Hz: in SPI
+            mode 0 the PL022 adds 1.5 SCLK between frames (17.5 per sample, not 16). Fixed 10-22 by running
+            the burst in mode 3 (the chip accepts either); passed 10-22.</td>
           <td></td>
         </tr>
         <tr>

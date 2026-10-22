@@ -10,7 +10,8 @@ checklist (2026-10-19, one Phyduino Pico): 28-32, 34 and 36 passed
 (MulticoreBasics with all three Operating System options, MulticoreFifo
 without FreeRTOS, `multicore_idle` with None and FreeRTOS, FreeRtosTasks with
 FreeRTOS and CMSIS-RTOS2, `serial_echo` and the IDE's 1200-baud upload reset
-with FreeRTOS); 33 and 35 not yet run.
+with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
+2026-10-22, reading A3 instead of A0 (MAX11635 SPI with the RTOS running).
 
 ### Added
 - Second core, arduino-pico compatible: a sketch that defines `setup1()` and
@@ -113,8 +114,8 @@ with FreeRTOS); 33 and 35 not yet run.
   11 + DMA up to 300 ksps). Variants provide eight `variantAnalog*()` hooks (ADR
   003 extended); `max11635.h` gains averaging, scan, differential and bursts.
   New bundled `Phyduino` library with six analog examples (File > Examples > Phyduino).
-  Host-tested; not yet run on hardware (checklist 21-26, 25b is the clock
-  mode 11 byte alignment).
+  Host-tested; hardware-tested 2026-10-21 (checklist 21-26 passed) and
+  2026-10-22 (25b passed).
 
 ### Changed
 - Default USB-PD request is now 5 V only (was up to 20 V): VIN is 5 V unless
@@ -132,6 +133,11 @@ with FreeRTOS); 33 and 35 not yet run.
   `long` is 64-bit; now always the width of `int`.
 
 ### Fixed
+- MAX11635 bursts above 20 ksps (clock mode 11) sampled about 9 % slower than
+  the rate `analogReadBurst()` returned (≈ 181 kHz for 197916 Hz): in SPI mode 0
+  the RP2040's SPI adds 1.5 clocks between frames. The burst now runs in SPI
+  mode 3 (the MAX11635 accepts either), so frames run back to back at 16 clocks
+  per sample. Checklist 25b passed 2026-10-22.
 - Release workflow merged the package index of the newest full release only
   (`releases/latest` skips pre-releases), so each pre-release index listed only
   itself. It now merges the index of the newest `v*` release, pre-releases
@@ -161,5 +167,15 @@ with FreeRTOS); 33 and 35 not yet run.
 - `usbpd_status` read one command character per second, so a burst of input was
   acted on seconds late; it now handles all waiting input each loop (fix not yet
   run on hardware).
+- Hardware checklist (2026-10-21, one Phyduino Pico): analog items 21-26 passed
+  (`AnalogMillivolts`, `AnalogAveraging`, `AnalogDifferential`,
+  `AnalogReadMultiple`, `AnalogBurst` on A0 at 20 ksps, `AnalogBurstBackground`).
+  25b (A3 at 200 ksps, MAX11635 clock mode 11): result bytes aligned, no glitches,
+  but the burst really sampled at ≈ 181 kHz while `analogReadBurst()` reported
+  197916 Hz (362 samples per 500 Hz period instead of ≈ 396). Fixed (see Fixed);
+  passed 2026-10-22 with 396 samples per period. Checklist wording for 22-26
+  reworded from the test: averaging needs sources that follow each ADC's
+  reference (the 3.3 V rail drifts ≈ ±1 %), and A3 reads a few mV lower with
+  averaging on (potentiometer source; not yet checked with a stiff source).
 - Board seen with A3-A5 100 kOhm pull-downs (R47-R49) apparently not connected:
   unconnected inputs float. Hardware, not firmware.

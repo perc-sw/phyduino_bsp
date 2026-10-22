@@ -206,10 +206,15 @@ TEST_CASE_FIXTURE(AnalogTest, "stopping a MAX11635 burst puts the chip back for 
     fake::hw.dma_busy_polls = 100;
     uint16_t buffer[16] = {};
     CHECK(analogStartBurst(A3, buffer, 16, 200000) > 0);
+    CHECK(fake::hw.spi[0].data_bits == 16);                // mode 3: no gap between frames
+    CHECK(fake::hw.spi[0].cpol == SPI_CPOL_1);
+    CHECK(fake::hw.spi[0].cpha == SPI_CPHA_1);
     CHECK_FALSE(analogBurstDone());
     analogStopBurst();
     CHECK(analogBurstDone());
     CHECK(adc.setup_register == 0x46);
+    CHECK(fake::hw.spi[0].cpol == SPI_CPOL_0);             // back to mode 0
+    CHECK(fake::hw.spi[0].cpha == SPI_CPHA_0);
     adc.channel_value[0] = 321;
     CHECK(analogRead(A3) == 321);
 }
