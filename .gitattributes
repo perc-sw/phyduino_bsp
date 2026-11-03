@@ -1,4 +1,6 @@
 # Line endings that must not depend on the machine's core.autocrlf setting:
-# shell scripts run under /bin/sh (a CR breaks them), batch files under cmd.
-*.sh   text eol=lf
-*.cmd  text eol=crlf
+# shell scripts and git hooks run under /bin/sh (a CR breaks them), batch
+# files under cmd.
+*.sh        text eol=lf
+.githooks/* text eol=lf
+*.cmd       text eol=crlf
