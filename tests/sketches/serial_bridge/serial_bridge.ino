@@ -9,8 +9,10 @@
 
 void setup() {
     Serial.begin(115200);
+#ifdef ARDUINO_ARCH_RP2040   // arduino-pico only; CI also builds this for the Phyduino Pico
     Serial2.setTX(4);
     Serial2.setRX(5);
+#endif
     Serial2.begin(115200);
 }
 

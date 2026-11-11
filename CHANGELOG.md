@@ -66,7 +66,9 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
 - `tests/sketches/serial_bridge` uses Serial2 on the Pico 2 (GP4 TX pin 6,
   GP5 RX pin 7) instead of Serial1 (GP0/GP1): on the test Pico 2, with
   arduino-pico 6.3.2, Serial1 sent nothing from GP0 or GP12 (2026-11-11).
-  Checklist wiring diagrams for 14, 15, 20 and 27 updated.
+  Checklist wiring diagrams for 14, 15, 20 and 27 updated. The pin calls
+  (`setTX()`/`setRX()`, arduino-pico only) are inside `#ifdef ARDUINO_ARCH_RP2040`,
+  so CI (compile and CMake jobs) still builds the sketch for the Phyduino Pico.
 
 ## Unreleased: v0.1.0 (Stage 1: Phyduino Pico board package)
 
