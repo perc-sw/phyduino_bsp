@@ -2,7 +2,11 @@
 
 Format: one section per version, newest first. Stage plan: README.md.
 
-## Unreleased: v0.1.1 (Stage 2: FreeRTOS and multi-core)
+## v0.1.1-rc.1 (2026-11-11; Stage 2: FreeRTOS and multi-core)
+
+First pre-release of v0.1.1. It also contains all of Stage 1 (the v0.1.0
+section below), which never had a final release. Whole hardware checklist
+passed (40 items, 2026-11-11).
 
 Design: ADR 009 (docs/decisions/009-multicore-freertos.html) and ADR 010
 (docs/decisions/010-cmsis-rtos2.html). Built and host-tested. Hardware
@@ -70,7 +74,7 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
   (`setTX()`/`setRX()`, arduino-pico only) are inside `#ifdef ARDUINO_ARCH_RP2040`,
   so CI (compile and CMake jobs) still builds the sketch for the Phyduino Pico.
 
-## Unreleased: v0.1.0 (Stage 1: Phyduino Pico board package)
+## v0.1.0 (Stage 1: Phyduino Pico board package; pre-releases only, up to v0.1.0-rc.2, included in v0.1.1-rc.1)
 
 ### Added
 - Own Arduino core on pico-sdk 2.2.0 + ArduinoCore-API 1.5.2.
