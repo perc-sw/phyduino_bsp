@@ -39,8 +39,9 @@ all documentation starts at [docs/index.html](docs/index.html).
 |---|---|---|
 | 1 | v0.1.0 | Phyduino Pico board package with integrated pico-sdk |
 | 2 | v0.1.1 | FreeRTOS (and CMSIS-RTOS2) and multi-core |
-| 3 | v0.2.0 | Phyduino Pico2 (RP2350B, Arm); libraries updated |
-| 4 | v0.2.1 | RISC-V build option for Phyduino Pico2 |
+| 3 | v0.1.2 | PlatformIO support alongside the Arduino IDE (same core, variants, libraries and SDK bundles) |
+| 4 | v0.2.0 | Phyduino Pico2 (RP2350B, Arm); libraries updated |
+| 5 | v0.2.1 | RISC-V build option for Phyduino Pico2 |
 
 Libraries and examples for the Analog Shield and Analog Shield2 live in their own
 repository, not in this board package ([ADR 008](docs/decisions/008-shield-libraries-separate-repo.html)).

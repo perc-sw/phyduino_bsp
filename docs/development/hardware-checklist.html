@@ -24,6 +24,10 @@
                         font-size: 11.5px; line-height: 1.15; color: var(--text); margin: 8px 0;
                         padding: 8px 10px; background: var(--bg); border: 1px solid var(--border);
                         border-radius: var(--r); overflow-x: auto; }
+  /* A wide wiring diagram scrolls inside its cell instead of widening the table,
+     which would push the status column out of the (overflow: hidden) table box */
+  .ds-table td:nth-child(2) { max-width: 0; }
+  .ds-table td:last-child   { width: 1%; }   /* status column: as narrow as its pill */
 </style>
 </head>
 <body>
@@ -65,7 +69,7 @@
       <div class="spec-row">
         <span class="spec-pill">v0.1.0</span>
         <span class="spec-pill">Phyduino Pico</span>
-        <span class="spec-pill">19 passed</span>
+        <span class="spec-pill">40 passed</span>
         <span class="spec-pill">0 to run</span>
       </div>
     </div>
@@ -231,7 +235,15 @@
         </tr>
         <tr>
           <td>18 · analog_read</td>
-          <td>CPU Speed 200 MHz; a known voltage under 2.048 V on A3 (e.g. a 1.5 V cell, a divider from 3.3 V, or the Analog Shield's temperature front end). Checks the MAX11635 start-conversion pulse is still long enough at the fastest clock<span class="check-expected">A3 reads the applied voltage (reading × 2.048 / 4095), same as at 133 MHz (Analog Shield temperature front end on A3: 2783 at 133 MHz, 2788 at 200 MHz, 2790 at 133 MHz again ≈ 1.39 V; steady within each run, the small rise is sensor drift)</span></td>
+          <td>CPU Speed 200 MHz; a known voltage under 2.048 V on A3 (e.g. a 1.5 V cell, a divider from 3.3 V, or the Analog Shield's temperature front end). Checks the MAX11635 start-conversion pulse is still long enough at the fastest clock<pre class="wiring"> Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │ A3           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
+   Set it anywhere, then leave it. Or: a 1.5 V cell
+   (+ to A3, − to GND), or the Analog Shield&#x27;s
+   temperature front end on A3.</pre><span class="check-expected">A3 reads the applied voltage (reading × 2.048 / 4095), same as at 133 MHz (Analog Shield temperature front end on A3: 2783 at 133 MHz, 2788 at 200 MHz, 2790 at 133 MHz again ≈ 1.39 V; steady within each run, the small rise is sensor drift)</span></td>
           <td><span class="status pass">Passed 10-09</span></td>
         </tr>
       </tbody>
@@ -249,10 +261,10 @@
         ▼                                        ▼
  ┌────────────────────┐              ┌─────────────────────┐
  │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
- │ (usbpd_status)     │              │ (serial bridge)     │
- │ D1 TX (GPIO0)     ●├──────────────┤● GP1 RX  (pin 2)    │
- │ D0 RX (GPIO1)     ●├──────────────┤● GP0 TX  (pin 1)    │
- │ GND               ●├──────────────┤● GND     (pin 3)    │
+ │ (usbpd_status)     │              │ (serial_bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP5 RX  (pin 7)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP4 TX  (pin 6)    │
+ │ GND               ●├──────────────┤● GND     (pin 8)    │
  │ POK2 / POK3 LEDs   │              └─────────────────────┘
  └────────────────────┘
    Only these three wires: VBUS is 20 V on a 20 V contract.</pre><span class="check-expected">“STUSB4500 found”; profiles 5.0V/2.0A 9.0V/1.0A 20.0V/0.5A; VBUS ≈ 20 V, POK3 lit (got 20.2 V)</span></td>
@@ -260,7 +272,18 @@
         </tr>
         <tr>
           <td>15 · usbpd_status</td>
-          <td>Same setup as 14; send 9, then 5, then f<span class="check-expected">VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V (got 9.1 V, 5.15 V, 20.2 V)</span></td>
+          <td>Same setup as 14; send 9, then 5, then f<pre class="wiring"> USB-PD charger (20 V)                          PC
+        │ USB-C                                  │ USB
+        ▼                                        ▼
+ ┌────────────────────┐              ┌─────────────────────┐
+ │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
+ │ (usbpd_status)     │              │ (serial_bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP5 RX  (pin 7)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP4 TX  (pin 6)    │
+ │ GND               ●├──────────────┤● GND     (pin 8)    │
+ │ POK2 / POK3 LEDs   │              └─────────────────────┘
+ └────────────────────┘
+   Only these three wires: VBUS is 20 V on a 20 V contract.</pre><span class="check-expected">VBUS → ≈ 9 V (POK2 lit), → ≈ 5 V, → ≈ 20 V (got 9.1 V, 5.15 V, 20.2 V)</span></td>
           <td><span class="status pass">Passed 10-09</span></td>
         </tr>
         <tr>
@@ -271,18 +294,44 @@
         </tr>
         <tr>
           <td>19 · usbpd_nvm</td>
-          <td>New board, once. Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; Serial Monitor 115200; send <code>r</code>, then <code>write5v</code>; unplug and replug. Keep the printed <code>r</code> output as the board&#x27;s backup<span class="check-expected"><code>r</code> shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after <code>write5v</code> the read-back shows 1 profile, 5 V/2.0 A and &ldquo;OK: verified&rdquo;; after replugging, usbpd_status (stored settings) shows profiles 5.0V/2.0A (got: factory NVM except sector 0 byte 3 = AB; only sector 3 written, 56 &rarr; 72)</span></td>
-          <td><span class="status pass">Passed 10-09</span></td>
+          <td>New board, once. Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; Serial Monitor 115200; send <code>r</code>, then <code>write5v</code>; unplug and replug. Keep the printed <code>r</code> output as the board&#x27;s backup<span class="check-expected"><code>r</code> shows the NVM (ST factory: 3 profiles 5 V/1.5 A, 15 V/1.5 A, 20 V/1.0 A); after <code>write5v</code> the read-back shows 1 profile, 5 V/2.0 A and &ldquo;OK: verified&rdquo;; after replugging, usbpd_status (stored settings) shows profiles 5.0V/2.0A (got: factory NVM except sector 0 byte 3 = AB; only sector 3 written, 56 &rarr; 72; second board 11-11: same NVM, same result)</span></td>
+          <td><span class="status pass">Passed 10-09, 11-11</span></td>
         </tr>
         <tr>
           <td>20 · usbpd_status</td>
-          <td>After 19: same setup as 14 but Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; plug in the 20 V charger. Then rebuild with Up to 20 V<span class="check-expected">VBUS &asymp; 5 V from plug-in, profiles 5.0V/2.0A; with Up to 20 V, VBUS &asymp; 20 V (menu changes working registers only; <code>r</code> in usbpd_nvm still shows 5 V only)</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>After 19: same setup as 14 but Tools &gt; USB-PD Power: Use chip&#x27;s stored settings; plug in the 20 V charger. Then rebuild with Up to 20 V<pre class="wiring"> USB-PD charger (20 V)                          PC
+        │ USB-C                                  │ USB
+        ▼                                        ▼
+ ┌────────────────────┐              ┌─────────────────────┐
+ │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
+ │ (usbpd_status)     │              │ (serial_bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP5 RX  (pin 7)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP4 TX  (pin 6)    │
+ │ GND               ●├──────────────┤● GND     (pin 8)    │
+ │ POK2 / POK3 LEDs   │              └─────────────────────┘
+ └────────────────────┘
+   Only these three wires: VBUS is 20 V on a 20 V contract.
+   Uploads: unplug the charger, then connect the
+   Phyduino to the PC.</pre><span class="check-expected">VBUS &asymp; 5 V from plug-in, profiles 5.0V/2.0A; with Up to 20 V, VBUS &asymp; 20 V (menu changes working registers only; <code>r</code> in usbpd_nvm still shows 5 V only) (got, second board after its 19: 5.0V/2.0A, offer 1, 5.10 V; Up to 20 V: offer 5, 500 mA, 19.98 V, POK3 lit; <code>r</code> unchanged, sector 3 = 72)</span></td>
+          <td><span class="status pass">Passed 11-11</span></td>
         </tr>
         <tr>
           <td>27 · UsbPdPower</td>
-          <td>Same setup as 14, but Tools &gt; USB-PD Power: 5 V only (default); send 20, then 9, then 5, then 7<span class="check-expected">At start: profiles 5.0V/2.00A, VBUS &asymp; 5 V; 20: &ldquo;Asking for up to 20 V&rdquo;, profiles 5.0V/2.00A 9.0V/1.00A 20.0V/0.50A, VBUS &asymp; 20 V (POK3 lit); 9: VBUS &asymp; 9 V (POK2 lit); 5: VBUS &asymp; 5 V; 7: &ldquo;Send 5, 9, 12, 15 or 20.&rdquo;</span></td>
-          <td><span class="status todo">To do</span></td>
+          <td>Same setup as 14, but Tools &gt; USB-PD Power: 5 V only (default); send 20, then 9, then 5, then 7<pre class="wiring"> USB-PD charger (20 V)                          PC
+        │ USB-C                                  │ USB
+        ▼                                        ▼
+ ┌────────────────────┐              ┌─────────────────────┐
+ │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
+ │ (UsbPdPower)       │              │ (serial_bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP5 RX  (pin 7)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP4 TX  (pin 6)    │
+ │ GND               ●├──────────────┤● GND     (pin 8)    │
+ │ POK2 / POK3 LEDs   │              └─────────────────────┘
+ └────────────────────┘
+   Only these three wires: VBUS is 20 V on a 20 V contract.
+   Commands arrive through the bridge on D0 RX,
+   so that wire is needed here.</pre><span class="check-expected">At start: profiles 5.0V/2.00A, VBUS &asymp; 5 V; 20: &ldquo;Asking for up to 20 V&rdquo;, profiles 5.0V/2.00A 9.0V/1.00A 20.0V/0.50A, VBUS &asymp; 20 V (POK3 lit); 9: VBUS &asymp; 9 V (POK2 lit); 5: VBUS &asymp; 5 V; 7: &ldquo;Send 5, 9, 12, 15 or 20.&rdquo; (got, second board, bridge on Serial2: start 5.0V/2.00A, offer 1, 5.10 V; 20: offer 5, 500 mA, 19.98 V, POK3 lit; 9: offer 2, 1000 mA, 9.00 V, POK2 lit; 5: offer 1, 5.10 V; 7 rejected; also 15: 15.0V/0.66A, offer 4, 14.97 V, then 9 again 9.00 V; each change within one status line)</span></td>
+          <td><span class="status pass">Passed 11-11</span></td>
         </tr>
       </tbody>
     </table>
@@ -319,7 +368,13 @@
         </tr>
         <tr>
           <td>33 · FreeRtosQueue</td>
-          <td>FreeRTOS; potentiometer wiper (or AREF) on A0<span class="check-expected">A line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1807 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
+          <td>FreeRTOS; potentiometer wiper (or AREF) on A0<pre class="wiring"> Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ 3.3V         ●├─────────────┤ end   │
+ │ A0           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
+   Or a jumper from AREF to A0 (as in 6).</pre><span class="check-expected">A line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1807 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
           <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
@@ -329,7 +384,13 @@
         </tr>
         <tr>
           <td>35 · CmsisRtos2Threads</td>
-          <td>Tools &gt; Operating System: FreeRTOS (SMP) + CMSIS-RTOS2; potentiometer wiper (or AREF) on A0<span class="check-expected">&ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;; LED flashes once a second (100 ms on); a line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: &ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;, LED flashing once a second, 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1808 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
+          <td>Tools &gt; Operating System: FreeRTOS (SMP) + CMSIS-RTOS2; potentiometer wiper (or AREF) on A0<pre class="wiring"> Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ 3.3V         ●├─────────────┤ end   │
+ │ A0           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
+   Or a jumper from AREF to A0 (as in 6).</pre><span class="check-expected">&ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;; LED flashes once a second (100 ms on); a line every 100 ms, times 100 ms apart; A0 matches AnalogMillivolts; no &ldquo;Queue full&rdquo; (got, with the sketch&#x27;s A0 changed to A3 for the wiring: &ldquo;Kernel: FreeRTOS V11.1.0+&rdquo;, LED flashing once a second, 100 lines in 10 s all exactly 100 ms apart, A3 1804&ndash;1808 mV against 1803 mV in AnalogMillivolts, no &ldquo;Queue full&rdquo;)</span></td>
           <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
@@ -347,37 +408,96 @@
       <tbody>
         <tr>
           <td>21 · AnalogMillivolts</td>
-          <td>AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200<span class="check-expected">Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5 (got A0 2029–2058, A1 2035–2039, A2 2036–2041 mV, about 0.5 % low; A3, A4, A5 2047 mV)</span></td>
+          <td>AREF jumper to each of A0–A5 in turn (as in 6); Serial Monitor 115200<pre class="wiring"> Phyduino Pico
+ ┌───────────────┐
+ │ AREF 2.048 V ●├──┐ jumper
+ │ A0           ●├──┘
+ │ A1           ●│
+ │ A2           ●│   move the jumper&#x27;s free end
+ │ A3           ●│   to A0, then A1 … A5,
+ │ A4           ●│   one input at a time
+ │ A5           ●│
+ └───────────────┘</pre><span class="check-expected">Full scale 3300 mV for A0–A2, 2048 mV for A3–A5; the jumpered pin reads ≈ 2048 mV on A0–A2 and ≈ 2047 mV on A3–A5 (got A0 2029–2058, A1 2035–2039, A2 2036–2041 mV, about 0.5 % low; A3, A4, A5 2047 mV)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>22 · AnalogAveraging</td>
-          <td>Potentiometer across 3.3 V and GND, wiper on A0; a second potentiometer across AREF and GND, wiper on A3; Serial Monitor 115200. Not AREF on A0 or a 3.3 V potentiometer on A3: each then follows the other ADC's reference and carries the slow ≈ 1 % drift of the 3.3 V rail, which averaging cannot remove<span class="check-expected">Spread shrinks as averaging rises from 1 to 32: clearly on A0 (≈ 10 → 1), only slightly on A3 (the MAX11635 is already quiet, ≈ 5 → 3) (got A0 spread 8–11, 4–5, 2–3, 2, 1–2 counts; A3 4–5, 7, 6, 4, 3. With AREF on A0 and a 3.3 V potentiometer on A3 the spread stayed 20–55 counts at every setting)</span></td>
+          <td>Potentiometer across 3.3 V and GND, wiper on A0; a second potentiometer across AREF and GND, wiper on A3; Serial Monitor 115200. Not AREF on A0 or a 3.3 V potentiometer on A3: each then follows the other ADC's reference and carries the slow ≈ 1 % drift of the 3.3 V rail, which averaging cannot remove<pre class="wiring"> Phyduino Pico                 potentiometer 1 (A0: 0–3.3 V)
+ ┌───────────────┐             ┌───────┐
+ │ 3.3V         ●├─────────────┤ end   │
+ │ A0           ●├─────────────┤ wiper │
+ │               │          ┌──┤ end   │
+ │               │          │  └───────┘
+ │ GND          ●├──────────┤  potentiometer 2 (A3: 0–2.048 V)
+ │               │          │  ┌───────┐
+ │               │          └──┤ end   │
+ │ A3           ●├─────────────┤ wiper │
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │               │             └───────┘
+ └───────────────┘
+   10 kΩ potentiometers; set each anywhere, then leave it.</pre><span class="check-expected">Spread shrinks as averaging rises from 1 to 32: clearly on A0 (≈ 10 → 1), only slightly on A3 (the MAX11635 is already quiet, ≈ 5 → 3) (got A0 spread 8–11, 4–5, 2–3, 2, 1–2 counts; A3 4–5, 7, 6, 4, 3. With AREF on A0 and a 3.3 V potentiometer on A3 the spread stayed 20–55 counts at every setting)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>23 · AnalogDifferential</td>
-          <td>Potentiometer wiper on A3 and A0 (one potentiometer for both, or one each; keep A3 under 2.048 V, e.g. a potentiometer across AREF and GND), A4 and A1 to GND; turn from 0 V up<span class="check-expected">A3 − A4 matches A3 in <code>AnalogMillivolts</code>, below and above 1024 mV (above it, two readings); A0 − A1 matches A0 (got A3 − A4 870 and 1799 mV against A3 875 and 1802 mV, a few mV lower with the sketch's averaging 16; A0 − A1 1048 mV against A0 1058 − A1 8 mV; one potentiometer each)</span></td>
+          <td>Potentiometer wiper on A3 and A0 (one potentiometer for both, or one each; keep A3 under 2.048 V, e.g. a potentiometer across AREF and GND), A4 and A1 to GND; turn from 0 V up<pre class="wiring"> Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │ A3           ●├──────────┬──┤ wiper │
+ │ A0           ●├──────────┘┌─┤ end   │
+ │ A4           ●├──┐        │ └───────┘
+ │ A1           ●├──┤        │
+ │ GND          ●├──┴────────┘
+ └───────────────┘
+   One potentiometer for both pairs:
+   A3 − A4 and A0 − A1 both read the wiper.</pre><span class="check-expected">A3 − A4 matches A3 in <code>AnalogMillivolts</code>, below and above 1024 mV (above it, two readings); A0 − A1 matches A0 (got A3 − A4 870 and 1799 mV against A3 875 and 1802 mV, a few mV lower with the sketch's averaging 16; A0 − A1 1048 mV against A0 1058 − A1 8 mV; one potentiometer each)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>24 · AnalogReadMultiple</td>
-          <td>Serial Plotter 115200; AREF jumper to one analog pin at a time, or known, different voltages on several pins at once (e.g. the wiring of 23)<span class="check-expected">Six traces, ≈ 20 lines a second; only the jumpered pin's trace rises to ≈ 2048 mV (or each trace matches that pin in <code>AnalogMillivolts</code>) (got, wired as 23: A0 1056, A1 8, A3 1801, A4 0 mV, each matching <code>AnalogMillivolts</code>; 59 lines in 3 s)</span></td>
+          <td>Serial Plotter 115200; AREF jumper to one analog pin at a time, or known, different voltages on several pins at once (e.g. the wiring of 23)<pre class="wiring"> Phyduino Pico
+ ┌───────────────┐
+ │ AREF 2.048 V ●├──┐ jumper
+ │ A0           ●├──┘
+ │ A1           ●│
+ │ A2           ●│   move the jumper&#x27;s free end
+ │ A3           ●│   to A0, then A1 … A5,
+ │ A4           ●│   one input at a time
+ │ A5           ●│
+ └───────────────┘
+   Or the wiring of 23 (traces A0, A1, A3, A4 at once).</pre><span class="check-expected">Six traces, ≈ 20 lines a second; only the jumpered pin's trace rises to ≈ 2048 mV (or each trace matches that pin in <code>AnalogMillivolts</code>) (got, wired as 23: A0 1056, A1 8, A3 1801, A4 0 mV, each matching <code>AnalogMillivolts</code>; 59 lines in 3 s)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>25 · AnalogBurst</td>
-          <td>Wire D2 → A0 (sketch plays 500 Hz on D2)<span class="check-expected">Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048 (1950–2050: 500 samples are 12.5 periods, so it depends on where the burst starts) (got "Rate 20000 Hz", exactly 40 samples per period every time, duty 48–50 %, levels 9–11 and 4067–4080, no samples mid-edge, mean 1961–2050)</span></td>
+          <td>Wire D2 → A0 (sketch plays 500 Hz on D2)<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D2          ●├──┐
+ │              │  │ jumper (500 Hz square wave, 0–3.3 V)
+ │ A0          ●├──┘
+ └──────────────┘</pre><span class="check-expected">Plot shows a clean square wave, 40 samples per period; "Rate 20000 Hz"; mean ≈ 2048 (1950–2050: 500 samples are 12.5 periods, so it depends on where the burst starts) (got "Rate 20000 Hz", exactly 40 samples per period every time, duty 48–50 %, levels 9–11 and 4067–4080, no samples mid-edge, mean 1961–2050)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
         <tr>
           <td>25b · AnalogBurst</td>
-          <td>As 25, but <code>PIN = A3</code>, <code>RATE_HZ = 200000</code> (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V)<span class="check-expected">Square wave between ≈ 0 and ≈ 3200–3300 counts (1.60–1.65 V, resistor tolerance); edges settle within ~8 samples (divider and the input filter); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate 197916 Hz" (nearest SPI clock to 200000); every burst the same. Rate / 500 ≈ 396 samples per period (edges ≈ 198 samples apart; 181 would mean the SPI is back in mode 0, which adds a gap between frames) (got lowest 0, highest 3234–3252, edges exactly 198 samples apart, no glitches in 2000 samples; on 10-21, before the fix, 181 apart)</span></td>
+          <td>As 25, but <code>PIN = A3</code>, <code>RATE_HZ = 200000</code> (MAX11635 clock mode 11); D2 → A3 through 10 kΩ, 10 kΩ from A3 to GND (1.65 V)<pre class="wiring"> Phyduino Pico
+ ┌──────────────┐
+ │ D2          ●├────[10k]────┐
+ │ A3          ●├─────────────┤   A3: 0 V / ≈ 1.65 V at 500 Hz
+ │ GND         ●├────[10k]────┘
+ └──────────────┘
+   The divider keeps A3 under its 2.048 V full scale.</pre><span class="check-expected">Square wave between ≈ 0 and ≈ 3200–3300 counts (1.60–1.65 V, resistor tolerance); edges settle within ~8 samples (divider and the input filter); flat parts steady, with no isolated spikes or jumps by powers of two (those would mean misaligned result bytes); "Rate 197916 Hz" (nearest SPI clock to 200000); every burst the same. Rate / 500 ≈ 396 samples per period (edges ≈ 198 samples apart; 181 would mean the SPI is back in mode 0, which adds a gap between frames) (got lowest 0, highest 3234–3252, edges exactly 198 samples apart, no glitches in 2000 samples; on 10-21, before the fix, 181 apart)</span></td>
           <td><span class="status pass">Passed 10-22</span></td>
         </tr>
         <tr>
           <td>26 · AnalogBurstBackground</td>
-          <td>Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200<span class="check-expected">LED blinks steadily at 2 Hz, from when the Serial Monitor opens (<code>setup()</code> waits for it); ten lines a second; mean matches A3 in <code>AnalogMillivolts</code>, RMS of a few tenths of a mV (got 199 lines in 20 s, mean 1803.9 mV against A3 1801–1806 mV, RMS 0.20–0.23 mV)</span></td>
+          <td>Steady voltage under 2.048 V on A3 (e.g. potentiometer); Serial Monitor 115200<pre class="wiring"> Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │ A3           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
+   Set it anywhere, then leave it.</pre><span class="check-expected">LED blinks steadily at 2 Hz, from when the Serial Monitor opens (<code>setup()</code> waits for it); ten lines a second; mean matches A3 in <code>AnalogMillivolts</code>, RMS of a few tenths of a mV (got 199 lines in 20 s, mean 1803.9 mV against A3 1801–1806 mV, RMS 0.20–0.23 mV)</span></td>
           <td><span class="status pass">Passed 10-21</span></td>
         </tr>
       </tbody>
@@ -391,7 +511,8 @@
         <tr>
           <td>Board tested</td>
           <td>One Phyduino Pico, 2026-10-05, 2026-10-08, 2026-10-09, 2026-10-18,
-            2026-10-19, 2026-10-21 and 2026-10-22 (dates in the table are 2026).</td>
+            2026-10-19, 2026-10-21 and 2026-10-22 (dates in the table are 2026).
+            A second Phyduino Pico (COM23) on 2026-11-11 for 19, 20 and 27.</td>
           <td></td>
         </tr>
         <tr>
@@ -403,7 +524,7 @@
             count 902, blink 488; 32 the same with Prio 1 for loop. 34: echo checked in
             Tera Term (needs DTR on: with it off the board drops everything it sends),
             then Arduino IDE Upload of Blink with COM5 selected, no button. 33 and 35
-            not run yet.</td>
+            were run later and passed on 2026-10-22 (see their rows).</td>
           <td></td>
         </tr>
         <tr>
@@ -439,10 +560,13 @@
           <td></td>
         </tr>
         <tr>
-          <td>Pico 2 used for 13–15</td>
+          <td>Pico 2 used for 13–15, 20, 27</td>
           <td>Its GP0 (pin 1) does not transmit, so for 14–15 the bridge used
             <code>Serial1.setTX(12)</code> (pin 16) instead. That board only; a working
-            Pico 2 uses the wiring shown.</td>
+            Pico 2 could use GP0/GP1. On 2026-11-11, rebuilt with arduino-pico 6.3.2,
+            Serial1 sent nothing from GP12 either (loopback test), while Serial2 on
+            GP4/GP5 worked both ways; serial_bridge now uses Serial2 (GP4 TX pin 6,
+            GP5 RX pin 7), as the diagrams show.</td>
           <td></td>
         </tr>
       </tbody>

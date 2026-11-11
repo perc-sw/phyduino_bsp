@@ -72,9 +72,10 @@ Sketches are in `tests/sketches/` and `platform/libraries/*/examples/`.
 
 Tests not listed need no wiring.
 
-### 6 · `analog_read`
+### 6 · `analog_read`, 21 · `AnalogMillivolts`, 24 · `AnalogReadMultiple`
 
-AREF jumper to each analog input in turn.
+AREF jumper to each analog input in turn. For 24, the wiring of 23 also works
+(traces A0, A1, A3, A4 at once).
 
 ```text
  Phyduino Pico
@@ -205,11 +206,13 @@ Raspberry Pi Pico 2 as controller.
    5 V controllers (e.g. UNO R4) need a level shifter.
 ```
 
-### 14 / 15 · `usbpd_status`
+### 14 / 15 / 20 · `usbpd_status`, 27 · `UsbPdPower`
 
 Charger powers the board; a Pico 2 running `serial_bridge` passes Serial1 to the PC
-(`usbpd_status` mirrors its output to Serial1). Open the Pico 2's Serial Monitor
-before plugging in the charger, or the "STUSB4500 found" line is missed.
+(`usbpd_status` and `UsbPdPower` mirror their output to Serial1 and read commands
+from it). Open the Pico 2's Serial Monitor before plugging in the charger, or the
+"STUSB4500 found" line is missed. For 27 the diagram's sketch is `UsbPdPower`. For
+uploads, unplug the charger and connect the Phyduino to the PC.
 
 ```text
  USB-PD charger (20 V)                          PC
@@ -217,10 +220,10 @@ before plugging in the charger, or the "STUSB4500 found" line is missed.
         ▼                                        ▼
  ┌────────────────────┐              ┌─────────────────────┐
  │ Phyduino Pico      │              │ Raspberry Pi Pico 2 │
- │ (usbpd_status)     │              │ (serial bridge)     │
- │ D1 TX (GPIO0)     ●├──────────────┤● GP1 RX  (pin 2)    │
- │ D0 RX (GPIO1)     ●├──────────────┤● GP0 TX  (pin 1)    │
- │ GND               ●├──────────────┤● GND     (pin 3)    │
+ │ (usbpd_status)     │              │ (serial_bridge)     │
+ │ D1 TX (GPIO0)     ●├──────────────┤● GP5 RX  (pin 7)    │
+ │ D0 RX (GPIO1)     ●├──────────────┤● GP4 TX  (pin 6)    │
+ │ GND               ●├──────────────┤● GND     (pin 8)    │
  │ POK2 / POK3 LEDs   │              └─────────────────────┘
  └────────────────────┘
    Only these three wires: VBUS is 20 V on a 20 V contract.
@@ -233,4 +236,98 @@ Ordinary USB port on the PC.
 ```text
  PC USB port ──── USB-C ────► Phyduino Pico (usbpd_status)
    5 V only; Serial Monitor at 115200
+```
+
+### 18 · `analog_read`, 26 · `AnalogBurstBackground`
+
+A steady voltage under 2.048 V on A3. For 18, a 1.5 V cell (+ to A3, − to GND) or
+the Analog Shield's temperature front end on A3 also works.
+
+```text
+ Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │ A3           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
+   Set it anywhere, then leave it.
+```
+
+### 22 · `AnalogAveraging`
+
+Each input gets a potentiometer across its own ADC's reference: 3.3 V for A0, AREF
+for A3.
+
+```text
+ Phyduino Pico                 potentiometer 1 (A0: 0–3.3 V)
+ ┌───────────────┐             ┌───────┐
+ │ 3.3V         ●├─────────────┤ end   │
+ │ A0           ●├─────────────┤ wiper │
+ │               │          ┌──┤ end   │
+ │               │          │  └───────┘
+ │ GND          ●├──────────┤  potentiometer 2 (A3: 0–2.048 V)
+ │               │          │  ┌───────┐
+ │               │          └──┤ end   │
+ │ A3           ●├─────────────┤ wiper │
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │               │             └───────┘
+ └───────────────┘
+   10 kΩ potentiometers; set each anywhere, then leave it.
+```
+
+### 23 · `AnalogDifferential`
+
+One potentiometer across AREF and GND keeps A3 under 2.048 V; its wiper goes to
+A3 and A0, and A4 and A1 go to GND.
+
+```text
+ Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ AREF 2.048 V ●├─────────────┤ end   │
+ │ A3           ●├──────────┬──┤ wiper │
+ │ A0           ●├──────────┘┌─┤ end   │
+ │ A4           ●├──┐        │ └───────┘
+ │ A1           ●├──┤        │
+ │ GND          ●├──┴────────┘
+ └───────────────┘
+   A3 − A4 and A0 − A1 both read the wiper.
+```
+
+### 25 · `AnalogBurst`
+
+The sketch plays 500 Hz on D2 with `tone()`.
+
+```text
+ Phyduino Pico
+ ┌──────────────┐
+ │ D2          ●├──┐
+ │              │  │ jumper (500 Hz square wave, 0–3.3 V)
+ │ A0          ●├──┘
+ └──────────────┘
+```
+
+### 25b · `AnalogBurst` (`PIN = A3`, `RATE_HZ = 200000`)
+
+The divider keeps A3 under its 2.048 V full scale.
+
+```text
+ Phyduino Pico
+ ┌──────────────┐
+ │ D2          ●├────[10k]────┐
+ │ A3          ●├─────────────┤   A3: 0 V / ≈ 1.65 V at 500 Hz
+ │ GND         ●├────[10k]────┘
+ └──────────────┘
+```
+
+### 33 · `FreeRtosQueue`, 35 · `CmsisRtos2Threads`
+
+Potentiometer wiper on A0, or a jumper from AREF to A0 (as in 6).
+
+```text
+ Phyduino Pico                 potentiometer (10 kΩ)
+ ┌───────────────┐             ┌───────┐
+ │ 3.3V         ●├─────────────┤ end   │
+ │ A0           ●├─────────────┤ wiper │
+ │ GND          ●├─────────────┤ end   │
+ └───────────────┘             └───────┘
 ```

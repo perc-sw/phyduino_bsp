@@ -58,6 +58,15 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
 - `Serial1`/`Serial2` receive buffers are guarded by a critical section
   (spin lock) instead of masking interrupts, so either core can read a port
   whichever core called `begin()`.
+- Stage plan: new Stage 3, v0.1.2, PlatformIO support alongside the Arduino
+  IDE: a PlatformIO development platform (board JSON, SCons builder
+  replicating platform.txt, Tools menus as `board_build.*` options, Python
+  UF2 upload) using the same core, variants, libraries and SDK bundles. The
+  Pico2 stages become Stages 4 and 5 (still v0.2.0 and v0.2.1).
+- `tests/sketches/serial_bridge` uses Serial2 on the Pico 2 (GP4 TX pin 6,
+  GP5 RX pin 7) instead of Serial1 (GP0/GP1): on the test Pico 2, with
+  arduino-pico 6.3.2, Serial1 sent nothing from GP0 or GP12 (2026-11-11).
+  Checklist wiring diagrams for 14, 15, 20 and 27 updated.
 
 ## Unreleased: v0.1.0 (Stage 1: Phyduino Pico board package)
 
@@ -73,7 +82,7 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
 - STUSB4500 USB-PD driver (`stusb4500.h`); profiles from Tools > USB-PD Power
   (default 5 V only) loaded at start-up (working registers only, NVM untouched).
   `UsbPdPower` example in the `Phyduino` library (File > Examples > Phyduino);
-  not yet run on hardware (checklist 27).
+  run on hardware 2026-11-11 (checklist 27, passed).
 - `sdk-builder/` generating the committed SDK bundle.
 - Release tooling (`package/`) and CI (`.github/`).
 - CMake verification build (`CMakeLists.txt`, `cmake/`): same flags as the
@@ -162,8 +171,14 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
   the "20 V/0.5 A" seen earlier was the working registers after `initVariant()`.
   The test board's NVM is now 5 V only (checklist 19, passed); its original
   contents (factory, except sector 0 byte 3 = AB) are recorded in
-  docs/development/hardware-checklist.html. Item 20 (20 V charger: 5 V at plug-in,
-  menu still raises it) still to do.
+  docs/development/hardware-checklist.html. 2026-11-11, on a second board (COM23):
+  19 passed (same original NVM as the first board; only sector 3 written,
+  56 → 72), then 20 passed: with "Use chip's stored settings", 5.0V/2.0A and
+  VBUS 5.10 V on a 20 V charger; rebuilt with Up to 20 V, 19.98 V at 500 mA,
+  POK3 lit; `r` afterwards still showed the NVM as 5 V only. 27 (`UsbPdPower`,
+  5 V only) passed on the same board: 20 → 19.98 V at 500 mA (POK3 lit),
+  9 → 9.00 V at 1000 mA (POK2 lit), 5 → 5.10 V, 7 rejected, 15 → 14.97 V at 660 mA; each change within one
+  status line. Whole checklist now passed.
 - `usbpd_status` read one command character per second, so a burst of input was
   acted on seconds late; it now handles all waiting input each loop (fix not yet
   run on hardware).
