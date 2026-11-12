@@ -2,14 +2,6 @@
 
 Format: one section per version, newest first. Stage plan: README.md.
 
-## v0.1.1-rc.2 (not yet released)
-
-- CI can be started by hand (`workflow_dispatch`): Actions > CI > Run
-  workflow, or `gh workflow run ci.yml --ref <branch>`. For push runs that
-  GitHub leaves queued with no jobs (four on 2026-11-11, which could not be
-  cancelled or re-run). A manual run on main also fills the release
-  tool-archive cache, as a push to main does.
-
 ## v0.1.1-rc.1 (2026-11-11; Stage 2: FreeRTOS and multi-core)
 
 First pre-release of v0.1.1. It also contains all of Stage 1 (the v0.1.0
@@ -81,6 +73,11 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
   Checklist wiring diagrams for 14, 15, 20 and 27 updated. The pin calls
   (`setTX()`/`setRX()`, arduino-pico only) are inside `#ifdef ARDUINO_ARCH_RP2040`,
   so CI (compile and CMake jobs) still builds the sketch for the Phyduino Pico.
+- CI can be started by hand (`workflow_dispatch`): Actions > CI > Run
+  workflow, or `gh workflow run ci.yml --ref <branch>`. For push runs that
+  GitHub leaves queued with no jobs (four on 2026-11-11, which could not be
+  cancelled or re-run). A manual run on main also fills the release
+  tool-archive cache, as a push to main does.
 
 ## v0.1.0 (Stage 1: Phyduino Pico board package; pre-releases only, up to v0.1.0-rc.2, included in v0.1.1-rc.1)
 

@@ -29,7 +29,9 @@ Raspberry Pi pico-sdk. Sketches can use the Arduino API and the pico-sdk
 
 Supported hosts: Windows x64, Linux x64/arm64, macOS Apple Silicon.
 
-The URL works once v0.1.0 is published and the repository is public.
+That URL always gives the newest full release. Until there is one, use a
+pre-release's own URL instead: `releases/download/<tag>/package_phyduino_index.json`
+(for example `v0.1.1-rc.1`); [docs/index.html](docs/index.html) always shows the current one.
 Pin map and board details: [docs/boards/phyduino_pico.html](docs/boards/phyduino_pico.html);
 all documentation starts at [docs/index.html](docs/index.html).
 
