@@ -23,8 +23,12 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-build
 
+      # VERSION is checked out with CR LF (all text files are), so drop the CR.
       - name: Check tag matches VERSION
-        run: test "v$(cat VERSION)" = "${GITHUB_REF_NAME}"
+        run: |
+          version=$(tr -d '\r' < VERSION)
+          echo "VERSION: $version  tag: $GITHUB_REF_NAME"
+          test "v$version" = "$GITHUB_REF_NAME"
 
       - name: Compile sketches
         run: python3 tests/compile_all.py --config-file "$ARDUINO_CLI_CONFIG"

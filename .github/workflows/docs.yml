@@ -62,7 +62,7 @@ jobs:
         run: |
           doxygen --version
           ( cat Doxyfile
-            echo "PROJECT_NUMBER = $(cat VERSION)"
+            echo "PROJECT_NUMBER = $(tr -d '\r' < VERSION)"  # VERSION is CR LF
             echo "WARN_AS_ERROR = FAIL_ON_WARNINGS" ) | doxygen -
 
       - uses: actions/configure-pages@v6

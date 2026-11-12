@@ -78,6 +78,9 @@ with FreeRTOS). 33 (FreeRtosQueue) and 35 (CmsisRtos2Threads) passed
   GitHub leaves queued with no jobs (four on 2026-11-11, which could not be
   cancelled or re-run). A manual run on main also fills the release
   tool-archive cache, as a push to main does.
+- Release workflow: the tag check failed for every tag since the CR LF
+  conversion (2026-10-31), because `cat VERSION` kept the CR on the Linux
+  runner. The release and docs workflows now drop it (`tr -d '\r'`).
 
 ## v0.1.0 (Stage 1: Phyduino Pico board package; pre-releases only, up to v0.1.0-rc.2, included in v0.1.1-rc.1)
 
