@@ -1,4 +1,5 @@
-# On each push / pull request:
+# On each push / pull request, or by hand (Actions > CI > Run workflow, or
+# gh workflow run ci.yml --ref <branch>) when a push run gets stuck:
 #   compile     - every test sketch and library example through arduino-cli
 #   cmake       - the same code through the CMake verification build (-Werror)
 #   host-tests  - PC-side unit tests against a fake pico-sdk (tests/host)
@@ -9,6 +10,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   compile:
@@ -57,7 +59,7 @@ jobs:
   # A tag run (release.yml) can only restore caches saved on main or on that tag,
   # so the tool-archive cache is filled here. Only downloads when tools.json changes.
   release-downloads:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04  # pinned; change deliberately (ubuntu-latest moves to 26.04 on 2026-10-19)
     steps:
       - uses: actions/checkout@v7

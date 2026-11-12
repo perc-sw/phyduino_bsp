@@ -2,6 +2,14 @@
 
 Format: one section per version, newest first. Stage plan: README.md.
 
+## v0.1.1-rc.2 (not yet released)
+
+- CI can be started by hand (`workflow_dispatch`): Actions > CI > Run
+  workflow, or `gh workflow run ci.yml --ref <branch>`. For push runs that
+  GitHub leaves queued with no jobs (four on 2026-11-11, which could not be
+  cancelled or re-run). A manual run on main also fills the release
+  tool-archive cache, as a push to main does.
+
 ## v0.1.1-rc.1 (2026-11-11; Stage 2: FreeRTOS and multi-core)
 
 First pre-release of v0.1.1. It also contains all of Stage 1 (the v0.1.0
